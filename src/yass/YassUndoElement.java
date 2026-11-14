@@ -29,7 +29,8 @@ import java.util.Vector;
  */
 public class YassUndoElement {
     public final Vector<YassRow> data;
-    public final int[] selectedRows;
+    // Page-break edits refresh selection after navigation and row insertion/removal.
+    public int[] selectedRows;
     public final Point sheetViewPosition;
     public final double sheetBeatSize, bpm, gap, start, end, vgap;
     public final boolean absolutePitchViewEnabled;

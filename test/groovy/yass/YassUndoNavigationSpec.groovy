@@ -11,6 +11,108 @@ import java.awt.event.KeyEvent
 
 class YassUndoNavigationSpec extends Specification {
 
+    def 'undo and redo of a page break keep the selected syllable after navigating from an earlier edit'() {
+        given:
+        I18.setDefaultLanguage()
+        def previousZoomMode = YassTable.zoomMode
+        def props = Stub(YassProperties) {
+            isUncommonSpacingAfter() >> true
+            getBooleanProperty('use-sample') >> true
+        }
+        YassTable table
+        YassLyrics lyrics
+        UndoActions actions
+        JTextPane area
+        def selectedBeats = []
+        def cursorOffsets = []
+        def breakCounts = []
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            model.addRow(new YassRow('#TITLE:Page break undo navigation'))
+            6.times { page ->
+                model.addRow(new YassRow(':', "${page * 40}", '5', '10', "One${page}" + YassRow.SPACE))
+                if (existingBreak && page == 5) {
+                    model.addRow(new YassRow('-', "${page * 40 + 6}", '', '', ''))
+                }
+                model.addRow(new YassRow(':', "${page * 40 + 8}", '5', '10', "Two${page}" + YassRow.SPACE))
+                model.addRow(new YassRow('-', "${page * 40 + 15}", '', '', ''))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            YassTable.zoomMode = YassTable.ZOOM_ONE
+            table.setRowSelectionInterval(1, 1)
+            table.addUndo()
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            actions = new UndoActions(new YassSheet(),
+                    Stub(YassPlayer, constructorArgs: [null, props]), lyrics)
+            setField(actions, 'table', table)
+            lyrics.editLyrics()
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            area.caretPosition = area.text.indexOf('Two5') + 1
+            if (useButton) {
+                actions.getTogglePageBreak().actionPerformed(null)
+            } else {
+                press(area, KeyEvent.VK_ENTER, 0, '\n' as char)
+            }
+        }
+        SwingUtilities.invokeAndWait {}
+        [false, true].each { redo ->
+            SwingUtilities.invokeAndWait {
+                if (globalUndo) {
+                    getField(actions, redo ? 'redo' : 'undo').actionPerformed(null)
+                } else {
+                    press(area, redo ? KeyEvent.VK_Y : KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK,
+                            KeyEvent.CHAR_UNDEFINED)
+                }
+            }
+            SwingUtilities.invokeAndWait {}
+            SwingUtilities.invokeAndWait {
+                selectedBeats << table.getRowAt(table.selectedRow)?.beatInt
+                cursorOffsets << area.caretPosition - area.text.indexOf('Two5')
+                breakCounts << (0..<table.rowCount).count { table.getRowAt(it).isPageBreak() }
+                assert table.canUndo() == redo
+                assert table.canRedo() == !redo
+            }
+        }
+
+        then:
+        selectedBeats == [208, 208]
+        // A selected syllable may put the caret just after its trailing separator.
+        cursorOffsets.every { it in 0..5 }
+        breakCounts == (existingBreak ? [7, 6] : [6, 7])
+        !table.canRedo()
+
+        cleanup:
+        SwingUtilities.invokeAndWait {
+            lyrics?.finishEditing()
+            if (actions != null) {
+                KeyboardFocusManager.currentKeyboardFocusManager.removeKeyEventDispatcher(
+                        getField(actions, 'editorKeyDispatcher'))
+            }
+            YassTable.zoomMode = previousZoomMode
+        }
+
+        where:
+        existingBreak | useButton | globalUndo
+        false         | false     | false
+        false         | true      | false
+        true          | false     | false
+        true          | true      | false
+        false         | false     | true
+        false         | true      | true
+        true          | false     | true
+        true          | true      | true
+    }
+
     def 'undo and redo of a lyric split preserve the current timeline view and cursor'() {
         given:
         I18.setDefaultLanguage()

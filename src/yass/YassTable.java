@@ -2410,6 +2410,13 @@ public class YassTable extends JTable {
         return undos.elementAt(undoPos);
     }
 
+    private void updateUndoSelection() {
+        if (!preventUndo && undoPos >= 0 && undoPos < undos.size()) {
+            // Navigation since the last edit must not send Undo back to an old note.
+            currentUndo().selectedRows = getSelectedRows();
+        }
+    }
+
     public void redoRows() {
         if (redoMax < 1) {
             return;
@@ -6755,6 +6762,7 @@ public class YassTable extends JTable {
             removePageBreak(true);
             setRowSelectionInterval(row, row);
         }
+        updateUndoSelection();
         if (zoomMode == ZOOM_ONE) {
             zoomPage();
         } else {
@@ -6791,10 +6799,11 @@ public class YassTable extends JTable {
             return;
         }
 
+        if (next != null && next.isPageBreak()) {
+            return;
+        }
+        updateUndoSelection();
         if (next != null) {
-            if (next.isPageBreak()) {
-                return;
-            }
             String txt = next.getText();
             if (txt.startsWith(YassRow.SPACE + "")) {
                 next.setText(txt.substring(1));
@@ -6822,6 +6831,7 @@ public class YassTable extends JTable {
             tm.insertRowAt("-", beat, "", "", "", row + 1);
         }
         tm.fireTableRowsInserted(row + 1, row + 1);
+        updateUndoSelection();
     }
 
     /**
@@ -6849,6 +6859,7 @@ public class YassTable extends JTable {
         YassRow next = row < n - 1 ? getRowAt(row + 1) : null;
         YassRow prev = row > 0 ? getRowAt(row - 1) : null;
 
+        updateUndoSelection();
         if (next != null && next.isNote()) {
             String txt = next.getText();
             if (prev != null && prev.isNote() && prev.getText().endsWith("-")) {
