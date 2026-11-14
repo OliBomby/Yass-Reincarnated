@@ -126,6 +126,7 @@ class YassLyricsSpec extends Specification {
         }
         YassAutoCorrect auto = Stub(YassAutoCorrect)
         List<String> actualTexts
+        String displayedText
         boolean consumed
 
         when:
@@ -153,14 +154,16 @@ class YassLyricsSpec extends Specification {
                     splitKey == '-' ? KeyEvent.VK_MINUS : KeyEvent.VK_SPACE, splitKey as char)
             area.keyListeners.each { it.keyPressed(event) }
             actualTexts = (0..<table.rowCount).collect { table.getRowAt(it) }
-                    .findAll { it.note }.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                    .findAll { it.note }.collect { it.text }
+            displayedText = area.text
             consumed = event.consumed
             lyrics.finishEditing()
         }
 
         then:
         consumed
-        actualTexts == expected
+        actualTexts == expected.collect { it.replace(' ' as char, YassRow.SPACE) }
+        displayedText.contains('so' + splitKey + 'u')
 
         where:
         spacingAfter | splitKey | input                         || expected
@@ -169,11 +172,17 @@ class YassLyricsSpec extends Specification {
         false        | '-'      | ['One', ' sou', '~', '~']     || ['One', ' so', 'u', '~']
         false        | ' '      | ['One', ' sou', '~', '~']     || ['One', ' so', ' u', '~']
         true         | '-'      | ['One', 'sou', '~', '~ ']     || ['One', 'so', 'u', '~ ']
+        true         | ' '      | ['One', 'sou', '~', '~ ']     || ['One', 'so ', 'u', '~ ']
         false        | '-'      | ['One', 'sou', '~', '~']      || ['One', 'so', 'u', '~']
+        false        | ' '      | ['One', 'sou', '~', '~']      || ['One', 'so', ' u', '~']
         true         | '-'      | ['One ', '\n', 'sou', '~ ']  || ['One ', 'so', 'u ']
+        true         | ' '      | ['One ', '\n', 'sou', '~ ']  || ['One ', 'so ', 'u ']
         false        | '-'      | ['One', '\n', 'sou', '~']    || ['One', 'so', 'u']
+        false        | ' '      | ['One', '\n', 'sou', '~']    || ['One', 'so', ' u']
         true         | '-'      | ['sou', '~', '~ ']            || ['so', 'u', '~ ']
+        true         | ' '      | ['sou', '~', '~ ']            || ['so ', 'u', '~ ']
         false        | '-'      | ['sou', '~', '~']             || ['so', 'u', '~']
+        false        | ' '      | ['sou', '~', '~']             || ['so', ' u', '~']
     }
 
     def 'recognizes minus key events from keyboard layouts and numeric keypads'() {

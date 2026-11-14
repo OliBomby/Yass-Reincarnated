@@ -27,7 +27,8 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - One Undo restores the lyrics before a split; Redo reapplies it. Neither action
   introduces an empty lyric state or an extra step with no visible change.
 - Pressing space inside a syllable also splits at the caret and shifts subsequent
-  lyrics right, adding a word boundary between the resulting parts.
+  lyrics right, adding a word boundary between the resulting parts without an
+  extra hyphen before the second part.
 - Lyrics splitting works with both spaces after words and legacy spaces before
   words, including after word boundaries, between syllables, after line breaks,
   and at the start of a song.
@@ -60,7 +61,8 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - Repeat the same split with spaces before words enabled. The syllable still
   splits at the caret, preserving the existing word boundary.
 - Press space at `so|u`. The result is two words, `so` and `u`, rather than two
-  connected syllables.
+  connected syllables. The lyrics editor displays `so u`, without a hyphen
+  before `u`, with either spacing convention.
 - With `ru-les` in the lyrics editor, press Delete at `ru|-les` or Backspace at
   `ru-|les`. The syllables join as `rules` on the earlier note and subsequent
   lyrics roll left. Repeat with spaces after words and spaces before words.

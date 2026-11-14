@@ -8040,7 +8040,7 @@ public class YassTable extends JTable {
         if (pos > 0 && pos < txt.length()) {
             // Splitting a syllable with splitCode character (' ' or  '-') and rolling the lyrics to the right after
             // If the splitCode is '-', a connecting syllable is assumed. ' ' for a new syllable.
-            init = new String[]{txt.substring(0, pos) + (splitCode == ' ' ? ' ' : ""), txt.substring(pos)};
+            init = new String[]{txt.substring(0, pos) + (splitCode == ' ' ? YassRow.SPACE : ""), txt.substring(pos)};
         } else {
             init = new String[]{txt};
             trimEndSpace(row - 1); // remove trailing space of previous note
