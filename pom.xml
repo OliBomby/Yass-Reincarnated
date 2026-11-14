@@ -305,11 +305,20 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.7.0</version>
                 <configuration>
-                    <mainClass>yass.YassMain</mainClass>
+                    <executable>${java.home}/bin/java</executable>
+                    <!-- Include all production scopes, including the legacy system JARs.
+                         JavaFX's module-path discovery drops JMF and JDOM. -->
+                    <classpathScope>provided</classpathScope>
+                    <longClasspath>true</longClasspath>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>yass.YassMain</argument>
+                    </arguments>
                 </configuration>
             </plugin>
             <plugin>

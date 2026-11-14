@@ -143,15 +143,13 @@ access to download Maven and project dependencies.
 From the repository root on Windows (PowerShell):
 
 ```powershell
-.\mvnw.cmd -q -DskipTests compile
-.\mvnw.cmd javafx:run
+.\mvnw.cmd compile exec:exec
 ```
 
 On macOS or Linux:
 
 ```sh
-sh ./mvnw -q -DskipTests compile
-sh ./mvnw javafx:run
+sh ./mvnw compile exec:exec
 ```
 
 Run tests with `.\mvnw.cmd -q test`, or a single Spock spec with
