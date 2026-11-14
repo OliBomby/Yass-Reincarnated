@@ -21,6 +21,83 @@ import yass.input.*
 
 class YassLyricsSpec extends Specification {
 
+    def 'Enter toggles a page break while editing lyrics and supports undo and redo'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> spacingAfter }
+        def snapshots = []
+        def displayedTexts = []
+        def geometry = []
+        boolean consumed
+        YassLyrics lyrics
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            model.addRow(new YassRow('#TITLE:Enter page break'))
+            model.addRow(new YassRow(':', '0', '5', '10',
+                    spacingAfter ? 'One' + YassRow.SPACE : 'One'))
+            if (existingBreak) {
+                model.addRow(new YassRow('-', '5', '', '', ''))
+            }
+            model.addRow(new YassRow(':', '8', '5', '12',
+                    !spacingAfter && !existingBreak ? String.valueOf(YassRow.SPACE) + 'Two' : 'Two'))
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            def takeSnapshot = {
+                snapshots << (0..<table.rowCount).count { table.getRowAt(it).isPageBreak() }
+                displayedTexts << area.text
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+            }
+            area.caretPosition = area.text.indexOf('Two') + 1
+            takeSnapshot()
+            def enter = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                    KeyEvent.VK_ENTER, '\n' as char)
+            area.keyListeners.each { it.keyPressed(enter) }
+            consumed = enter.consumed
+            assert lyrics.editable
+            takeSnapshot()
+            [KeyEvent.VK_Z, KeyEvent.VK_Y].each { key ->
+                def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, KeyEvent.CTRL_DOWN_MASK,
+                        key, KeyEvent.CHAR_UNDEFINED)
+                area.keyListeners.each { it.keyPressed(event) }
+                takeSnapshot()
+                if (key == KeyEvent.VK_Z) {
+                    assert !table.canUndo()
+                }
+            }
+        }
+
+        then:
+        consumed
+        snapshots == (existingBreak ? [1, 0, 1, 0] : [0, 1, 0, 1])
+        displayedTexts.collect { it.contains('\n') } == snapshots.collect { it == 1 }
+        displayedTexts[2] == displayedTexts[0]
+        displayedTexts[3] == displayedTexts[1]
+        geometry.every { it == geometry.first() }
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+
+        where:
+        spacingAfter | existingBreak
+        false        | false
+        false        | true
+        true         | false
+        true         | true
+    }
+
     def 'an arrow arriving during the F4 switch cannot move the lyrics cursor to the start'() {
         given:
         I18.setDefaultLanguage()

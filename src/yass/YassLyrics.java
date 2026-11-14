@@ -486,10 +486,17 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     boolean state = lyricsArea.isEditable();
                     int dot = lyricsArea.getCaret().getDot();
                     finishEditing();
-                    table.dispatchEvent(e);
+                    if (e.getModifiersEx() == 0) {
+                        YassLyrics.this.firePropertyChange("play", null, "stop");
+                        // The global shortcut dispatcher leaves typing to this listener.
+                        // Redispatching to the unfocused table cannot invoke its shortcut.
+                        table.togglePageBreak();
+                    } else {
+                        table.dispatchEvent(e);
+                    }
                     if (state) {
                         editLyrics();
-                        lyricsArea.getCaret().setDot(dot);
+                        lyricsArea.getCaret().setDot(Math.min(dot, lyricsArea.getDocument().getLength()));
                     }
                     e.consume();
                     return;
