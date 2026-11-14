@@ -599,7 +599,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                         lyricsArea.getCaret().setDot(dot);
                         e.consume();
                         editTableLyrics(() -> {
-                            if (prop.isUncommonSpacingAfter()) {
+                            if (c == ' ' && prop.isUncommonSpacingAfter()) {
                                 table.removeEndSpace();
                             } else {
                                 table.rollLeft();

@@ -334,12 +334,16 @@ class YassLyricsSpec extends Specification {
         snapshots == ['rau' + YassRow.SPACE, 'ru' + YassRow.SPACE, 'rau' + YassRow.SPACE]
     }
 
-    def 'removing a lyric separator refreshes the text without recording empty lyrics'() {
+    def 'deleting a syllable separator rolls lyrics left and undoes in one step'() {
         given:
         I18.setDefaultLanguage()
-        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> false }
-        def original = ['One', ' ru', 'les', '~']
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> spacingAfter }
+        def original = spacingAfter ? ['One ', 'ru', 'les', '~ '] : ['One', ' ru', 'les', '~']
+        def expected = spacingAfter ? ['One ', 'rules', '~', '~ '] : ['One', ' rules', '~', '~']
         def snapshots = []
+        def geometry = []
+        def displayedTexts = []
+        boolean consumed
 
         when:
         SwingUtilities.invokeAndWait {
@@ -361,21 +365,47 @@ class YassLyricsSpec extends Specification {
             lyrics.editLyrics()
             def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
                     .viewport.view as JTextPane
-            area.caretPosition = area.text.indexOf('ru') + 2
+            def takeSnapshot = {
+                snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+                displayedTexts << area.text
+            }
+            takeSnapshot()
+            int separatorPosition = area.text.indexOf('ru') + 2
+            assert area.text.charAt(separatorPosition) == '-' as char
+            area.caretPosition = separatorPosition + (key == KeyEvent.VK_BACK_SPACE ? 1 : 0)
             def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
-                    KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED)
+                    key, KeyEvent.CHAR_UNDEFINED)
             area.keyListeners.each { it.keyPressed(event) }
-            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+            consumed = event.consumed
+            assert area.caretPosition == separatorPosition
+            takeSnapshot()
+            [KeyEvent.VK_Z, KeyEvent.VK_Y].each { undoKey ->
+                def undoEvent = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, KeyEvent.CTRL_DOWN_MASK,
+                        undoKey, KeyEvent.CHAR_UNDEFINED)
+                area.keyListeners.each { it.keyPressed(undoEvent) }
+                takeSnapshot()
+                if (undoKey == KeyEvent.VK_Z) {
+                    assert !table.canUndo()
+                }
+            }
             lyrics.finishEditing()
-            table.undoRows()
-            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
-            assert !table.canUndo()
-            table.redoRows()
-            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
         }
 
         then:
-        snapshots == [['One', ' rules', '~', '~'], original, ['One', ' rules', '~', '~']]
+        consumed
+        snapshots == [original, expected, original, expected]
+        geometry.every { it == geometry.first() }
+        displayedTexts[1].contains('rules')
+        displayedTexts[2] == displayedTexts[0]
+        displayedTexts[3] == displayedTexts[1]
+
+        where:
+        spacingAfter | key
+        false        | KeyEvent.VK_DELETE
+        false        | KeyEvent.VK_BACK_SPACE
+        true         | KeyEvent.VK_DELETE
+        true         | KeyEvent.VK_BACK_SPACE
     }
 
     private static class PromptingRollTable extends YassTable {

@@ -31,6 +31,11 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - Lyrics splitting works with both spaces after words and legacy spaces before
   words, including after word boundaries, between syllables, after line breaks,
   and at the start of a song.
+- In lyrics editing mode, Delete immediately before a `-` syllable separator or
+  Backspace immediately after it removes the division by rolling lyrics left.
+  The adjacent syllables join and subsequent lyrics shift one note left, with
+  note count, timing, duration, and pitch preserved. This works with both spacing
+  conventions and can be undone and redone in one step.
 - Splitting respects the editor's touching-syllable setting.
 - Explicit syllable divisions are preferred when available.
 - Matching syllable and segment counts map one-to-one.
@@ -56,6 +61,10 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   splits at the caret, preserving the existing word boundary.
 - Press space at `so|u`. The result is two words, `so` and `u`, rather than two
   connected syllables.
+- With `ru-les` in the lyrics editor, press Delete at `ru|-les` or Backspace at
+  `ru-|les`. The syllables join as `rules` on the earlier note and subsequent
+  lyrics roll left. Repeat with spaces after words and spaces before words.
+  Undo once restores the division; Redo removes it again.
 - Press `-` at `r|u` when the following note is a `~` continuation. If asked to
   correct uncommon spaces, accept the single prompt. The existing notes contain
   `r` and `u`, with no new timed note or added `~`. Undo once restores `ru` and
