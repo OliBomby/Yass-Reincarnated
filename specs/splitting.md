@@ -29,6 +29,9 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - Pressing space inside a syllable also splits at the caret and shifts subsequent
   lyrics right, adding a word boundary between the resulting parts without an
   extra hyphen before the second part.
+- At the start of a syllable immediately after a hyphen or word space, `-` and
+  Space act on that preceding separator as if the caret were one position left.
+  The caret stays at the start of the syllable after the action.
 - Lyrics splitting works with both spaces after words and legacy spaces before
   words, including after word boundaries, between syllables, after line breaks,
   and at the start of a song.
@@ -66,6 +69,10 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - Press space at `so|u`. The result is two words, `so` and `u`, rather than two
   connected syllables. The lyrics editor displays `so u`, without a hyphen
   before `u`, with either spacing convention.
+- Press Space at `ru-|les`. The text becomes `ru |les`. Press `-` there to
+  restore `ru-|les`. Pressing the key matching the existing separator leaves
+  the text and caret unchanged. Both spacing conventions support these actions,
+  including Undo and Redo of a separator change.
 - With `ru-les` in the lyrics editor, press Delete at `ru|-les` or Backspace at
   `ru-|les`. The syllables join as `rules` on the earlier note and subsequent
   lyrics roll left. Repeat with spaces after words and spaces before words.

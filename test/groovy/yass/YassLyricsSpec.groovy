@@ -451,6 +451,98 @@ class YassLyricsSpec extends Specification {
         false        | ' '      | ['sou', '~', '~']             || ['so', ' u', '~']
     }
 
+    def 'separator keys at a syllable start affect the preceding boundary'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> spacingAfter }
+        def original = spacingAfter
+                ? ['One ', 'ru' + (separator == ' ' ? ' ' : ''), 'les', '~ ']
+                : ['One', ' ru', (separator == ' ' ? ' ' : '') + 'les', '~']
+        def expected = spacingAfter
+                ? ['One ', 'ru' + (key == ' ' ? ' ' : ''), 'les', '~ ']
+                : ['One', ' ru', (key == ' ' ? ' ' : '') + 'les', '~']
+        def snapshots = []
+        def displayedTexts = []
+        def geometry = []
+        boolean consumed
+        YassLyrics lyrics
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            original.eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 6) as String, '5', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            def takeSnapshot = {
+                snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                displayedTexts << area.text
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+            }
+            takeSnapshot()
+            int position = area.text.indexOf('les')
+            assert area.text.charAt(position - 1) == separator as char
+            area.caretPosition = position
+            def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                    key == '-' ? KeyEvent.VK_MINUS : KeyEvent.VK_SPACE, key as char)
+            area.keyListeners.each { it.keyPressed(event) }
+            consumed = event.consumed
+            assert area.caretPosition == position
+            assert area.selectionStart == area.selectionEnd
+            takeSnapshot()
+            if (separator != key) {
+                [KeyEvent.VK_Z, KeyEvent.VK_Y].each { undoKey ->
+                    def undoEvent = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, KeyEvent.CTRL_DOWN_MASK,
+                            undoKey, KeyEvent.CHAR_UNDEFINED)
+                    area.keyListeners.each { it.keyPressed(undoEvent) }
+                    takeSnapshot()
+                    if (undoKey == KeyEvent.VK_Z) {
+                        assert !table.canUndo()
+                    }
+                }
+            } else {
+                assert !table.canUndo()
+            }
+        }
+
+        then:
+        consumed
+        snapshots == (separator == key ? [original, original] : [original, expected, original, expected])
+        displayedTexts[1] == displayedTexts[0].replace('ru' + separator + 'les', 'ru' + key + 'les')
+        geometry.every { it == geometry.first() }
+        if (separator != key) {
+            assert displayedTexts[2] == displayedTexts[0]
+            assert displayedTexts[3] == displayedTexts[1]
+        }
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+
+        where:
+        spacingAfter | separator | key
+        false        | '-'       | ' '
+        true         | '-'       | ' '
+        false        | ' '       | '-'
+        true         | ' '       | '-'
+        false        | '-'       | '-'
+        true         | '-'       | '-'
+        false        | ' '       | ' '
+        true         | ' '       | ' '
+    }
+
     def 'recognizes minus key events from keyboard layouts and numeric keypads'() {
         given:
         def component = new JPanel()

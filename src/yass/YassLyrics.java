@@ -516,6 +516,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                         e.consume();
                         return;
                     }
+                    // At a syllable's start, apply separator keys to its preceding boundary.
+                    if (dot > 0 && (txt.charAt(dot - 1) == ' ' || txt.charAt(dot - 1) == '-')) {
+                        dot--;
+                    }
                     int dot0 = dot - 1;
                     int dot1 = dot + 1;
                     char c = txt.charAt(dot);
