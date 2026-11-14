@@ -8,15 +8,204 @@ import javax.swing.JScrollPane
 import javax.swing.JTextPane
 import javax.swing.JViewport
 import javax.swing.SwingUtilities
+import javax.swing.text.DefaultEditorKit
 import java.awt.Dimension
 import java.awt.DefaultKeyboardFocusManager
 import java.awt.KeyboardFocusManager
 import java.awt.Toolkit
 import java.awt.event.FocusEvent
 import java.awt.event.KeyEvent
+import java.awt.event.ActionEvent
+import java.awt.image.BufferedImage
 import yass.input.*
 
 class YassLyricsSpec extends Specification {
+
+    def 'an arrow arriving during the F4 switch cannot move the lyrics cursor to the start'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties)
+        YassLyrics lyrics
+        YassTable table
+        JTextPane area
+        int entryPosition
+        int positionBeforeRepaint
+        int positionAfterRepaint
+        def selectedBeforeRepaint
+        def arrowAction = forward ? DefaultEditorKit.forwardAction : DefaultEditorKit.backwardAction
+        def paintText = {
+            area.setSize(400, 300)
+            def graphics = new BufferedImage(400, 300, BufferedImage.TYPE_INT_ARGB).createGraphics()
+            try {
+                area.paint(graphics)
+            } finally {
+                graphics.dispose()
+            }
+        }
+        def pressArrow = {
+            area.actionMap.get(arrowAction).actionPerformed(
+                    new ActionEvent(area, ActionEvent.ACTION_PERFORMED, arrowAction))
+        }
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            ['One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Last'].eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 8) as String, '6', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            table = new YassTable(model, props)
+            table.setModel(model)
+            table.setRowSelectionInterval(2, 2)
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+        }
+        SwingUtilities.invokeAndWait {}
+        SwingUtilities.invokeAndWait {
+            paintText()
+            if (arrowBeforeSwitch) {
+                if (forward) {
+                    table.nextBeat()
+                } else {
+                    table.prevBeat()
+                }
+            }
+            lyrics.editLyrics()
+            entryPosition = area.caretPosition
+            // Process the next input before the rebuilt editable text view has painted.
+            pressArrow()
+            positionBeforeRepaint = area.caretPosition
+            selectedBeforeRepaint = table.selectedRows.toList()
+            paintText()
+            pressArrow()
+            positionAfterRepaint = area.caretPosition
+        }
+
+        then:
+        entryPosition > 0
+        positionBeforeRepaint == entryPosition
+        selectedBeforeRepaint == [arrowBeforeSwitch ? (forward ? 3 : 1) : 2]
+        positionAfterRepaint == entryPosition + (forward ? 1 : -1)
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+
+        where:
+        forward | arrowBeforeSwitch
+        false   | false
+        true    | false
+        false   | true
+        true    | true
+    }
+
+    def 'switching to lyrics before queued arrow navigation finishes keeps the current syllable'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties)
+        YassLyrics lyrics
+        YassTable table
+        JTextPane area
+        int entryPosition
+        def selectedAfterCursorMove
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            ['One ', 'Two ', 'Three ', '\n', 'Last'].eachWithIndex { text, index ->
+                model.addRow(text == '\n'
+                        ? new YassRow('-', (index * 8) as String, '', '', '')
+                        : new YassRow(':', (index * 8) as String, '6', '10',
+                                text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            table = new YassTable(model, props)
+            table.setModel(model)
+            table.setRowSelectionInterval(refreshLyrics ? 1 : 4, refreshLyrics ? 1 : 4)
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+        }
+        SwingUtilities.invokeAndWait {}
+        SwingUtilities.invokeAndWait {
+            if (refreshLyrics) {
+                assert area.caretPosition < area.document.length
+                // A note update rebuilds the lyrics document even without visiting the last note.
+                (table.model as YassTableModel).fireTableRowsUpdated(1, 1)
+            } else {
+                table.setRowSelectionInterval(1, 1)
+            }
+            assert area.caretPosition == area.document.length
+            if (forward) {
+                table.nextBeat()
+            } else {
+                table.prevBeat()
+            }
+            // These input events can already be queued ahead of the lyrics selection update.
+            lyrics.editLyrics()
+            entryPosition = area.caretPosition
+        }
+        SwingUtilities.invokeAndWait {}
+        SwingUtilities.invokeAndWait {
+            area.caretPosition = Math.max(0, area.caretPosition - 1)
+            selectedAfterCursorMove = table.selectedRows.toList()
+        }
+
+        then:
+        entryPosition >= area.text.indexOf(syllable)
+        entryPosition <= area.text.indexOf(syllable) + syllable.length()
+        selectedAfterCursorMove == [expectedRow]
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+
+        where:
+        forward | refreshLyrics | syllable | expectedRow
+        false   | false         | 'One'    | 0
+        true    | false         | 'Three'  | 2
+        false   | true          | 'One'    | 0
+        true    | true          | 'Three'  | 2
+    }
+
+    def 'switching to lyrics preserves a selection made directly in the lyrics'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties)
+        YassLyrics lyrics
+        JTextPane area
+        def cursorBeforeEditing
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            model.addRow(new YassRow(':', '0', '6', '10', 'Hello'))
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            table.setRowSelectionInterval(0, 0)
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            area.caretPosition = 2
+            cursorBeforeEditing = [area.caret.dot, area.caret.mark]
+            lyrics.editLyrics()
+            assert [area.caret.dot, area.caret.mark] == cursorBeforeEditing
+        }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        [area.caret.dot, area.caret.mark] == cursorBeforeEditing
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+    }
 
     def 'lyrics cursor follows whole pages without moving visible syllables to the left edge'() {
         given:

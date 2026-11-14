@@ -96,6 +96,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
     private int lastSelectionMax = -1;
     private boolean isCaretUpdate = false;
     private boolean caretScrollToEnd = true;
+    private Selector pendingSelector;
 
     /**
      * Description of the Method
@@ -328,6 +329,17 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         });
 
         lyricsArea.setCaret(overwriteCaret);
+        lyricsArea.setNavigationFilter(new NavigationFilter() {
+            @Override
+            public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias,
+                                                 int direction, Position.Bias[] biasRet)
+                    throws BadLocationException {
+                int next = super.getNextVisualPositionFrom(text, pos, bias, direction, biasRet);
+                // Changing editable state rebuilds Swing's view. Until it paints, visual
+                // navigation can return -1, which DefaultCaret would clamp to the start.
+                return next < 0 ? pos : next;
+            }
+        });
 
         lyricsArea.addCaretListener(caretListener);
         lyricsArea.addFocusListener(new FocusListener() {
@@ -852,6 +864,14 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             return;
         }
 
+        // Navigation may have queued a selection update behind this input event.
+        // Apply it before editing, but preserve an explicitly positioned lyrics caret.
+        if (pendingSelector != null) {
+            if (!pendingSelector.fromCaret) {
+                pendingSelector.run();
+            }
+            pendingSelector = null;
+        }
         lyricsArea.requestFocus();
         lyricsArea.setEditable(true);
         colorsChanged();
@@ -1043,6 +1063,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
      * Description of the Method
      */
     public void updateSelection() {
+        pendingSelector = null;
         int i = table.getSelectionModel().getMinSelectionIndex();
         int j = table.getSelectionModel().getMaxSelectionIndex();
         if (i < 0) {
@@ -1363,7 +1384,8 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     caretin = in;
                 }
                 if (syllable == max) {
-                    SwingUtilities.invokeLater(new Selector(caretin, i, scrollToEnd));
+                    pendingSelector = new Selector(caretin, i, scrollToEnd);
+                    SwingUtilities.invokeLater(pendingSelector);
                     return;
                 }
             }
@@ -1380,6 +1402,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
     class Selector implements Runnable {
         int in, out;
         boolean scrollToEnd;
+        final boolean fromCaret;
 
         /**
          * Constructor for the Selector object
@@ -1391,12 +1414,17 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             in = i;
             out = j;
             this.scrollToEnd = scrollToEnd;
+            fromCaret = isCaretUpdate;
         }
 
         /**
          * Main processing method for the Selector object
          */
         public synchronized void run() {
+            if (pendingSelector != this) {
+                return;
+            }
+            pendingSelector = null;
             preventFireUpdate = true;
             try {
                 lyricsArea.getStyledDocument().setCharacterAttributes(0,
