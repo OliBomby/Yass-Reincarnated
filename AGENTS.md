@@ -40,10 +40,13 @@ the project identity matters.
 
 ## Verification
 
-- Compile without tests: `mvn -q -DskipTests compile`
-- Package without tests: `mvn -q -DskipTests package`
-- Run all tests: `mvn -q test`
-- Run one Spock spec: `mvn -q "-Dtest=SpecName" test`
+Use the Maven Wrapper with JDK 21 (`JAVA_HOME` must point to the JDK).
+On Windows, replace `sh ./mvnw` below with `.\mvnw.cmd`.
+
+- Compile without tests: `sh ./mvnw -q -DskipTests compile`
+- Package without tests: `sh ./mvnw -q -DskipTests package`
+- Run all tests: `sh ./mvnw -q test`
+- Run one Spock spec: `sh ./mvnw -q "-Dtest=SpecName" test`
 
 For docs-only changes, a directory/link sanity check is usually enough. Mention
 explicitly when no code tests were run.

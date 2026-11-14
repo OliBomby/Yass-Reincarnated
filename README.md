@@ -135,7 +135,34 @@ and start the jar like this:
 
 # Developers
 
-Basic setup is described in the Wiki: https://github.com/SarutaSan72/Yass/wiki/Developers
+Install JDK 21 and set `JAVA_HOME` to its installation directory. The included
+Maven Wrapper downloads Maven 3.9.16 on first use and caches it for later builds;
+you do not need to install Maven separately. The first build requires internet
+access to download Maven and project dependencies.
+
+From the repository root on Windows (PowerShell):
+
+```powershell
+.\mvnw.cmd -q -DskipTests compile
+.\mvnw.cmd javafx:run
+```
+
+On macOS or Linux:
+
+```sh
+sh ./mvnw -q -DskipTests compile
+sh ./mvnw javafx:run
+```
+
+Run tests with `.\mvnw.cmd -q test`, or a single Spock spec with
+`.\mvnw.cmd -q "-Dtest=YassRowSpec" test`. Package the application with
+`.\mvnw.cmd -q -DskipTests package`; the resulting JAR is
+`target/Yass-Reloaded.jar`. On macOS/Linux, use `sh ./mvnw` in place of
+`.\mvnw.cmd` for these commands.
+
+FFmpeg and ffprobe are needed for media handling; see the requirements above.
+Implemented feature specs and code entry points live in `specs/`, and tests live
+in `test/groovy/`.
 
 # Yass Reloaded uses
 - Java Look & Feel Graphics Repository
