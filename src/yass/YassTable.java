@@ -7060,7 +7060,7 @@ public class YassTable extends JTable {
                 existingRowsToAppend = Collections.emptyList();
             }
             deleteAllRowsFrom(startRow);
-            int rowCounter = before ? 0 : 1;
+            List<YassRow> insertedNotes = new ArrayList<>();
             int pasteBeat = -1;
             int currentBeat = 0;
             int lengthInt = 0;
@@ -7086,15 +7086,17 @@ public class YassTable extends JTable {
                     break;
                 }
                 tm.addRow(type, String.valueOf(currentBeat), length, height, txt);
+                YassRow insertedRow = tm.getRowAt(tm.getRowCount() - 1);
+                if (insertedRow.isNote()) {
+                    insertedNotes.add(insertedRow);
+                }
                 hasPageBreak = "-".equals(type);
-                rowCounter++;
             }
             if (!existingRowsToAppend.isEmpty()) {
                 YassRow firstRowToAppend = existingRowsToAppend.get(0);
                 int start = hasPageBreak && firstRowToAppend.isPageBreak() ? 1 : 0;
                 for (YassRow rowToAppend : existingRowsToAppend.subList(start, existingRowsToAppend.size())) {
                     tm.addRow(rowToAppend);
-                    rowCounter++;
                 }
             }
             if (getRowCount() > 1 && tm.getRowAt(getRowCount() - 1).isPageBreak()) {
@@ -7103,7 +7105,9 @@ public class YassTable extends JTable {
             if (tm.getEndRow() == null) {
                 tm.addEndRow();
             }
-            tm.fireTableRowsInserted(before ? startRow : startRow + 1, startRow + rowCounter - 1);
+            // The tail was replaced and rebuilt, rather than inserted into the old model.
+            tm.fireTableDataChanged();
+            setInsertedLyricsSelection(insertedNotes);
         }
         return num;
     }

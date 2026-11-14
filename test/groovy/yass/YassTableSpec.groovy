@@ -1033,9 +1033,7 @@ class YassTableSpec extends Specification {
         YassTable yassTable = new YassTable(ytm, props)
         yassTable.setBPM(240d)
         yassTable.gap = 1000
-        yassTable.model = Stub(TableModel) {
-            getRowCount() >> TRAILING_SPACE_SHORT_WORD_TILDE_SONG.size()
-        }
+        yassTable.setModel(ytm)
         YassHyphenator hyphenator = new YassHyphenator(null)
         hyphenator.hyphenator = new Hyphenator()
         hyphenator.setFallbackHyphenations(['hello': 'he•lo'])
@@ -1063,6 +1061,66 @@ class YassTableSpec extends Specification {
                 ':\t9\t3\t20\td \n' +
                 ':\t14\t2\t20\te \n'  | 5        || ['One', '~ ', 'two ', 'a ', 'b ', 'c ', 'd ', 'e ', '_', 'Four ', 'five', '~ ']
         'hello b c d\ne f g h\n'      | 5        || ['One', '~ ', 'two ', 'he', 'lo ', 'b ', 'c ', 'd ', '_', 'e ', 'f ', 'g ', 'h ', '_', 'Four ', 'five', '~ ']
+    }
+
+    def 'inserting lyrics selects only the inserted notes and preserves the rest of the song'() {
+        given:
+        YassTable yassTable = tableForInsertedLyrics([
+                note(':', 0, 4, 10, 'first '),
+                note(':', 20, 4, 10, 'middle '),
+                new YassRow('-', '30', '', '', ''),
+                note(':', 40, 4, 10, 'last ')
+        ], [:])
+        int firstNoteRow = firstRowIndex(yassTable) { it.note }
+        int insertionRow = firstNoteRow + startRow
+        yassTable.setRowSelectionInterval(insertionRow, insertionRow)
+
+        when:
+        yassTable.insertRowsAt(text, insertionRow, true)
+
+        then:
+        yassTable.getSelectedRows() == selectedRows.collect { it + firstNoteRow } as int[]
+        noteTexts(yassTable) == expectedTexts
+        yassTable.getRowAt(yassTable.rowCount - 1).end
+
+        where:
+        startRow | text                                      | selectedRows || expectedTexts
+        0        | ':\t0\t2\t10\tnew '                     | [0]          || ['new ', 'middle ', 'last ']
+        1        | ':\t0\t2\t10\tnew '                     | [1]          || ['first ', 'new ', 'last ']
+        1        | ':\t0\t2\t10\tone \n:\t3\t2\t10\ttwo ' | [1, 2]       || ['first ', 'one ', 'two ', 'last ']
+        3        | ':\t0\t2\t10\tnew '                     | [3]          || ['first ', 'middle ', 'new ']
+    }
+
+    def 'standard dialog insertion and vocal fallback select only the new lyrics'() {
+        given:
+        YassTable yassTable = tableForInsertedLyrics([
+                note(':', 80, 4, 10, 'first '),
+                note(':', 100, 4, 10, 'old '),
+                note(':', 120, 4, 10, 'last ')
+        ], [:])
+        int insertionRow = firstRowIndex(yassTable) { it.note && it.beatInt == 100 }
+        long cursorMs = yassTable.beatToMs(100)
+        yassTable.setSheet(Stub(YassSheet) {
+            getPlayerPosition() >> 100
+            fromTimeline(100) >> cursorMs
+            nextNote(100) >> insertionRow
+        })
+        yassTable.setPreventZoom(true)
+        yassTable.setRowSelectionInterval(insertionRow, insertionRow)
+
+        when:
+        if (vocalFallback) {
+            yassTable.handleInsertedLyricsResult(YassTable.InsertedLyricsResult.noUsablePitchData(2, 10), 'one two')
+        } else {
+            invokeInsertNoteWithOptionalText(yassTable, 'one two')
+        }
+
+        then:
+        noteTexts(yassTable) == ['first ', 'one ', 'two ', 'last ']
+        yassTable.getSelectedRows() == [insertionRow, insertionRow + 1] as int[]
+
+        where:
+        vocalFallback << [false, true]
     }
 
     def 'blank insert note creates a tilde placeholder and trims previous same-page end space'() {
@@ -1156,6 +1214,10 @@ class YassTableSpec extends Specification {
         noteBeats(yassTable) == [100, 102, 104]
         noteLengths(yassTable) == [1, 1, 4]
         notePitches(yassTable)[0..1] == [5, 7]
+        yassTable.getSelectedRows() == [
+                firstRowIndex(yassTable) { it.note && it.beatInt == 100 },
+                firstRowIndex(yassTable) { it.note && it.beatInt == 102 }
+        ] as int[]
     }
 
     def 'insertLyricsWithVocalPitchAtBeat rejects text with more syllables than the local gap can hold'() {
