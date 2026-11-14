@@ -417,6 +417,81 @@ class YassLyricsSpec extends Specification {
         true         | KeyEvent.VK_BACK_SPACE
     }
 
+    def 'deleting a word space joins the text without inserting a hyphen'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> spacingAfter }
+        def original = spacingAfter ? ['One ', 'ru ', 'les', '~ '] : ['One', ' ru', ' les', '~']
+        def expected = spacingAfter ? ['One ', 'rules', '~ ', ''] : ['One', ' rules', '~', '']
+        def snapshots = []
+        def geometry = []
+        def displayedTexts = []
+        boolean consumed
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            original.eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 6) as String, '5', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            def lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            def takeSnapshot = {
+                snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+                displayedTexts << area.text
+            }
+            takeSnapshot()
+            int spacePosition = area.text.indexOf('ru') + 2
+            assert area.text.charAt(spacePosition) == ' ' as char
+            area.caretPosition = spacePosition + (key == KeyEvent.VK_BACK_SPACE ? 1 : 0)
+            def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                    key, KeyEvent.CHAR_UNDEFINED)
+            area.keyListeners.each { it.keyPressed(event) }
+            consumed = event.consumed
+            assert area.caretPosition == spacePosition
+            takeSnapshot()
+            [KeyEvent.VK_Z, KeyEvent.VK_Y].each { undoKey ->
+                def undoEvent = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, KeyEvent.CTRL_DOWN_MASK,
+                        undoKey, KeyEvent.CHAR_UNDEFINED)
+                area.keyListeners.each { it.keyPressed(undoEvent) }
+                takeSnapshot()
+                if (undoKey == KeyEvent.VK_Z) {
+                    assert !table.canUndo()
+                }
+            }
+            lyrics.finishEditing()
+        }
+
+        then:
+        consumed
+        snapshots == [original, expected, original, expected]
+        geometry.every { it == geometry.first() }
+        displayedTexts[1] == displayedTexts[0].replace('ru les', 'rules')
+        displayedTexts[2] == displayedTexts[0]
+        displayedTexts[3].contains('rules')
+        !displayedTexts[3].contains('ru-les')
+
+        where:
+        spacingAfter | key
+        false        | KeyEvent.VK_DELETE
+        false        | KeyEvent.VK_BACK_SPACE
+        true         | KeyEvent.VK_DELETE
+        true         | KeyEvent.VK_BACK_SPACE
+    }
+
     private static class PromptingRollTable extends YassTable {
         Closure prompt
 

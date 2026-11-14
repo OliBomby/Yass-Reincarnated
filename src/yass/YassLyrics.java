@@ -596,18 +596,12 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                         return;
                     }
 
-                    if (c == ' ' || c == '-' || (c == YassRow.HYPHEN && c1 == '\n')) {
+                    if (c == '-' || (c == YassRow.HYPHEN && c1 == '\n')) {
                         // workaround
                         lyricsArea.getCaret().setDot(dot1);
                         lyricsArea.getCaret().setDot(dot);
                         e.consume();
-                        editTableLyrics(() -> {
-                            if (c == ' ' && prop.isUncommonSpacingAfter()) {
-                                table.removeEndSpace();
-                            } else {
-                                table.rollLeft();
-                            }
-                        });
+                        editTableLyrics(() -> table.rollLeft());
                         lyricsArea.getCaret().setDot(dot);
                         lyricsArea.getCaret().moveDot(dot1);
 

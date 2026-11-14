@@ -38,6 +38,9 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   note count, timing, duration, and pitch preserved. This works with both spacing
   conventions and can be undone and redone in one step.
 - Splitting respects the editor's touching-syllable setting.
+- In lyrics editing mode, Delete before a word space or Backspace after it
+  removes the space and joins the adjacent text without inserting a hyphen.
+  This works with both spacing conventions and supports Undo and Redo.
 - Explicit syllable divisions are preferred when available.
 - Matching syllable and segment counts map one-to-one.
 - With two pitch segments and more than two syllables, the first syllable maps
@@ -71,6 +74,10 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   correct uncommon spaces, accept the single prompt. The existing notes contain
   `r` and `u`, with no new timed note or added `~`. Undo once restores `ru` and
   the original continuation; Redo restores the split lyrics.
+- With `ru les` in the lyrics editor, press Delete at `ru| les` or Backspace
+  at `ru |les`. The text reads `rules`, with no replacement hyphen. Repeat with
+  spaces after words and spaces before words. Undo restores the space and Redo
+  removes it again.
 - Split a held syllable with clear detected pitch changes. The resulting notes
   follow those pitches and retain the lyric text in order.
 - Split a note without usable pitch information. The normal split behavior is
