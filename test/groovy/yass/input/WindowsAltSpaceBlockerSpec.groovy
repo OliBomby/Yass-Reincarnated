@@ -12,11 +12,13 @@ import spock.lang.Specification
 
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
+import javax.swing.JTextField
 import java.awt.GraphicsEnvironment
+import java.awt.event.KeyEvent
 
 @Requires({ Platform.isWindows() && !GraphicsEnvironment.isHeadless() })
 class WindowsAltSpaceBlockerSpec extends Specification {
-    def 'native Alt Space is blocked while other system commands are forwarded and restored'() {
+    def 'Alt menu activation is blocked while other system commands are forwarded and restored'() {
         given:
         def frame = new JFrame('Alt Space shortcut test')
         HWND hwnd
@@ -46,11 +48,38 @@ class WindowsAltSpaceBlockerSpec extends Specification {
 
             assert sendCommand(hwnd, 0xF100, 32) == 0
             assert sendCommand(hwnd, 0xF101, 32) == 0
+            3.times {
+                assert sendCommand(hwnd, 0xF100, 0) == 0
+            }
             assert forwarded.empty
             assert sendCommand(hwnd, 0xF100, (int) 'f'.charAt(0)) == 73
-            assert sendCommand(hwnd, 0xF100, 0) == 73
             assert sendCommand(hwnd, 0xF090, 32) == 73
-            assert forwarded.size() == 3
+            assert forwarded.size() == 2
+
+            SwingUtilities.invokeAndWait {
+                def editor = new JTextField()
+                frame.add(editor)
+                3.times {
+                    [KeyEvent.KEY_PRESSED, KeyEvent.KEY_RELEASED].each { int id ->
+                        def event = new KeyEvent(editor, id, 0, 0, KeyEvent.VK_ALT, KeyEvent.CHAR_UNDEFINED)
+                        assert blocker.dispatchAlt(event)
+                        assert event.consumed
+                    }
+                }
+                def shortcut = new KeyEvent(editor, KeyEvent.KEY_PRESSED, 0,
+                        KeyEvent.ALT_DOWN_MASK, KeyEvent.VK_F, (char) 'f')
+                assert !blocker.dispatchAlt(shortcut)
+                assert !shortcut.consumed
+                def otherWindow = new JFrame()
+                try {
+                    def event = new KeyEvent(otherWindow, KeyEvent.KEY_PRESSED, 0, 0,
+                            KeyEvent.VK_ALT, KeyEvent.CHAR_UNDEFINED)
+                    assert !blocker.dispatchAlt(event)
+                    assert !event.consumed
+                } finally {
+                    otherWindow.dispose()
+                }
+            }
 
             SwingUtilities.invokeAndWait {
                 blocker.close()
