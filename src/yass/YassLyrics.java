@@ -1539,10 +1539,8 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             Rectangle rr = table.getCellRect(i, 0, true);
             rr.add(table.getCellRect(j, 4, true));
             table.scrollRectToVisible(rr);
-            if (sheet != null) {
-                sheet.scrollRectToVisible(i, j);
-            }
-
+            // Preserve the current page while the syllables are visible; let
+            // page navigation reveal off-screen selections without panning to the caret.
             table.adjustMultiSize();
         }
     }
