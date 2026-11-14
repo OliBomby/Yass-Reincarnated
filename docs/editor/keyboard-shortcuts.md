@@ -71,8 +71,8 @@ Spaces). Both are listed below.
 | Move note left / right (beat) | `Ctrl-Alt-Left` / `Ctrl-Alt-Right` | `Ctrl-Option-Cmd-Left` / `Ctrl-Option-Cmd-Right` |
 | Move remaining notes left / right | `Ctrl-Alt-Shift-Left` / `Ctrl-Alt-Shift-Right` | `Ctrl-Option-Cmd-Shift-Left` / `Ctrl-Option-Cmd-Shift-Right` |
 | Split / join note | `-` / `+` | `-` / `+` |
-| Delete note | `Delete` | `Delete` |
-| Delete note and lyrics | `Ctrl-Delete` | `Ctrl-Delete` |
+| Delete notes and lyrics | `Delete` | `Delete` |
+| Remove notes, keep lyrics | `Ctrl-Delete` | `Ctrl-Delete` |
 | Add note | `Ctrl-Enter` or `Shift-Enter` | `Ctrl-Enter` or `Shift-Enter` |
 | Toggle page break | `Enter` | `Enter` |
 | Remove page break | `Backspace` | `Backspace` |

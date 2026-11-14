@@ -680,10 +680,10 @@ public class YassActions implements DropTargetListener {
                         KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK)),
                 new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK), "removeCopy", removeCopy,
                         KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK)),
-                new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeRows", removeRows,
+                new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeRowsWithLyrics", removeRowsWithLyrics,
                         KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0)),
                 new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK),
-                        "removeRowsWithLyrics", removeRowsWithLyrics,
+                        "removeRows", removeRows,
                         KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK)),
                 new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "removePageBreak", removePageBreak, null),
                 new EditorShortcutBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK), "insertNoteWithVocalPitch", insertNoteWithVocalPitch,
@@ -2568,12 +2568,14 @@ public class YassActions implements DropTargetListener {
     private final Action removeRows = new AbstractAction(I18.get("edit_remove")) {
         public void actionPerformed(ActionEvent e) {
             interruptPlay();
+            lyrics.finishEditing();
             table.removeRows();
         }
     };
     private final Action removeRowsWithLyrics = new AbstractAction(I18.get("edit_remove_with_lyrics")) {
         public void actionPerformed(ActionEvent e) {
             interruptPlay();
+            lyrics.finishEditing();
             table.removeRowsWithLyrics();
         }
     };
@@ -7551,6 +7553,7 @@ public class YassActions implements DropTargetListener {
         menu.add(insertNote);
         menu.add(splitRows);
         menu.add(joinRows);
+        menu.add(removeRowsWithLyrics);
         menu.add(removeRows);
         menu.addSeparator();
         menu.add(rollLeft);
@@ -7888,7 +7891,7 @@ public class YassActions implements DropTargetListener {
         b.setOpaque(false);
 
         t.add(b = new JButton());
-        b.setAction(removeRows);
+        b.setAction(removeRowsWithLyrics);
         b.setToolTipText(b.getText());
         b.setText("");
         b.setIcon(getIcon("removeSyllable24Icon"));

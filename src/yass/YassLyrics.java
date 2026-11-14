@@ -462,7 +462,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     return;
                 } else if (keyCode == KeyEvent.VK_DELETE && e.isControlDown()) {
                     finishEditing();
-                    table.removeRowsWithLyrics();
+                    table.removeRows();
                     e.consume();
                     return;
                 } else if (keyCode == KeyEvent.VK_ESCAPE) {
@@ -550,7 +550,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     if (!lyricsArea.isEditable()) {
                         if (keyCode == KeyEvent.VK_BACK_SPACE) {
                             table.getActions().removePageBreak();
+                        } else {
+                            table.removeRowsWithLyrics();
                         }
+                        e.consume();
                         return;
                     }
                     String txt = lyricsArea.getText();
@@ -1862,7 +1865,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         find.putValue(AbstractAction.ACCELERATOR_KEY,
                       KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
         erase.putValue(AbstractAction.ACCELERATOR_KEY,
-                       KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK));
+                       KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
 
         /*
          * lyricsArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,

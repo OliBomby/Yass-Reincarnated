@@ -6314,10 +6314,7 @@ public class YassTable extends JTable {
         if (noteText == null) {
             return;
         }
-        if (StringUtils.isBlank(noteText)) {
-            insertNoteWithOptionalText(noteText);
-            return;
-        }
+        noteText = StringUtils.defaultIfBlank(noteText, "~");
         InsertedLyricsResult result = insertLyricsWithVocalPitchAtBeat(noteText, resolveInsertCursorBeat(), pitchData);
         handleInsertedLyricsResult(result, noteText);
     }
@@ -6425,6 +6422,16 @@ public class YassTable extends JTable {
     }
 
     private int resolveInsertCursorBeat() {
+        int selectedRow = getSelectionModel().getMaxSelectionIndex();
+        if (selectedRow >= 0) {
+            YassRow selected = getRowAt(selectedRow);
+            if (selected.isNote()) {
+                return selected.getBeatInt() + selected.getLengthInt();
+            }
+            if (selected.isPageBreak()) {
+                return selected.getSecondBeatInt();
+            }
+        }
         if (sheet != null && sheet.getPlayerPosition() >= 0) {
             return sheet.timelineToBeat(sheet.getPlayerPosition());
         }
@@ -6482,135 +6489,100 @@ public class YassTable extends JTable {
     }
 
     void insertNoteWithOptionalText(String noteText) {
+        noteText = StringUtils.defaultIfBlank(noteText, "~");
         int preservedAbsoluteViewY = -1;
         if (sheet != null && sheet.isAbsolutePitchViewEnabled()) {
             preservedAbsoluteViewY = sheet.getViewPosition().y;
         }
-        if (StringUtils.isNotBlank(noteText)) {
-            insertRowsAt(noteText, -1, true);
-            if (sheet != null) {
-                sheet.updateActiveTable();
-                updatePlayerPosition();
-                zoomPage();
-                restoreAbsoluteViewYLater(preservedAbsoluteViewY);
-            }
+        int beat = resolveInsertCursorBeat();
+        int insertIndex = resolveAddedNoteIndex(beat);
+        List<String> texts = extractInsertedLyricNoteTexts(noteText, beat);
+        if (texts.isEmpty()) {
             return;
         }
-        int n = getRowCount();
-        int row = getSelectionModel().getMinSelectionIndex();
-        boolean useCursorBeat = row < 0 && sheet != null && sheet.getPlayerPosition() >= 0;
-        int cursorBeat = useCursorBeat ? sheet.timelineToBeat(sheet.getPlayerPosition()) : -1;
-        if (row < 0) {
-            row = sheet != null ? sheet.nextElement() : 0;
-            if (row < 0) {
-                row = n - 1;
-            }
-            if (row > 0) {
-                row--;
+        addUndo();
+        List<YassRow> insertedRows = new ArrayList<>();
+        List<YassRow> suppliedRows = new ArrayList<>();
+        if (noteText.contains("\t")) {
+            for (String line : splitTextToLines(noteText, beat)) {
+                YassRow supplied = new YassRow(line);
+                if (supplied.isNote()) {
+                    suppliedRows.add(supplied);
+                }
             }
         }
-        if (getRowAt(row).isComment()) {
-            return;
+        int suppliedOffset = suppliedRows.isEmpty() ? 0 : beat - suppliedRows.get(0).getBeatInt();
+        for (String text : texts) {
+            YassRow added;
+            if (suppliedRows.isEmpty()) {
+                added = new YassRow(":", Integer.toString(beat),
+                        Integer.toString(yassUtils.getDefaultLength()), "6", text.replace(' ', YassRow.SPACE));
+            } else {
+                added = suppliedRows.get(insertedRows.size());
+                added.setBeat(added.getBeatInt() + suppliedOffset);
+                added.setText(added.getText().replace(' ', YassRow.SPACE));
+            }
+            tm.getData().insertElementAt(added, insertIndex++);
+            insertedRows.add(added);
+            beat += added.getLengthInt();
         }
-
-        int pnote = row;
-        YassRow prevNote = getRowAt(pnote);
-        while (!prevNote.isNote() && pnote > 0) {
-            prevNote = getRowAt(--pnote);
+        connectInsertedLyrics(noteText, insertedRows);
+        tm.fireTableDataChanged();
+        setInsertedLyricsSelection(insertedRows);
+        if (sheet != null) {
+            sheet.updateActiveTable();
+            updatePlayerPosition();
+            zoomPage();
+            restoreAbsoluteViewYLater(preservedAbsoluteViewY);
         }
-        if (!prevNote.isNote()) {
-            prevNote = null;
-        }
-
-        int nnote = Math.min(row + 1, n - 1);
-        YassRow nextNote = getRowAt(nnote);
-        while (!nextNote.isNote() && nnote < n - 1) {
-            nextNote = getRowAt(++nnote);
-        }
-        if (!nextNote.isNote()) {
-            nextNote = null;
-        }
-
-        int pbreak = row;
-        YassRow prevBreak = getRowAt(pbreak);
-        while (!prevBreak.isPageBreak() && pbreak > 0) {
-            prevBreak = getRowAt(--pbreak);
-        }
-        if (!prevBreak.isPageBreak()) {
-            prevBreak = null;
-        }
-
-        int nbreak = row;
-        if (useCursorBeat && getRowAt(row).isPageBreak() && getRowAt(row).getBeatInt() < cursorBeat && nbreak < n - 1) {
-            nbreak++;
-        }
-        YassRow nextBreak = getRowAt(nbreak);
-        while (!nextBreak.isPageBreak() && nbreak < n - 1) {
-            nextBreak = getRowAt(++nbreak);
-        }
-        if (!nextBreak.isPageBreak()) {
-            nextBreak = null;
-        }
-
-        int beat = 0;
-        if (prevNote != null) {
-            beat = prevNote.getBeatInt() + prevNote.getLengthInt();
-        }
-        if (prevBreak != null) {
-            beat = Math.max(beat, prevBreak.getSecondBeatInt());
-        }
-        if (useCursorBeat) {
-            beat = Math.max(beat, cursorBeat);
-        }
-
-        int length = 4;
-        if (nextNote != null) {
-            length = Math.min(length, nextNote.getBeatInt() - beat);
-        }
-        if (nextBreak != null) {
-            length = Math.min(length, nextBreak.getBeatInt() - beat);
-        }
-        if (length <= 0) {
-            return;
-        }
-
-        // preserve spacing
-        /*
-         * if (length > 1) { beat++; length--; }
-         */
-        if (length > 1) {
-            length--;
-        }
-
-        int height = 0;
-        if (prevNote != null) {
-            height = prevNote.getHeightInt();
-        } else if (nextNote != null) {
-            height = nextNote.getHeightInt();
-        }
-
-        trimPreviousNoteEndSpaceOnSamePage(pnote, prevBreak == null ? -1 : pbreak);
-        tm.insertRowAt(":", beat, length, height, "~", row + 1);
-        tm.fireTableRowsInserted(row + 1, row + 1);
-        setRowSelectionInterval(row + 1, row + 1);
-        updatePlayerPosition();
-        zoomPage();
-        restoreAbsoluteViewYLater(preservedAbsoluteViewY);
     }
 
-    private void trimPreviousNoteEndSpaceOnSamePage(int previousNoteIndex, int previousBreakIndex) {
-        if (previousNoteIndex < 0 || previousNoteIndex >= getRowCount()) {
+    private int resolveAddedNoteIndex(int beat) {
+        int selected = getSelectionModel().getMaxSelectionIndex();
+        if (selected >= 0) {
+            return Math.min(selected + 1, getRowCount() - 1);
+        }
+        for (int index = 0; index < getRowCount(); index++) {
+            YassRow row = getRowAt(index);
+            if (row.isEnd() || ((row.isNote() || row.isPageBreak()) && row.getBeatInt() >= beat)) {
+                return index;
+            }
+        }
+        return getRowCount();
+    }
+
+    private void connectInsertedLyrics(String text, List<YassRow> insertedRows) {
+        if (text.contains("\t") || insertedRows.isEmpty()) {
             return;
         }
-        if (previousBreakIndex >= 0 && previousNoteIndex < previousBreakIndex) {
-            return;
+        int first = tm.getData().indexOf(insertedRows.get(0));
+        int last = tm.getData().indexOf(insertedRows.get(insertedRows.size() - 1));
+        if (first > 0 && getRowAt(first - 1).isNote()) {
+            YassRow previous = getRowAt(first - 1);
+            YassRow added = getRowAt(first);
+            if (text.strip().startsWith("-")) {
+                previous.setText(previous.getText().replaceAll("[ " + YassRow.SPACE + "]+$", ""));
+                added.setText(added.getText().replaceAll("^[ " + YassRow.SPACE + "]+", ""));
+            } else if (!previous.endsWithSpace() && !added.getText().startsWith(" ")
+                    && !added.getText().startsWith(Character.toString(YassRow.SPACE))) {
+                if (yassUtils.isSpacingAfter()) {
+                    previous.setText(previous.getText() + YassRow.SPACE);
+                } else {
+                    added.setText(YassRow.SPACE + added.getText());
+                }
+            }
         }
-        trimEndSpace(previousNoteIndex);
+        if (text.strip().endsWith("-") && last + 1 < getRowCount() && getRowAt(last + 1).isNote()) {
+            trimEndSpace(last);
+            YassRow next = getRowAt(last + 1);
+            next.setText(next.getText().replaceAll("^[ " + YassRow.SPACE + "]+", ""));
+        }
     }
 
     public InsertedLyricsResult insertLyricsWithVocalPitchAtBeat(String noteText,
                                                                  int cursorBeat,
                                                                  List<PitchDetector.PitchData> pitchData) {
+        noteText = StringUtils.defaultIfBlank(noteText, "~");
         List<String> noteTexts = extractInsertedLyricNoteTexts(noteText, cursorBeat);
         if (noteTexts.isEmpty()) {
             return InsertedLyricsResult.noInsertableText();
@@ -6628,27 +6600,31 @@ public class YassTable extends JTable {
 
         Vector<YassRow> snapshot = cloneRows(tm.getData());
         addUndo();
-        if (window.replacedRowIndex() >= 0) {
-            tm.removeRowAt(window.replacedRowIndex());
-        }
-
         List<YassRow> insertedRows = new ArrayList<>();
-        int initialHeight = determineInsertedLyricsInitialHeight(window.replacedRow(), window.startBeat());
+        int insertIndex = resolveAddedNoteIndex(cursorBeat);
+        int initialHeight = determineInsertedLyricsInitialHeight(window.startBeat());
         for (int index = 0; index < noteTexts.size(); index++) {
-            int beat = window.startBeat() + index * 2;
+            int beat = window.startBeat() + index;
             YassRow row = new YassRow(":", Integer.toString(beat), "1", Integer.toString(initialHeight),
                                       noteTexts.get(index));
-            int insertIndex = findInsertionIndexForBeat(beat);
-            tm.getData().insertElementAt(row, insertIndex);
+            tm.getData().insertElementAt(row, insertIndex++);
             insertedRows.add(row);
         }
 
         alignToMelody(insertedRows, pitchData, AlignToMelodyContext.insertedLyrics());
+        for (int index = 0; index + 1 < insertedRows.size(); index++) {
+            YassRow current = insertedRows.get(index);
+            int nextBeat = insertedRows.get(index + 1).getBeatInt();
+            if (current.getBeatInt() + current.getLengthInt() < nextBeat) {
+                current.setLength(nextBeat - current.getBeatInt());
+            }
+        }
         if (!insertedRowsRespectWindow(insertedRows, window)) {
             restoreRows(snapshot);
             return InsertedLyricsResult.alignmentOutOfBounds(noteTexts.size(), window.capacity());
         }
 
+        connectInsertedLyrics(noteText, insertedRows);
         tm.fireTableDataChanged();
         setInsertedLyricsSelection(insertedRows);
         updatePlayerPosition();
@@ -6658,18 +6634,32 @@ public class YassTable extends JTable {
 
     private record LocalInsertWindow(int startBeat,
                                      int endBeat,
-                                     Integer nextNoteBeat,
-                                     int replacedRowIndex,
-                                     YassRow replacedRow) {
+                                     Integer nextNoteBeat) {
         int capacity() {
             int beats = endBeat - startBeat + 1;
-            return beats <= 0 ? 0 : beats / 2;
+            return Math.max(0, beats - (nextNoteBeat == null ? 0 : 1));
         }
     }
 
     private List<String> extractInsertedLyricNoteTexts(String noteText, int startBeat) {
         if (StringUtils.isBlank(noteText)) {
             return Collections.emptyList();
+        }
+        if (!noteText.contains("\t") && noteText.contains("-")) {
+            // Explicit connectors define syllables; do not automatically split those parts again.
+            List<String> texts = new ArrayList<>();
+            for (String word : noteText.strip().split("\\s+")) {
+                String[] parts = word.split("-", -1);
+                for (int index = 0; index < parts.length; index++) {
+                    if (!parts[index].isEmpty()) {
+                        boolean wordStart = index == 0;
+                        boolean wordEnd = index == parts.length - 1;
+                        texts.add((!yassUtils.isSpacingAfter() && wordStart ? " " : "")
+                                + parts[index] + (yassUtils.isSpacingAfter() && wordEnd ? " " : ""));
+                    }
+                }
+            }
+            return texts;
         }
         String[] lines = splitTextToLines(noteText, startBeat);
         List<String> noteTexts = new ArrayList<>();
@@ -6683,35 +6673,24 @@ public class YassTable extends JTable {
     }
 
     private LocalInsertWindow determineLocalInsertWindow(int cursorBeat, List<PitchDetector.PitchData> pitchData) {
-        int replacedRowIndex = findNoteIndexContainingBeat(cursorBeat);
-        YassRow replacedRow = replacedRowIndex >= 0 ? new YassRow(getRowAt(replacedRowIndex)) : null;
-        Integer nextNoteBeat = findNextNoteBeatAfter(cursorBeat, replacedRowIndex);
+        Integer nextNoteBeat = findNextNoteBeatAfter(cursorBeat);
         int endBeat = nextNoteBeat == null ? findLastPitchBeatAtOrAfter(cursorBeat, pitchData) : nextNoteBeat - 1;
+        for (int index = resolveAddedNoteIndex(cursorBeat); index < getRowCount(); index++) {
+            YassRow row = getRowAt(index);
+            if (row.isPageBreak()) {
+                endBeat = Math.min(endBeat, row.getBeatInt() - 1);
+                break;
+            }
+        }
         if (endBeat < cursorBeat) {
             return null;
         }
-        return new LocalInsertWindow(cursorBeat, endBeat, nextNoteBeat, replacedRowIndex, replacedRow);
+        return new LocalInsertWindow(cursorBeat, endBeat, nextNoteBeat);
     }
 
-    private int findNoteIndexContainingBeat(int cursorBeat) {
+    private Integer findNextNoteBeatAfter(int cursorBeat) {
         int rowCount = getRowCount();
         for (int index = 0; index < rowCount; index++) {
-            YassRow row = getRowAt(index);
-            if (row != null && row.isNote()
-                    && row.getBeatInt() <= cursorBeat
-                    && cursorBeat < row.getBeatInt() + row.getLengthInt()) {
-                return index;
-            }
-        }
-        return -1;
-    }
-
-    private Integer findNextNoteBeatAfter(int cursorBeat, int ignoredRowIndex) {
-        int rowCount = getRowCount();
-        for (int index = 0; index < rowCount; index++) {
-            if (index == ignoredRowIndex) {
-                continue;
-            }
             YassRow row = getRowAt(index);
             if (row != null && row.isNote() && row.getBeatInt() > cursorBeat) {
                 return row.getBeatInt();
@@ -6741,7 +6720,7 @@ public class YassTable extends JTable {
             return false;
         }
         for (int index = 0; index < syllableCount; index++) {
-            if (!hasPitchFrameInBeat(startBeat + index * 2, pitchData)) {
+            if (!hasPitchFrameInBeat(startBeat + index, pitchData)) {
                 return false;
             }
         }
@@ -6764,10 +6743,7 @@ public class YassTable extends JTable {
         return (int) Math.floor(msToBeatExact(frame.time() * 1000.0));
     }
 
-    private int determineInsertedLyricsInitialHeight(YassRow replacedRow, int startBeat) {
-        if (replacedRow != null && replacedRow.isNote()) {
-            return replacedRow.getHeightInt();
-        }
+    private int determineInsertedLyricsInitialHeight(int startBeat) {
         YassRow previous = findPreviousInsertedLyricsNoteBefore(startBeat);
         if (previous != null) {
             return previous.getHeightInt();
@@ -6799,27 +6775,13 @@ public class YassTable extends JTable {
         return null;
     }
 
-    private int findInsertionIndexForBeat(int beat) {
-        int rowCount = getRowCount();
-        for (int index = 0; index < rowCount; index++) {
-            YassRow row = getRowAt(index);
-            if (row == null || row.isEnd()) {
-                return index;
-            }
-            if ((row.isNote() || row.isPageBreak()) && row.getBeatInt() > beat) {
-                return index;
-            }
-        }
-        return rowCount;
-    }
-
     private boolean insertedRowsRespectWindow(List<YassRow> insertedRows, LocalInsertWindow window) {
         if (insertedRows == null || insertedRows.isEmpty()) {
             return false;
         }
         List<YassRow> sorted = new ArrayList<>(insertedRows);
         sorted.sort(Comparator.comparingInt(YassRow::getBeatInt));
-        int previousEnd = window.startBeat() - 2;
+        int previousEnd = window.startBeat() - 1;
         for (YassRow row : sorted) {
             if (row == null || !row.isNote() || row.getLengthInt() < 1) {
                 return false;
@@ -6829,7 +6791,7 @@ public class YassTable extends JTable {
             if (start < window.startBeat() || end > window.endBeat()) {
                 return false;
             }
-            if (start <= previousEnd + 1) {
+            if (start <= previousEnd) {
                 return false;
             }
             previousEnd = end;
@@ -7873,9 +7835,7 @@ public class YassTable extends JTable {
         }
     }
 
-    /**
-     * Description of the Method
-     */
+    /** Removes selected notes while transferring their lyrics to adjacent notes. */
     public void removeRows() {
         int n = getRowCount();
         int[] rows = getSelectedRows();
@@ -7890,6 +7850,9 @@ public class YassTable extends JTable {
 
             YassRow r = getRowAt(row);
             if (!r.isNote()) {
+                if (!r.isPageBreak()) {
+                    continue;
+                }
                 if (row < n - 1) {
                     YassRow nr = getRowAt(row + 1);
                     if (nr.isNote()) {
@@ -7957,9 +7920,7 @@ public class YassTable extends JTable {
         }
     }
 
-    /**
-     * Description of the Method
-     */
+    /** Erases selected notes together with their lyrics, and selected page breaks. */
     public boolean removeRowsWithLyrics() {
         int[] rows = getSelectedRows();
         if (rows == null || rows.length < 1) {
@@ -7984,8 +7945,15 @@ public class YassTable extends JTable {
 
         removeDanglingPageBreaksWithoutFollowingNotes();
         tm.fireTableDataChanged();
-        if (next != null)
-            setRowSelectionInterval(rows[0], rows[0]);
+        int selection = Math.min(rows[0], getRowCount() - 1);
+        while (selection >= 0 && !getRowAt(selection).isNote()) {
+            selection--;
+        }
+        if (selection >= 0) {
+            setRowSelectionInterval(selection, selection);
+        } else {
+            clearSelection();
+        }
         updatePlayerPosition();
         zoomPage();
         return true;

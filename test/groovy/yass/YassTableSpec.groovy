@@ -1116,14 +1116,197 @@ class YassTableSpec extends Specification {
         }
 
         then:
-        noteTexts(yassTable) == ['first ', 'one ', 'two ', 'last ']
-        yassTable.getSelectedRows() == [insertionRow, insertionRow + 1] as int[]
+        noteTexts(yassTable) == ['first ', 'old ', 'one ', 'two ', 'last ']
+        noteBeats(yassTable) == [80, 100, 104, 105, 120]
+        yassTable.getSelectedRows() == [insertionRow + 1, insertionRow + 2] as int[]
 
         where:
         vocalFallback << [false, true]
     }
 
-    def 'blank insert note creates a tilde placeholder and trims previous same-page end space'() {
+    def 'adding lyrics after the selected last note stays on that page and preserves overlaps'() {
+        given:
+        YassTable table = tableForInsertedLyrics([
+                note(':', 10, 4, 7, 'old '),
+                new YassRow('-', '14', '', '', ''),
+                note(':', 16, 4, 9, 'next ')
+        ], [:])
+        int selected = firstRowIndex(table) { it.note }
+        def originals = (0..<table.rowCount).collect { table.getRowAt(it) }
+        table.setRowSelectionInterval(selected, selected)
+        table.setSheet(Stub(YassSheet) {
+            getPlayerPosition() >> 999
+            timelineToBeat(999) >> 999
+        })
+        table.setPreventZoom(true)
+
+        when:
+        table.insertNoteWithOptionalText('one two three')
+
+        then:
+        noteTexts(table) == ['old ', 'one ', 'two ', 'three ', 'next ']
+        noteBeats(table) == [10, 14, 15, 16, 16]
+        table.getRowAt(selected + 4).pageBreak
+        originals.every { original -> (0..<table.rowCount).any { table.getRowAt(it).is(original) } }
+        table.getSelectedRows() == [selected + 1, selected + 2, selected + 3] as int[]
+    }
+
+    def 'explicit hyphens connect syllables without storing a hyphen'() {
+        given:
+        YassTable table = tableForInsertedLyrics([
+                note(':', 0, 4, 7, spacingAfter ? 'pre ' : ' pre'),
+                note(':', 30, 4, 9, spacingAfter ? 'next ' : ' next')
+        ], [:])
+        table.yassUtils.setSpacingAfter(spacingAfter)
+        int selected = firstRowIndex(table) { it.note }
+        table.setRowSelectionInterval(selected, selected)
+
+        when:
+        table.insertNoteWithOptionalText('-hel-lo-')
+
+        then:
+        noteTexts(table) == (spacingAfter ? ['pre', 'hel', 'lo', 'next '] : [' pre', 'hel', 'lo', 'next'])
+
+        where:
+        spacingAfter << [true, false]
+    }
+
+    def 'hyphens split explicit syllables while spaces still separate words'() {
+        given:
+        YassTable table = tableForInsertedLyrics([note(':', 0, 4, 7, 'old ')], [:])
+        table.setRowSelectionInterval(firstRowIndex(table) { it.note }, firstRowIndex(table) { it.note })
+
+        when:
+        table.insertNoteWithOptionalText('hel-lo world')
+
+        then:
+        noteTexts(table) == ['old ', 'hel', 'lo ', 'world ']
+    }
+
+    def 'new lyrics connect to the previous syllable only with a leading hyphen'() {
+        given:
+        YassTable table = tableForInsertedLyrics([
+                note(':', 0, 4, 7, previous),
+                note(':', 20, 4, 9, 'next ')
+        ], [:])
+        table.yassUtils.setSpacingAfter(spacingAfter)
+        int selected = firstRowIndex(table) { it.note }
+        table.setRowSelectionInterval(selected, selected)
+
+        when:
+        if (vocal) {
+            def result = table.insertLyricsWithVocalPitchAtBeat(input, 4,
+                    pitchFramesByBeat(table, 4, [7, 7, 7, 7]))
+            assert result.inserted()
+        } else {
+            table.insertNoteWithOptionalText(input)
+        }
+
+        then:
+        noteTexts(table)[0..1] == expected
+
+        where:
+        [spacingAfter, previous, input, expected, vocal] << [
+                [true, 'pre', 'fix', ['pre ', 'fix ']],
+                [true, 'pre ', 'fix', ['pre ', 'fix ']],
+                [true, 'pre ', '-fix', ['pre', 'fix ']],
+                [true, 'pre', '', ['pre ', '~ ']],
+                [false, ' pre', 'fix', [' pre', ' fix']],
+                [false, ' pre', '-fix', [' pre', 'fix']]
+        ].collectMany { row -> (row[2] == '' ? [false] : [false, true]).collect { row + [it] } }
+    }
+
+    def 'multiple generated syllables touch in time regardless of lyric connectors or note length'() {
+        given:
+        YassTable table = tableForInsertedLyrics([note(':', 0, 4, 7, 'pre')], [:])
+        table.yassUtils.setDefaultLength(length)
+        int selected = firstRowIndex(table) { it.note }
+        table.setRowSelectionInterval(selected, selected)
+
+        when:
+        table.insertNoteWithOptionalText(input)
+
+        then:
+        noteBeats(table) == [0, 4, 4 + length, 4 + 2 * length]
+        noteLengths(table) == [4, length, length, length]
+
+        where:
+        [input, length] << [['one two three', '-one-two-three'], [1, 4]].combinations()
+    }
+
+    def 'adding supplied note rows preserves their type length pitch and relative timing'() {
+        given:
+        YassTable table = tableForInsertedLyrics([note(':', 10, 4, 7, 'old ')], [:])
+        int selected = firstRowIndex(table) { it.note }
+        table.setRowSelectionInterval(selected, selected)
+
+        when:
+        table.insertNoteWithOptionalText('*\t0\t3\t12\thel\nF\t5\t2\t14\tlo ')
+
+        then:
+        noteTexts(table) == ['old ', 'hel', 'lo ']
+        noteTypes(table) == [':', '*', 'F']
+        noteLengths(table) == [4, 3, 2]
+        notePitches(table) == [7, 12, 14]
+        noteBeats(table) == [10, 14, 19]
+    }
+
+    def 'blank input adds a placeholder at the cursor without a selection'() {
+        given:
+        YassTable table = tableForInsertedLyrics([note(':', 10, 4, 7, 'next ')], [:])
+        table.clearSelection()
+        table.setSheet(Stub(YassSheet) {
+            getPlayerPosition() >> 5
+            timelineToBeat(5) >> 5
+        })
+        table.setPreventZoom(true)
+
+        when:
+        table.insertNoteWithOptionalText('   ')
+
+        then:
+        noteTexts(table) == ['~ ', 'next ']
+        noteBeats(table) == [5, 10]
+    }
+
+    def 'blank and whitespace input produce exactly the same notes as a typed tilde'() {
+        given:
+        def makeTable = {
+            YassTable table = tableForInsertedLyrics([
+                    note(':', 0, 4, 7, spacingAfter ? 'one' : ' one'),
+                    note(':', 12, 4, 9, spacingAfter ? 'two ' : ' two')
+            ], [:])
+            table.yassUtils.setSpacingAfter(spacingAfter)
+            int selected = firstRowIndex(table) { it.note }
+            table.setRowSelectionInterval(selected, selected)
+            table
+        }
+        YassTable blankTable = makeTable()
+        YassTable typedTable = makeTable()
+
+        when:
+        if (vocal) {
+            def frames = pitchFramesByBeat(blankTable, 4, [7, 7, 7])
+            assert blankTable.insertLyricsWithVocalPitchAtBeat(input, 4, frames).inserted()
+            assert typedTable.insertLyricsWithVocalPitchAtBeat('~', 4, frames).inserted()
+        } else {
+            blankTable.insertNoteWithOptionalText(input)
+            typedTable.insertNoteWithOptionalText('~')
+        }
+
+        then:
+        noteTexts(blankTable) == noteTexts(typedTable)
+        noteBeats(blankTable) == noteBeats(typedTable)
+        noteLengths(blankTable) == noteLengths(typedTable)
+        notePitches(blankTable) == notePitches(typedTable)
+        noteTexts(blankTable).join('') == 'one ~ two '
+                || noteTexts(blankTable).join('') == ' one ~ two'
+
+        where:
+        [input, spacingAfter, vocal] << [['', '   ', '\t'], [true, false], [true, false]].combinations()
+    }
+
+    def 'blank insert note creates a tilde placeholder and preserves the word boundary'() {
         given:
         YassTable yassTable = tableForInsertedLyrics([
                 note(':', 0, 4, 7, 'one '),
@@ -1136,11 +1319,11 @@ class YassTableSpec extends Specification {
         invokeInsertNoteWithOptionalText(yassTable, '')
 
         then:
-        noteTexts(yassTable) == ['one', '~', 'two ']
+        noteTexts(yassTable) == ['one ', '~ ', 'two ']
         noteBeats(yassTable) == [0, 4, 9]
-        noteLengths(yassTable) == [4, 3, 4]
-        notePitches(yassTable) == [7, 7, 12]
-        yassTable.getRowAt(yassTable.selectedRow).text == '~'
+        noteLengths(yassTable) == [4, 1, 4]
+        notePitches(yassTable) == [7, 6, 12]
+        yassTable.getRowAt(yassTable.selectedRow).text == '~' + YassRow.SPACE
     }
 
     def 'blank insert note does not trim previous note across a page break'() {
@@ -1151,18 +1334,18 @@ class YassTableSpec extends Specification {
                 new YassRow('Y', 'hide', '', '', ''),
                 note(':', 16, 4, 12, 'two ')
         ], [:])
-        int hiddenRow = firstRowIndex(yassTable) { it.hidden }
-        yassTable.setRowSelectionInterval(hiddenRow, hiddenRow)
+        int pageBreakRow = firstRowIndex(yassTable) { it.pageBreak }
+        yassTable.setRowSelectionInterval(pageBreakRow, pageBreakRow)
 
         when:
         invokeInsertNoteWithOptionalText(yassTable, '')
 
         then:
-        noteTexts(yassTable) == ['one ', '~', 'two ']
+        noteTexts(yassTable) == ['one ', '~ ', 'two ']
         noteBeats(yassTable) == [0, 10, 16]
     }
 
-    def 'blank insert note is blocked on comment rows'() {
+    def 'blank insert note behaves like a typed tilde on comment rows'() {
         given:
         YassTable yassTable = tableForInsertedLyrics([
                 new YassRow('#', 'COMMENT:', 'key=C', '', ''),
@@ -1176,11 +1359,11 @@ class YassTableSpec extends Specification {
         invokeInsertNoteWithOptionalText(yassTable, '')
 
         then:
-        yassTable.rowCount == originalRowCount
-        noteTexts(yassTable) == ['one ']
+        yassTable.rowCount == originalRowCount + 1
+        noteTexts(yassTable) == ['~ ', 'one ']
     }
 
-    def 'blank insert note is blocked when no beat space remains before the next note'() {
+    def 'blank insert note still creates a placeholder when the next note overlaps'() {
         given:
         YassTable yassTable = tableForInsertedLyrics([
                 note(':', 0, 4, 7, 'one '),
@@ -1193,30 +1376,31 @@ class YassTableSpec extends Specification {
         invokeInsertNoteWithOptionalText(yassTable, '')
 
         then:
-        noteTexts(yassTable) == ['one ', 'two ']
-        noteBeats(yassTable) == [0, 4]
+        noteTexts(yassTable) == ['one ', '~ ', 'two ']
+        noteBeats(yassTable) == [0, 4, 4]
+        noteLengths(yassTable) == [4, 1, 4]
     }
 
-    def 'insertLyricsWithVocalPitchAtBeat replaces the local note with aligned syllables inside the next-note gap'() {
+    def 'insertLyricsWithVocalPitchAtBeat preserves overlapping existing notes'() {
         given:
         YassTable yassTable = tableForInsertedLyrics([
                 note(':', 100, 4, 0, 'old '),
                 note(':', 104, 4, 0, 'next ')
         ], ['hello': 'hel\u00ADlo'])
-        List<PitchDetector.PitchData> pitchData = pitchFramesByBeat(yassTable, 100, [5, 5, 7, 7])
+        List<PitchDetector.PitchData> pitchData = pitchFramesByBeat(yassTable, 100, [5, 7, 7, 7])
 
         when:
         def result = yassTable.insertLyricsWithVocalPitchAtBeat('hello', 100, pitchData)
 
         then:
         result.status() == YassTable.InsertedLyricsStatus.INSERTED
-        noteTexts(yassTable) == ['hel', 'lo ', 'next ']
-        noteBeats(yassTable) == [100, 102, 104]
-        noteLengths(yassTable) == [1, 1, 4]
+        noteTexts(yassTable) == ['hel', 'lo ', 'old ', 'next ']
+        noteBeats(yassTable) == [100, 101, 100, 104]
+        noteLengths(yassTable) == [1, 1, 4, 4]
         notePitches(yassTable)[0..1] == [5, 7]
         yassTable.getSelectedRows() == [
                 firstRowIndex(yassTable) { it.note && it.beatInt == 100 },
-                firstRowIndex(yassTable) { it.note && it.beatInt == 102 }
+                firstRowIndex(yassTable) { it.note && it.beatInt == 101 }
         ] as int[]
     }
 
@@ -1237,28 +1421,49 @@ class YassTableSpec extends Specification {
         then:
         result.status() == YassTable.InsertedLyricsStatus.TOO_MANY_SYLLABLES
         result.syllableCount() == 4
-        result.capacity() == 2
+        result.capacity() == 3
         noteTexts(yassTable) == ['old ', 'next ']
         noteBeats(yassTable) == [100, 104]
     }
 
-    def 'insertLyricsWithVocalPitchAtBeat preserves a page break while using the first note after it as boundary'() {
+    def 'vocal insertion fits consecutive syllables without reserving internal time gaps'() {
+        given:
+        YassTable table = tableForInsertedLyrics([
+                note(':', 0, 4, 7, 'pre'),
+                note(':', 8, 4, 9, 'next ')
+        ], [:])
+        int selected = firstRowIndex(table) { it.note }
+        table.setRowSelectionInterval(selected, selected)
+
+        when:
+        def result = table.insertLyricsWithVocalPitchAtBeat('one-two-three', 4,
+                pitchFramesByBeat(table, 4, [5, 7, 9]))
+
+        then:
+        result.inserted()
+        result.capacity() == 3
+        noteTexts(table) == ['pre ', 'one', 'two', 'three ', 'next ']
+        noteBeats(table) == [0, 4, 5, 6, 8]
+        noteLengths(table) == [4, 1, 1, 1, 4]
+    }
+
+    def 'insertLyricsWithVocalPitchAtBeat keeps additions before the page break'() {
         given:
         YassTable yassTable = tableForInsertedLyrics([
                 note(':', 100, 1, 0, 'old '),
-                new YassRow('-', '103', '', '', ''),
+                new YassRow('-', '104', '', '', ''),
                 note(':', 108, 4, 0, 'next ')
         ], ['hello': 'hel\u00ADlo'])
-        List<PitchDetector.PitchData> pitchData = pitchFramesByBeat(yassTable, 100, [5, 5, 7, 7, 7, 7, 7, 7])
+        List<PitchDetector.PitchData> pitchData = pitchFramesByBeat(yassTable, 100, [5, 5, 7, 7])
 
         when:
         def result = yassTable.insertLyricsWithVocalPitchAtBeat('hello', 100, pitchData)
 
         then:
         result.status() == YassTable.InsertedLyricsStatus.INSERTED
-        pageBreakBeats(yassTable) == [103]
-        noteTexts(yassTable) == ['hel', 'lo ', 'next ']
-        noteBeats(yassTable) == [100, 102, 108]
+        pageBreakBeats(yassTable) == [104]
+        noteTexts(yassTable) == ['hel', 'lo ', 'old ', 'next ']
+        noteBeats(yassTable) == [100, 101, 100, 108]
     }
 
     def 'insertLyricsWithVocalPitchAtBeat rejects windows without usable pitch frames'() {

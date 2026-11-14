@@ -25,8 +25,15 @@ Frequently used shortcuts:
 | Resize left edge | `Ctrl-Left` / `Ctrl-Right` |
 | Resize right edge | `Alt-Left` / `Alt-Right` |
 | Split / join note | `-` / `+` |
-| Delete note | `Delete` |
+| Delete notes and lyrics | `Delete` |
+| Remove notes, keep lyrics | `Ctrl-Delete` |
 | Add note | `Ctrl-Enter` or `Shift-Enter` |
+
+`Delete` and the remove-note toolbar button erase selected notes together with
+their syllable text. To remove notes while transferring their lyrics to adjacent
+notes, use `Ctrl-Delete` or **Lyrics -> Remove Notes (Keep Lyrics)**. Undo restores
+deleted notes and lyrics. While editing lyric text, ordinary Delete continues to
+edit the text.
 
 ## Set Pitch From Microphone
 
