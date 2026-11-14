@@ -23,6 +23,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import yass.ffmpeg.FFMPEGLocator;
 import yass.ffmpeg.FfmpegDownloader;
 import yass.ffmpeg.FfmpegPromptSupport;
+import yass.input.WindowsAltSpaceBlocker;
 import yass.logger.YassLogger;
 import yass.stats.YassStats;
 import yass.titlecase.PhrasalVerbManager;
@@ -68,7 +69,25 @@ public class YassMain extends JFrame {
     private JComponent editToolbar;
     private JSplitPane verticalSplit;
     private boolean startupCanceled = false;
+    private WindowsAltSpaceBlocker altSpaceBlocker;
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (altSpaceBlocker == null) {
+            altSpaceBlocker = WindowsAltSpaceBlocker.install(this);
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        if (altSpaceBlocker != null) {
+            altSpaceBlocker.close();
+            altSpaceBlocker = null;
+        }
+        super.removeNotify();
+    }
 
     public static void main(String[] argv) {
         File userDir = new File(System.getProperty("user.home") + File.separator + ".yass");

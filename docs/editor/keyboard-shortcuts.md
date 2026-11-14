@@ -129,6 +129,9 @@ Spaces). Both are listed below.
 | Fullscreen | `Alt-Enter` |
 | Help | `F1` |
 
+On Windows, `Alt-Space` is disabled in the main window to prevent accidental
+opening of the system menu while editing.
+
 ## Virtual Piano
 
 During tap recording, Yass Reincarnated can use the top keyboard rows as a virtual piano. The exact layout depends on the active keyboard mapping:
