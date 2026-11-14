@@ -2221,9 +2221,11 @@ public class YassPlayer {
             if (lengthSamples <= 0) continue;
             byte[] pcm = null;
             boolean isPiano = false;
+            boolean isStereo = false;
             if (playClicks && !midiEnabled) {
                 if (useWav()) {
-                    pcm = drumClick; // Mono
+                    pcm = drumClick;
+                    isStereo = true;
                 } else {
                     int midiPitch = click.height() + 60;
                     if (midiPitch >= 0 && midiPitch < midis.length && midis[midiPitch] != null) {
@@ -2236,11 +2238,12 @@ public class YassPlayer {
                 isPiano = true;
             }
             if (pcm != null) {
-                int maxSamples = Math.min(pcm.length / 2, lengthSamples);
+                int pcmFrameSize = isStereo ? 4 : 2;
+                int maxSamples = Math.min(pcm.length / pcmFrameSize, lengthSamples);
                 int audioMaxSamples = Math.min(lengthSamples, (audio.length / 4) - startSample);
                 int samplesToCopy = Math.min(maxSamples, audioMaxSamples);
                 for (int i = 0; i < samplesToCopy; i++) {
-                    int pcmIndex = i * 2;
+                    int pcmIndex = i * pcmFrameSize;
                     int audioIndex = (startSample + i) * 4;
                     byte lo = pcm[pcmIndex];
                     byte hi = pcm[pcmIndex + 1];
@@ -2265,8 +2268,8 @@ public class YassPlayer {
                     } else {
                         audio[audioIndex] = lo;
                         audio[audioIndex + 1] = hi;
-                        audio[audioIndex + 2] = lo;
-                        audio[audioIndex + 3] = hi;
+                        audio[audioIndex + 2] = isStereo ? pcm[pcmIndex + 2] : lo;
+                        audio[audioIndex + 3] = isStereo ? pcm[pcmIndex + 3] : hi;
                     }
                 }
             }

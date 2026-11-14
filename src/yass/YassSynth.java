@@ -21,11 +21,9 @@ package yass;
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +50,7 @@ public class YassSynth {
     private static AudioFormat wavaudioFormat = null;
     private static SourceDataLine sourceDataLine = null;
     private static SourceDataLine wavsourceDataLine = null;
-    private static Vector<Byte> buffer = null;
+    private static byte[] buffer = null;
     private static int BUFFER_SIZE = 512000;
     /**
      * Description of the Method
@@ -190,7 +188,7 @@ public class YassSynth {
                 audioFormat = new AudioFormat(sampleRate, bytesPerSample * 8, channels, true, true);
             }
             if (wavaudioFormat == null) {
-                wavaudioFormat = new AudioFormat(sampleRate, 2 * 8, 2, true, true);
+                wavaudioFormat = new AudioFormat(sampleRate, 16, 2, true, false);
             }
             DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, audioFormat);
             wavsourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
@@ -213,40 +211,20 @@ public class YassSynth {
     /**
      * Description of the Method
      */
-    public static void loadWav() {
+    public static synchronized void loadWav() {
 
         if (audioFormat == null) {
             audioFormat = new AudioFormat(sampleRate, bytesPerSample * 8, channels, true, true);
         }
         if (wavaudioFormat == null) {
-            wavaudioFormat = new AudioFormat(sampleRate, 2 * 8, 2, true, true);
+            // Preserve the original click's stereo channels in the editor mixer's byte order.
+            wavaudioFormat = new AudioFormat(sampleRate, 16, 2, true, false);
         }
 
-        try {
-            InputStream istream = YassSynth.class.getResourceAsStream("/yass/resources/samples/click.wav");
-            AudioInputStream ostream = AudioSystem.getAudioInputStream(new BufferedInputStream(istream));
-            AudioInputStream stream = AudioSystem.getAudioInputStream(wavaudioFormat, ostream);
-            long len = stream.getFrameLength() * wavaudioFormat.getFrameSize();
-
-            buffer = new Vector<>((int) len);
-            int nBytesRead = 0;
-            byte[] abData = new byte[BUFFER_SIZE];
-            while (nBytesRead != -1) {
-                try {
-                    nBytesRead = stream.read(abData, 0, abData.length - 1);
-                } catch (IOException e) {
-                    LOGGER.log(Level.INFO, e.getMessage(), e);
-                }
-                //LOGGER.info("   Number of bytes read: "+nBytesRead);
-                if (nBytesRead >= 0) {
-                    for (int i = 1; i <= nBytesRead; i++) {
-                        buffer.add(abData[i]);
-                    }
-                }
-            }
-            stream.close();
-            ostream.close();
-            istream.close();
+        try (InputStream istream = YassSynth.class.getResourceAsStream("/yass/resources/samples/click.wav");
+             AudioInputStream ostream = AudioSystem.getAudioInputStream(new BufferedInputStream(istream));
+             AudioInputStream stream = AudioSystem.getAudioInputStream(wavaudioFormat, ostream)) {
+            buffer = stream.readAllBytes();
             LOGGER.info("Loaded click noise");
         } catch (Exception e) {
             LOGGER.log(Level.INFO, e.getMessage(), e);
@@ -331,20 +309,15 @@ public class YassSynth {
     }
 
     /**
-     * Gibt den rohen Klick-Sound aus dem Puffer als byte-Array zurück.
-     * @return byte-Array mit dem Klick-Sound
+     * Returns the click as signed 16-bit little-endian stereo PCM at 44.1 kHz.
      */
-    public static byte[] getWavSampleAsByteArray() {
-        if (buffer == null || buffer.isEmpty()) {
+    public static synchronized byte[] getWavSampleAsByteArray() {
+        if (buffer == null || buffer.length == 0) {
             loadWav();
         }
-        if (buffer == null || buffer.isEmpty()) {
+        if (buffer == null || buffer.length == 0) {
             return new byte[0]; // Fallback: leeres Array
         }
-        byte[] result = new byte[buffer.size()];
-        for (int i = 0; i < buffer.size(); i++) {
-            result[i] = buffer.get(i);
-        }
-        return result;
+        return buffer.clone();
     }
 }
