@@ -17,6 +17,8 @@ does not move the current syllable to the left edge and lose page boundaries.
 - When the cursor moves to an off-screen page, the note view follows the page
   containing the syllable, preserving page boundaries.
 - The same behavior applies when navigating backwards through the lyrics.
+- Undo and Redo preserve the current timeline position, horizontal zoom, and
+  playback cursor, so reversing a lyric edit does not jump to an earlier page.
 
 ## Acceptance Scenarios
 
@@ -27,3 +29,6 @@ does not move the current syllable to the left edge and lose page boundaries.
 - Move between syllables on the newly displayed page. The view remains stable.
 - Move the cursor back to a syllable on the previous off-screen page. The view
   returns to that page's boundaries.
+- Split a lyric on a later page after earlier edits used a different page zoom.
+  Undo and Redo the split. The lyrics change while the same timeline section,
+  zoom, and playback cursor remain in place, in both pitch-view modes.

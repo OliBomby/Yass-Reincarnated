@@ -18,6 +18,11 @@ syllables sung across multiple pitches and text split at the lyrics caret.
 - In lyrics editing mode (`F4`), pressing `-` inside a syllable splits its text
   at the caret and shifts subsequent lyrics one note to the right. It must not
   insert `~` before the whole syllable instead.
+- A lyrics split preserves the number, timing, duration, and pitch of notes.
+  A spacing-correction prompt must not let the same keystroke also split a timed
+  note or open a second spacing-correction prompt.
+- One Undo restores the lyrics before a split; Redo reapplies it. Neither action
+  introduces an empty lyric state or an extra step with no visible change.
 - Pressing space inside a syllable also splits at the caret and shifts subsequent
   lyrics right, adding a word boundary between the resulting parts.
 - Lyrics splitting works with both spaces after words and legacy spaces before
@@ -48,6 +53,10 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   splits at the caret, preserving the existing word boundary.
 - Press space at `so|u`. The result is two words, `so` and `u`, rather than two
   connected syllables.
+- Press `-` at `r|u` when the following note is a `~` continuation. If asked to
+  correct uncommon spaces, accept the single prompt. The existing notes contain
+  `r` and `u`, with no new timed note or added `~`. Undo once restores `ru` and
+  the original continuation; Redo restores the split lyrics.
 - Split a held syllable with clear detected pitch changes. The resulting notes
   follow those pitches and retain the lyric text in order.
 - Split a note without usable pitch information. The normal split behavior is

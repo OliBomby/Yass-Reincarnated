@@ -4193,7 +4193,7 @@ public class YassActions implements DropTargetListener {
             Point viewportBeforeUndo = sheet != null ? new Point(sheet.getViewPosition()) : null;
             table.undoRows();
             checkData(table, false, true);
-            updateGapBpm();
+            updateGapBpm(false);
             restoreSheetViewportAfterUndoRedo(viewportBeforeUndo);
         }
     };
@@ -4206,7 +4206,7 @@ public class YassActions implements DropTargetListener {
             Point viewportBeforeRedo = sheet != null ? new Point(sheet.getViewPosition()) : null;
             table.redoRows();
             checkData(table, false, true);
-            updateGapBpm();
+            updateGapBpm(false);
             restoreSheetViewportAfterUndoRedo(viewportBeforeRedo);
         }
     };
@@ -10512,6 +10512,10 @@ public class YassActions implements DropTargetListener {
     }
 
     private void updateGapBpm() {
+        updateGapBpm(true);
+    }
+
+    private void updateGapBpm(boolean zoomToSelection) {
         int gap = (int) table.getGap();
         SongHeader songHeader = sheet.getSongHeader();
         if (songHeader != null && songHeader.getGapSpinner() != null) {
@@ -10524,7 +10528,9 @@ public class YassActions implements DropTargetListener {
         if (songHeader != null && songHeader.getBpmField() != null) {
             songHeader.getBpmField().setText(bpm + "");
         }
-        table.zoomPage();
+        if (zoomToSelection) {
+            table.zoomPage();
+        }
     }
 
     public void setVideoGap(int ms) {

@@ -76,6 +76,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
     private int fontSize = 16;
 
     private boolean preventFireUpdate = false;
+    private boolean editingTable = false;
     private boolean preventHyphenKeys = true;
     private boolean isFormatting = false;
 
@@ -307,7 +308,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
 
         lyricsArea.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                if (preventFireUpdate) {
+                if (preventFireUpdate || editingTable) {
                     return;
                 }
                 YassLyrics.this.firePropertyChange("play", null, "stop");
@@ -337,7 +338,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             public void focusLost(FocusEvent e) {
                 // LOGGER.info("lyrics focus lost");
                 
-                if (frDialog == null || !frDialog.isVisible()) {
+                if (!editingTable && (frDialog == null || !frDialog.isVisible())) {
                     finishEditing();
                 }
             }
@@ -535,22 +536,9 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     }
                     pos = dot - pos;
 
-                    finishEditing();
-                    preventFireUpdate = true;
-                    table.getModel().removeTableModelListener(tableListener);
-                    table.getSelectionModel().removeListSelectionListener(
-                            tableSelectionListener);
-                    lyricsArea.removeCaretListener(caretListener);
-                    table.rollRight(key, pos);
-                    lyricsArea.setText(table.getText());
-                    lyricsArea.addCaretListener(caretListener);
-                    table.getSelectionModel().addListSelectionListener(
-                            tableSelectionListener);
-                    table.getModel().addTableModelListener(tableListener);
-                    tableListener.tableChanged(null);
-                    preventFireUpdate = false;
-
-                    editLyrics();
+                    e.consume();
+                    int splitPosition = pos;
+                    editTableLyrics(() -> table.rollRight(key, splitPosition));
                     lyricsArea.getCaret().setDot(dot1);
                     lyricsArea.getCaret().moveDot(dot1);
                     e.consume();
@@ -609,27 +597,14 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                         // workaround
                         lyricsArea.getCaret().setDot(dot1);
                         lyricsArea.getCaret().setDot(dot);
-                        finishEditing();
-                        preventFireUpdate = false;
-                        table.getModel()
-                             .removeTableModelListener(tableListener);
-                        table.getSelectionModel().removeListSelectionListener(
-                                tableSelectionListener);
-                        lyricsArea.removeCaretListener(caretListener);
-                        if (prop.isUncommonSpacingAfter()) {
-                            table.removeEndSpace();
-                        } else {
-                            table.rollLeft();
-                        }
-                        lyricsArea.setText(table.getText());
-                        lyricsArea.addCaretListener(caretListener);
-                        table.getSelectionModel().addListSelectionListener(
-                                tableSelectionListener);
-                        table.getModel().addTableModelListener(tableListener);
-                        tableListener.tableChanged(null);
-                        preventFireUpdate = false;
-
-                        editLyrics();
+                        e.consume();
+                        editTableLyrics(() -> {
+                            if (prop.isUncommonSpacingAfter()) {
+                                table.removeEndSpace();
+                            } else {
+                                table.rollLeft();
+                            }
+                        });
                         lyricsArea.getCaret().setDot(dot);
                         lyricsArea.getCaret().moveDot(dot1);
 
@@ -693,11 +668,12 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     return;
                 }
                 int keyCode = e.getKeyCode();
-                if (!overwrite && (keyCode == KeyEvent.VK_SPACE
+                if (e.getKeyChar() == ' ' || isMinusKey(e)
+                        || (!overwrite && (keyCode == KeyEvent.VK_SPACE
                         || keyCode == KeyEvent.VK_DELETE
-                        || keyCode == KeyEvent.VK_BACK_SPACE
-                        || isMinusKey(e))) {
+                        || keyCode == KeyEvent.VK_BACK_SPACE))) {
                     e.consume();
+                    return;
                 }
                 if (lyricsArea.isEditable() && sheet != null && overwrite) {
                     if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyChar() == (char) KeyEvent.VK_BACK_SPACE) {
@@ -908,6 +884,27 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                                                               notSelectStyle,
                                                               false);
 
+    }
+
+    private void editTableLyrics(Runnable edit) {
+        boolean oldPreventFireUpdate = preventFireUpdate;
+        editingTable = true;
+        preventFireUpdate = true;
+        disconnectTable();
+        try {
+            // Keep typing context active while a spacing dialog pumps queued key events.
+            edit.run();
+            finishEditing();
+            lyricsArea.setText(table.getText());
+            hyphenationChanged = true;
+            myUndo = null;
+        } finally {
+            connectTable();
+            preventFireUpdate = oldPreventFireUpdate;
+            editingTable = false;
+            editLyrics();
+        }
+        checkLength();
     }
 
     /**
@@ -1214,6 +1211,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             }
         }
         if (changed) {
+            table.setSaved(false);
             canUndo = myUndo != null && (table.currentUndo() == myUndo);
             myUndo = table.addUndo();
             long currentTime = System.currentTimeMillis();
@@ -1222,7 +1220,14 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             }
             lastCompoundChange = currentTime;
 
-            tm.fireTableDataChanged();
+            // applyLyrics already recorded the compound edit above.
+            boolean oldPreventUndo = table.getPreventUndo();
+            table.setPreventUndo(true);
+            try {
+                tm.fireTableDataChanged();
+            } finally {
+                table.setPreventUndo(oldPreventUndo);
+            }
             table.repaint();
         }
     }

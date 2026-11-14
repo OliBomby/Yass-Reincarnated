@@ -9,7 +9,12 @@ import javax.swing.JTextPane
 import javax.swing.JViewport
 import javax.swing.SwingUtilities
 import java.awt.Dimension
+import java.awt.DefaultKeyboardFocusManager
+import java.awt.KeyboardFocusManager
+import java.awt.Toolkit
+import java.awt.event.FocusEvent
 import java.awt.event.KeyEvent
+import yass.input.*
 
 class YassLyricsSpec extends Specification {
 
@@ -185,5 +190,205 @@ class YassLyricsSpec extends Specification {
         KeyEvent.VK_SUBTRACT | KeyEvent.CHAR_UNDEFINED    || true
         KeyEvent.VK_UNDEFINED| '-'                        || true
         KeyEvent.VK_A        | 'a'                        || false
+    }
+
+    def 'a lyric split stays in editing mode during a spacing prompt and undoes in one step'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) {
+            isUncommonSpacingAfter() >> true
+        }
+        def previousFocusManager = KeyboardFocusManager.currentKeyboardFocusManager
+        def timelineSplits = []
+        def duringPrompt = []
+        def original = ['One ', 'ru', '~', '~ ']
+        def snapshots = []
+        def geometry = []
+        def consumed = []
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            original.eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 6) as String, '5', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new PromptingRollTable(model, props)
+            table.setModel(model)
+            // The lightweight test constructor omits the production undo listener.
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            def lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
+                @Override
+                java.awt.Component getFocusOwner() { area }
+            })
+            def registry = new EditorKeyBindingRegistry()
+            registry.bind('-' as char, new SimpleEditorCommand('splitRows', { true }, {
+                timelineSplits << 'split'
+            }))
+            def dispatcher = new EditorKeyDispatcher({ true }, {
+                new EditorInputContext(lyrics.editable ? FocusArea.LYRICS_EDIT : FocusArea.LYRICS_VIEW,
+                        lyrics.editable, false, false, false, false, true, false)
+            }, registry, new KeySequenceTracker(500), { true })
+            table.prompt = {
+                // A modal prompt pumps queued events before rollRight returns.
+                def loop = Toolkit.defaultToolkit.systemEventQueue.createSecondaryLoop()
+                SwingUtilities.invokeLater { loop.exit() }
+                loop.enter()
+                area.focusListeners.each { it.focusLost(new FocusEvent(area, FocusEvent.FOCUS_LOST, true)) }
+                duringPrompt << lyrics.editable
+                def typed = new KeyEvent(area, KeyEvent.KEY_TYPED, 0, 0,
+                        KeyEvent.VK_UNDEFINED, splitKey as char)
+                if (!dispatcher.dispatchKeyEvent(typed)) {
+                    area.keyListeners.each { it.keyTyped(typed) }
+                }
+                consumed << typed.consumed
+            }
+            def takeSnapshot = {
+                snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+            }
+            takeSnapshot()
+            area.caretPosition = area.text.indexOf('ru') + 1
+            if (overwrite) {
+                def insert = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                        KeyEvent.VK_INSERT, KeyEvent.CHAR_UNDEFINED)
+                area.keyListeners.each { it.keyPressed(insert) }
+            }
+            def press = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                    splitKey == '-' ? KeyEvent.VK_MINUS : KeyEvent.VK_SPACE, splitKey as char)
+            area.keyListeners.each { it.keyPressed(press) }
+            consumed << press.consumed
+            takeSnapshot()
+            [KeyEvent.VK_Z, KeyEvent.VK_Y, KeyEvent.VK_Z].each { key ->
+                def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, KeyEvent.CTRL_DOWN_MASK,
+                        key, KeyEvent.CHAR_UNDEFINED)
+                area.keyListeners.each { it.keyPressed(event) }
+                takeSnapshot()
+            }
+            assert !table.canUndo()
+            lyrics.finishEditing()
+        }
+
+        then:
+        duringPrompt == [true]
+        timelineSplits.empty
+        consumed == [true, true]
+        snapshots == [original, expected, original, expected, original]
+        geometry.every { it == geometry.first() }
+
+        cleanup:
+        KeyboardFocusManager.setCurrentKeyboardFocusManager(previousFocusManager)
+
+        where:
+        splitKey | overwrite || expected
+        '-'      | false     || ['One ', 'r', 'u', '~ ']
+        '-'      | true      || ['One ', 'r', 'u', '~ ']
+        ' '      | false     || ['One ', 'r ', 'u', '~ ']
+        ' '      | true      || ['One ', 'r ', 'u', '~ ']
+    }
+
+    def 'typed lyric changes have no duplicate undo step'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> true }
+        def snapshots = []
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            model.addRow(new YassRow(':', '0', '5', '10', 'ru' + YassRow.SPACE))
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            def lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            area.document.insertString(1, 'a', null)
+            snapshots << table.getRowAt(0).text
+            lyrics.finishEditing()
+            table.undoRows()
+            snapshots << table.getRowAt(0).text
+            assert !table.canUndo()
+            table.redoRows()
+            snapshots << table.getRowAt(0).text
+        }
+
+        then:
+        snapshots == ['rau' + YassRow.SPACE, 'ru' + YassRow.SPACE, 'rau' + YassRow.SPACE]
+    }
+
+    def 'removing a lyric separator refreshes the text without recording empty lyrics'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> false }
+        def original = ['One', ' ru', 'les', '~']
+        def snapshots = []
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            original.eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 6) as String, '5', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new YassTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.addUndo()
+            def lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            area.caretPosition = area.text.indexOf('ru') + 2
+            def event = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                    KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED)
+            area.keyListeners.each { it.keyPressed(event) }
+            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+            lyrics.finishEditing()
+            table.undoRows()
+            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+            assert !table.canUndo()
+            table.redoRows()
+            snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+        }
+
+        then:
+        snapshots == [['One', ' rules', '~', '~'], original, ['One', ' rules', '~', '~']]
+    }
+
+    private static class PromptingRollTable extends YassTable {
+        Closure prompt
+
+        PromptingRollTable(YassTableModel model, YassProperties props) {
+            super(model, props)
+        }
+
+        @Override
+        void rollRight(char splitCode, int pos) {
+            prompt.call()
+            super.rollRight(splitCode, pos)
+        }
     }
 }

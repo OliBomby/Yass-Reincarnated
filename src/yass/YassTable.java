@@ -2458,7 +2458,6 @@ public class YassTable extends JTable {
         if (sheet != null) {
             sheet.init();
             sheet.update();
-            sheet.setBeatSize(undoElem.sheetBeatSize);
             restoreSheetViewportFromUndo(undoElem);
             restoreCurrentSheetViewport(currentSheetViewport);
             sheet.repaint();
@@ -2513,7 +2512,6 @@ public class YassTable extends JTable {
         if (sheet != null) {
             sheet.init();
             sheet.update();
-            sheet.setBeatSize(undoElem.sheetBeatSize);
             restoreSheetViewportFromUndo(undoElem);
             restoreCurrentSheetViewport(currentSheetViewport);
             sheet.repaint();
