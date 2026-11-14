@@ -86,6 +86,7 @@ public class YassSheetInfo extends JPanel {
 
     private enum OverviewDragMode { NONE, MOVE, RESIZE_LEFT, RESIZE_RIGHT }
     private OverviewDragMode overviewDragMode = OverviewDragMode.NONE;
+    private boolean timelineDragActive = false;
     private int overviewDragOffsetX = 0;
     private double overviewDragLeftMs = 0;
     private double overviewDragRightMs = 0;
@@ -116,6 +117,7 @@ public class YassSheetInfo extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                timelineDragActive = e.getY() >= txtBar;
                 if (sheet.isPlaying() || sheet.isTemporaryStop())
                     sheet.stopPlaying();
                 if (! isActiveTrack())
@@ -138,7 +140,7 @@ public class YassSheetInfo extends JPanel {
                 }
                 else if (isInErrorQuickArea(e.getX(), e.getY(), trackNameWidth) && hiliteCue == SHOW_ERRORS)
                     showErrors();
-                else {
+                else if (timelineDragActive) {
                     SwingUtilities.invokeLater(() -> {
                         boolean exact = e.isAltDown() || e.isControlDown() || e.getButton() == MouseEvent.BUTTON2|| e.getButton() == MouseEvent.BUTTON3;
                         moveTo(e.getX(), exact);
@@ -150,6 +152,7 @@ public class YassSheetInfo extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                timelineDragActive = false;
                 if (overviewDragMode != OverviewDragMode.NONE) {
                     overviewDragMode = OverviewDragMode.NONE;
                     overviewFixedEdgeX = -1;
@@ -169,6 +172,9 @@ public class YassSheetInfo extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (!timelineDragActive) {
+                    return;
+                }
                 if (handleOverviewMouseDragged(e)) {
                     return;
                 }
