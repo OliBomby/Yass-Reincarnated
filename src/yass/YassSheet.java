@@ -1100,6 +1100,7 @@ public class YassSheet extends JPanel implements YassPlaybackRenderer, Scrollabl
                 if (! isMousePressed)
                     return;
                 isMousePressed = false;
+                stopSlide();
 
                 if (table == null) {
                     return;
@@ -1312,9 +1313,11 @@ public class YassSheet extends JPanel implements YassPlaybackRenderer, Scrollabl
                 isMousePressed = true; // not while playing
                 int x = e.getX();
                 int y = e.getY();
+                int button = getButtonXY(x, y);
                 if (!isAbsolutePitchViewEnabled()
                         && YassTable.getZoomMode() == YassTable.ZOOM_ONE
-                        && dragMode != SLIDE) {
+                        && dragMode != SLIDE
+                        && button != PREV_SLIDE && button != NEXT_SLIDE) {
                     temporaryZoomOff = true;
                     YassTable.setZoomMode(YassTable.ZOOM_MULTI);
                 }
@@ -1347,14 +1350,13 @@ public class YassSheet extends JPanel implements YassPlaybackRenderer, Scrollabl
                     return;
 
                 }
-                int button = getButtonXY(x, y);
                 if (button != UNDEFINED) {
+                    hiliteCue = button | PRESSED_FLAG;
                     if (button == NEXT_SLIDE) {
                         startSlide(10);
                     } else if (button == PREV_SLIDE) {
                         startSlide(-10);
                     }
-                    hiliteCue = button | PRESSED_FLAG;
                     repaint();
                     // no further processing, because the actual event will be handled in mouseReleased()
                     return;
@@ -7959,37 +7961,39 @@ public class YassSheet extends JPanel implements YassPlaybackRenderer, Scrollabl
         scrollRectToVisible(i, j);
     }
 
-    private class SlideThread extends Thread {
-        private int off;
-        private int ticks = 0;
-        public boolean quit = false;
+    private Timer slideTimer = null;
 
-        public SlideThread(int off) {
-            this.off=off;
-        }
-        public void run() {
-            while (! quit && hiliteCue == PREV_SLIDE_PRESSED || hiliteCue == NEXT_SLIDE_PRESSED) {
-                if (off < 0)
-                    slideLeft(-off);
-                else slideRight(off);
-                ticks++;
-                if (ticks == 50)
-                    off *= 5;
-                try { Thread.sleep(40); } catch (Exception e) {}
+    private void startSlide(int off) {
+        stopSlide();
+        slideTimer = new Timer(40, new ActionListener() {
+            private int offset = off;
+            private int ticks = 0;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isMousePressed
+                        || (hiliteCue != PREV_SLIDE_PRESSED && hiliteCue != NEXT_SLIDE_PRESSED)) {
+                    return;
+                }
+                if (offset < 0) {
+                    slideLeft(-offset);
+                } else {
+                    slideRight(offset);
+                }
+                if (++ticks == 50) {
+                    offset *= 5;
                 }
             }
-        }
-    private SlideThread slideThread = null;
-
-    private void startSlide (int off) {
-        stopSlide();
-        slideThread = new SlideThread(off);
-        slideThread.start();
+        });
+        // Apply quick clicks immediately, then repeat on the Swing event thread.
+        slideTimer.getActionListeners()[0].actionPerformed(null);
+        slideTimer.start();
     }
+
     private void stopSlide() {
-        if (slideThread != null) {
-            slideThread.quit = true;
-            slideThread = null;
+        if (slideTimer != null) {
+            slideTimer.stop();
+            slideTimer = null;
         }
     }
 
