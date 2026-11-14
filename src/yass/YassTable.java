@@ -4017,27 +4017,13 @@ public class YassTable extends JTable {
             } else {
                 int scrollRow = i - 1;
                 if (add) {
-                    if (rows.length > 1) {
-                        int j = rows[rows.length - 2];
-                        while (!getRowAt(j).isNote()) {
-                            j--;
-                            if (j < i) {
-                                return;
-                            }
-                        }
-                        setRowSelectionInterval(i, j);
-                        scrollRow = j;
-                    } else {
-                        int j = i - 1;
-                        while (j >= 0 && !getRowAt(j).isNote()) {
-                            j--;
-                        }
-                        if (j < 0) {
-                            return;
-                        }
-                        setRowSelectionInterval(j, i);
-                        scrollRow = j;
+                    int j = findPreviousNoteAcrossPages(i);
+                    if (j < 0) {
+                        return;
                     }
+                    int endRow = rows.length > 0 ? rows[rows.length - 1] : j;
+                    setRowSelectionInterval(endRow, j);
+                    scrollRow = j;
                 } else {
                     setRowSelectionInterval(i - 1, i - 1);
                 }
@@ -4095,7 +4081,7 @@ public class YassTable extends JTable {
                             return;
                         }
                     }
-                    setRowSelectionInterval(rows[0], j);
+                    setRowSelectionInterval(rows.length > 0 ? rows[0] : j, j);
                 } else {
                     setRowSelectionInterval(i + 1, i + 1);
                 }
@@ -4162,25 +4148,23 @@ public class YassTable extends JTable {
     }
 
     public void extendSelectionDownToWordBoundary() {
-        int originalTailRow = getSelectionTailNoteRow();
-        if (originalTailRow < 0) {
+        int tailRow = getSelectionTailNoteRow();
+        if (tailRow < 0) {
             return;
         }
 
-        nextBeat(true);
-
-        int expandedTailRow = getSelectionTailNoteRow();
-        if (expandedTailRow < 0 || expandedTailRow == originalTailRow) {
-            return;
-        }
-
-        if (!isWordStartAtSelectionTail(expandedTailRow)) {
-            return;
+        int endRow = findWordEndFromStart(tailRow);
+        if (endRow == tailRow) {
+            int nextNoteRow = findNextNoteAcrossPages(tailRow);
+            if (nextNoteRow < 0) {
+                return;
+            }
+            endRow = findWordEndFromStart(nextNoteRow);
         }
 
         int startRow = getSelectionModel().getMinSelectionIndex();
-        int endRow = findWordEndFromStart(expandedTailRow);
-        setRowSelectionInterval(startRow, endRow);
+        setRowSelectionInterval(startRow >= 0 ? startRow : tailRow, endRow);
+        scrollSelectionToVisible(endRow);
         updatePlayerPosition();
         adjustMultiSize();
     }
@@ -4219,28 +4203,22 @@ public class YassTable extends JTable {
     }
 
     public void extendSelectionUpToWordBoundary() {
-        int originalHeadRow = getSelectionHeadNoteRow();
-        if (originalHeadRow < 0) {
+        int headRow = getSelectionHeadNoteRow();
+        if (headRow < 0) {
             return;
         }
 
-        prevBeat(true);
-
-        int expandedHeadRow = getSelectionHeadNoteRow();
-        if (expandedHeadRow < 0 || expandedHeadRow == originalHeadRow) {
-            return;
-        }
-
-        if (!isWordEndAtSelectionHead(expandedHeadRow)) {
-            return;
+        int startRow = findWordStartFromEnd(headRow);
+        if (startRow == headRow) {
+            int previousNoteRow = findPreviousNoteAcrossPages(headRow);
+            if (previousNoteRow < 0) {
+                return;
+            }
+            startRow = findWordStartFromEnd(previousNoteRow);
         }
 
         int endRow = getSelectionModel().getMaxSelectionIndex();
-        if (endRow < 0) {
-            endRow = expandedHeadRow;
-        }
-        int startRow = findWordStartFromEnd(expandedHeadRow);
-        setRowSelectionInterval(startRow, endRow);
+        setRowSelectionInterval(endRow >= 0 ? endRow : headRow, startRow);
         scrollSelectionToVisible(startRow);
         updatePlayerPosition();
         adjustMultiSize();
@@ -4326,14 +4304,6 @@ public class YassTable extends JTable {
     }
 
     private int getSelectionTailNoteRow() {
-        int leadSelectionIndex = getSelectionModel().getLeadSelectionIndex();
-        if (leadSelectionIndex >= 0) {
-            YassRow row = getRowAt(leadSelectionIndex);
-            if (row != null && row.isNote()) {
-                return leadSelectionIndex;
-            }
-        }
-
         int[] rows = getSelectedRows();
         if (rows != null) {
             for (int i = rows.length - 1; i >= 0; i--) {
@@ -4364,14 +4334,6 @@ public class YassTable extends JTable {
     }
 
     private int getSelectionHeadNoteRow() {
-        int leadSelectionIndex = getSelectionModel().getLeadSelectionIndex();
-        if (leadSelectionIndex >= 0) {
-            YassRow row = getRowAt(leadSelectionIndex);
-            if (row != null && row.isNote()) {
-                return leadSelectionIndex;
-            }
-        }
-
         int[] rows = getSelectedRows();
         if (rows != null) {
             for (int rowIndex : rows) {
@@ -4401,75 +4363,29 @@ public class YassTable extends JTable {
         return -1;
     }
 
-    private boolean isWordStartAtSelectionTail(int rowIndex) {
-        YassRow row = getRowAt(rowIndex);
-        if (row == null || !row.isNote()) {
-            return false;
-        }
-        if (!prop.isUncommonSpacingAfter()) {
-            return row.startsWithSpace();
-        }
-        int previousNoteRow = findPreviousNoteAcrossPages(rowIndex);
-        return previousNoteRow < 0 || getRowAt(previousNoteRow).endsWithSpace();
-    }
-
-    private boolean isWordEndAtSelectionHead(int rowIndex) {
-        YassRow row = getRowAt(rowIndex);
-        if (row == null || !row.isNote()) {
-            return false;
-        }
-        if (prop.isUncommonSpacingAfter()) {
-            return row.endsWithSpace();
-        }
-        int nextNoteRow = findNextNoteAcrossPages(rowIndex);
-        return nextNoteRow < 0 || getRowAt(nextNoteRow).startsWithSpace();
-    }
-
     private int findWordEndFromStart(int rowIndex) {
         int endRow = rowIndex;
-        if (prop.isUncommonSpacingAfter()) {
-            while (!getRowAt(endRow).endsWithSpace()) {
-                int nextNoteRow = findNextNoteInCurrentPage(endRow);
-                if (nextNoteRow < 0) {
-                    return endRow;
-                }
-                endRow = nextNoteRow;
-            }
-            return endRow;
-        }
-
-        while (true) {
+        // Navigation follows the song's spaces, independently of the correction preference.
+        while (!getRowAt(endRow).endsWithSpace()) {
             int nextNoteRow = findNextNoteInCurrentPage(endRow);
             if (nextNoteRow < 0 || getRowAt(nextNoteRow).startsWithSpace()) {
                 return endRow;
             }
             endRow = nextNoteRow;
         }
+        return endRow;
     }
 
     private int findWordStartFromEnd(int rowIndex) {
         int startRow = rowIndex;
-        if (prop.isUncommonSpacingAfter()) {
-            while (true) {
-                int previousNoteRow = findPreviousNoteInCurrentPage(startRow);
-                if (previousNoteRow < 0 || getRowAt(previousNoteRow).endsWithSpace()) {
-                    return startRow;
-                }
-                startRow = previousNoteRow;
-            }
-        }
-
-        while (true) {
-            YassRow currentRow = getRowAt(startRow);
-            if (currentRow.startsWithSpace()) {
-                return startRow;
-            }
+        while (!getRowAt(startRow).startsWithSpace()) {
             int previousNoteRow = findPreviousNoteInCurrentPage(startRow);
-            if (previousNoteRow < 0) {
+            if (previousNoteRow < 0 || getRowAt(previousNoteRow).endsWithSpace()) {
                 return startRow;
             }
             startRow = previousNoteRow;
         }
+        return startRow;
     }
 
     private int findNextNoteAcrossPages(int rowIndex) {

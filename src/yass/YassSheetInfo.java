@@ -94,6 +94,7 @@ public class YassSheetInfo extends JPanel {
     public YassSheetInfo(YassSheet s, int track) {
         super(true);
         setFocusable(false);
+        ToolTipManager.sharedInstance().registerComponent(this);
 
         this.sheet = s;
         this.track = track;
@@ -246,6 +247,14 @@ public class YassSheetInfo extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        if (isActiveTrack() && escalationHitRect != null && escalationHitRect.contains(event.getPoint())) {
+            return I18.get("edit_shift_arrow_escalation_tooltip");
+        }
+        return super.getToolTipText(event);
     }
 
     private Rectangle getOverviewRect() {
