@@ -4,6 +4,7 @@ import spock.lang.Specification
 import yass.autocorrect.YassAutoCorrect
 
 import javax.swing.JPanel
+import javax.swing.JButton
 import javax.swing.JScrollPane
 import javax.swing.JTextPane
 import javax.swing.JViewport
@@ -21,15 +22,19 @@ import yass.input.*
 
 class YassLyricsSpec extends Specification {
 
-    def 'Enter toggles a page break while editing lyrics and supports undo and redo'() {
+    def 'Enter and the page break button update lyrics and support undo and redo'() {
         given:
         I18.setDefaultLanguage()
-        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> spacingAfter }
+        def props = Stub(YassProperties) {
+            isUncommonSpacingAfter() >> spacingAfter
+            getBooleanProperty('use-sample') >> true
+        }
         def snapshots = []
         def displayedTexts = []
         def geometry = []
         boolean consumed
         YassLyrics lyrics
+        YassActions actions
 
         when:
         SwingUtilities.invokeAndWait {
@@ -52,6 +57,11 @@ class YassLyricsSpec extends Specification {
             lyrics = new YassLyrics(props)
             lyrics.setAutoCorrect(Stub(YassAutoCorrect))
             lyrics.setTable(table)
+            if (useButton) {
+                actions = new YassActions(new YassSheet(),
+                        Stub(YassPlayer, constructorArgs: [null, props]), lyrics)
+                actions.setTable(table)
+            }
             lyrics.editLyrics()
             def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
                     .viewport.view as JTextPane
@@ -64,8 +74,14 @@ class YassLyricsSpec extends Specification {
             takeSnapshot()
             def enter = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
                     KeyEvent.VK_ENTER, '\n' as char)
-            area.keyListeners.each { it.keyPressed(enter) }
-            consumed = enter.consumed
+            if (useButton) {
+                def button = new JButton(actions.getTogglePageBreak())
+                button.focusable = false
+                button.doClick(0)
+            } else {
+                area.keyListeners.each { it.keyPressed(enter) }
+                consumed = enter.consumed
+            }
             assert lyrics.editable
             takeSnapshot()
             [KeyEvent.VK_Z, KeyEvent.VK_Y].each { key ->
@@ -80,7 +96,7 @@ class YassLyricsSpec extends Specification {
         }
 
         then:
-        consumed
+        useButton || consumed
         snapshots == (existingBreak ? [1, 0, 1, 0] : [0, 1, 0, 1])
         displayedTexts.collect { it.contains('\n') } == snapshots.collect { it == 1 }
         displayedTexts[2] == displayedTexts[0]
@@ -89,13 +105,20 @@ class YassLyricsSpec extends Specification {
 
         cleanup:
         SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+        if (actions != null) {
+            KeyboardFocusManager.currentKeyboardFocusManager.removeKeyEventDispatcher(actions.editorKeyDispatcher)
+        }
 
         where:
-        spacingAfter | existingBreak
-        false        | false
-        false        | true
-        true         | false
-        true         | true
+        spacingAfter | existingBreak | useButton
+        false        | false         | false
+        false        | true          | false
+        true         | false         | false
+        true         | true          | false
+        false        | false         | true
+        false        | true          | true
+        true         | false         | true
+        true         | true          | true
     }
 
     def 'an arrow arriving during the F4 switch cannot move the lyrics cursor to the start'() {

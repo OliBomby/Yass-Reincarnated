@@ -2663,7 +2663,15 @@ public class YassActions implements DropTargetListener {
     private final Action togglePageBreak = new AbstractAction(I18.get("edit_break")) {
         public void actionPerformed(ActionEvent e) {
             interruptPlay();
+            boolean editingLyrics = lyrics.isEditable();
+            if (editingLyrics) {
+                // Allow the lyrics display to follow the changed page boundary.
+                lyrics.finishEditing();
+            }
             table.togglePageBreak();
+            if (editingLyrics) {
+                lyrics.editLyrics();
+            }
         }
     };
     private final Action removePageBreak = new AbstractAction(I18.get("edit_break_remove")) {
