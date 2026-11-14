@@ -60,6 +60,50 @@ class YassTableSpec extends Specification {
         yassTable.getSelectedRows() == [1, 2] as int[]
     }
 
+    def 'merging a split line-ending note restores its lyrics without a continuation marker'() {
+        given:
+        YassRow followingRow = lineBreak
+                ? new YassRow('-', '10', '', '', '')
+                : new YassRow('E', '', '', '', '')
+        List<YassRow> rows = [note(':', 0, 8, 10, text)]
+        if (lineBreak) {
+            rows.add(followingRow)
+            rows.add(note(':', 12, 4, 10, 'Next '))
+        }
+        YassTable yassTable = tableForGoldenSuggestions(rows)
+        followingRow = yassTable.getRowAt(1)
+        int originalRowCount = yassTable.getRowCount()
+        yassTable.setAutoCorrect(Stub(YassAutoCorrect) {
+            isTouchingSyllables() >> true
+        })
+        yassTable.setHyphenator(Stub(YassHyphenator) {
+            hyphenateWord(_ as String) >> { String word -> word }
+        })
+        yassTable.setRowSelectionInterval(0, 0)
+        yassTable.splitRows()
+
+        expect:
+        yassTable.getRowCount() == originalRowCount + 1
+        yassTable.getRowAt(1).getText().startsWith('~')
+        yassTable.getRowAt(1).endsWithSpace()
+
+        when:
+        yassTable.setRowSelectionInterval(merge == 'joinLeft' ? 1 : 0, merge == 'joinLeft' ? 1 : 0)
+        yassTable."$merge"()
+
+        then:
+        yassTable.getRowCount() == originalRowCount
+        yassTable.getRowAt(0).getText() == text.replace(' ' as char, YassRow.SPACE)
+        yassTable.getRowAt(0).getBeatInt() == 0
+        yassTable.getRowAt(0).getLengthInt() == 8
+        yassTable.getRowAt(0).getHeightInt() == 10
+        yassTable.getRowAt(1).is(followingRow)
+
+        where:
+        [merge, text, lineBreak] << [['joinLeft', 'joinRight', 'joinRows'],
+                                    ['is ', 'wind, ', 'hi! '], [true, false]].combinations()
+    }
+
     def 'splitRowsByPitch splits a held syllable at the first stable pitch segment change'() {
         given:
         YassTable yassTable = tableWithSingleNote(690, 14, 1, 'down ')

@@ -15,6 +15,9 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   in its detected pitch. When pitch or text information is insufficient or
   ambiguous, the normal split behavior is used as the fallback.
 - Existing continuation text such as `~n` stays on the right when split again.
+- Merging a split note at the end of a line removes the continuation marker
+  introduced by the split, preserving its lyric text, punctuation, and trailing
+  spacing. This applies to merging left, right, or selected notes.
 - In lyrics editing mode (`F4`), pressing `-` inside a syllable splits its text
   at the caret and shifts subsequent lyrics one note to the right. It must not
   insert `~` before the whole syllable instead.
@@ -63,6 +66,9 @@ syllables sung across multiple pitches and text split at the lyrics caret.
   used.
 - Split an existing `~n` continuation again. The continuation text remains on
   the right-hand note.
+- Split a line-ending note containing `is ` and merge the parts again. The
+  merged note contains `is `, without a trailing `~`. Repeat with `wind, `;
+  merging restores `wind, ` with its consonants, comma, and trailing space.
 
 ## Scope And Constraints
 

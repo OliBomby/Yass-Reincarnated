@@ -8702,8 +8702,8 @@ public class YassTable extends JTable {
         r.setHeight(r2.getHeightInt());
 
         String txt = r2.getText();
-        if (txt.equals("~")) {
-            txt = "";
+        if (txt.startsWith("~")) {
+            txt = txt.substring(1);
         }
         r.setText(r.getText() + txt);
 
@@ -8735,8 +8735,8 @@ public class YassTable extends JTable {
         r.setLength(w2);
 
         String txt = r2.getText();
-        if (txt.equals("~")) {
-            txt = "";
+        if (txt.startsWith("~")) {
+            txt = txt.substring(1);
         }
         r.setText(r.getText() + txt);
 
