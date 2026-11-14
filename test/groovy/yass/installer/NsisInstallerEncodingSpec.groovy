@@ -21,7 +21,7 @@ class NsisInstallerEncodingSpec extends Specification {
         and:
         String script = installerScript()
         script.contains('Kontextmenüeintrag für Textdateien')
-        script.contains('Yass Reloaded ya está instalado. $\\n$\\nElija `OK`')
+        script.contains('Yass Reincarnated ya está instalado. $\\n$\\nElija `OK`')
     }
 
     def 'installer avoids stale jpackage app images during upgrades without running old uninstaller'() {
@@ -29,7 +29,7 @@ class NsisInstallerEncodingSpec extends Specification {
         String script = installerScript()
 
         expect:
-        script.contains('InstallDirRegKey HKLM "SOFTWARE\\Yass Reloaded" "installdir"')
+        script.contains('InstallDirRegKey HKLM "SOFTWARE\\Yass Reincarnated" "installdir"')
         !script.contains('ExecWait \'"$R0"\'')
         !script.contains("ExecWait '\$R0 /UPGRADE'")
         script.contains('RMDir /r "$INSTDIR\\app"')
@@ -37,7 +37,7 @@ class NsisInstallerEncodingSpec extends Specification {
 
         and:
         script.findAll(/File \/r "dist-img\\yass\\\*\.\*"/).size() == 1
-        script.contains('WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Yass Reloaded" "UninstallString" \'"$INSTDIR\\uninstall.exe"\'')
+        script.contains('WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Yass Reincarnated" "UninstallString" \'"$INSTDIR\\uninstall.exe"\'')
     }
 
     def 'upgrade uninstall path never offers to delete user settings'() {

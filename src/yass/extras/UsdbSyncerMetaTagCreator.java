@@ -1,5 +1,5 @@
 /*
- * Yass Reloaded - Karaoke Editor
+ * Yass Reincarnated - Karaoke Editor
  * Copyright (C) 2009-2023 Saruta
  * Copyright (C) 2023 DoubleDee
  *
@@ -821,8 +821,8 @@ public class UsdbSyncerMetaTagCreator extends JDialog {
             connection.setConnectTimeout(IMAGE_DOWNLOAD_CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(IMAGE_DOWNLOAD_READ_TIMEOUT_MS);
             connection.setRequestProperty("Accept", "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8");
-            connection.setRequestProperty("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion()
-                    + " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+            connection.setRequestProperty("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion()
+                    + " ( https://github.com/OliBomby/Yass-Reincarnated )");
             connection.setRequestProperty("Connection", "close");
             LOGGER.info("Image download request: url=" + imageUrl
                     + ", route=" + (direct ? "[DIRECT fallback]" : describeImageDownloadRoute(imageUrl))

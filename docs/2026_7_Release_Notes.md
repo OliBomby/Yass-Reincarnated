@@ -1,4 +1,6 @@
-# Yass Reloaded 2026.7 Release Notes
+# Yass Reincarnated 2026.7 Release Notes
+
+These changes were inherited from Yass Reloaded.
 
 These release notes summarize the **user-facing changes** planned for `2026.7_release`.
 
@@ -19,13 +21,13 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
   - Aubio is required for automatic analysis; manual corrections still work without Aubio.
   - Small offsets below 5 cents are reported as "no correction needed".
 - Pitch correction is stored per song.
-  - Yass writes the correction into the song's `#COMMENT` data as `pitchShiftCents`.
+  - Yass Reincarnated writes the correction into the song's `#COMMENT` data as `pitchShiftCents`.
   - Playback uses a temporary corrected audio file, so the original files are not changed just by trying the feature.
   - When a non-zero correction is active, a small cents field appears in the editor toolbar for quick adjustments.
 - The correction can also be made permanent.
   - Use **Render to Files...** in the Pitch Shift dialog.
   - FFmpeg is required for rendering.
-  - Yass creates new shifted audio files, keeps the originals, updates the song to point to the new files, and removes the stored live correction so it is not applied twice.
+  - Yass Reincarnated creates new shifted audio files, keeps the originals, updates the song to point to the new files, and removes the stored live correction so it is not applied twice.
 - Pitch lines and melody alignment now stay in sync with pitch-shifted playback.
   - Previously, the detected pitch view could apply the correction twice in some cases.
 
@@ -34,13 +36,13 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
 - New **Set Pitch From Microphone** action in the editor.
   - Configure a microphone first in `Extras -> Preferences... -> Editor -> Control`.
   - If the microphone is too quiet or too sensitive, adjust **Mic sensitivity** on the same settings page.
-  - Devices are detected at startup, so reconnecting a microphone may require restarting Yass Reloaded before it appears.
+  - Devices are detected at startup, so reconnecting a microphone may require restarting Yass Reincarnated before it appears.
   - If no microphone is configured yet, the on-screen hint now names this path and can be dismissed with `Esc`.
 - To use it:
   - select one note or several notes
   - press `Ctrl-Shift-M` or choose the menu action
   - sing or hum the intended pitch
-  - Yass applies the detected pitch to the selected note(s)
+  - Yass Reincarnated applies the detected pitch to the selected note(s)
 - While listening:
   - `Up` / `Down` shifts the detection window by octave
   - selecting another note accepts the current pitch and continues on the new selection
@@ -52,7 +54,7 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
 
 - The Create Song Wizard can now use YouTube subtitles more reliably as transcript input.
   - Start from a YouTube URL as usual.
-  - If subtitles are downloaded, Yass can keep the selected subtitle file for the final song creation step.
+  - If subtitles are downloaded, Yass Reincarnated can keep the selected subtitle file for the final song creation step.
   - Manual subtitles are preferred over auto-generated subtitles when both are available.
 - Subtitle data can be used as a fallback transcript.
   - This helps when no full OpenAI or WhisperX transcription was run.
@@ -67,7 +69,7 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
 
 - **Align to Melody** and transcript-based note rebuilding are more vocal-aware.
   - This especially helps lyrics coming from subtitles, local `.lrc` files, LRCLib, OpenAI, or WhisperX.
-  - Yass can use vocal pitch and energy data to place words closer to the actually sung timing.
+  - Yass Reincarnated can use vocal pitch and energy data to place words closer to the actually sung timing.
 - Better handling of song starts and page boundaries.
   - Songs with `#GAP:0` can scan for the first real vocal entry instead of anchoring to intro dialog or bleed.
   - The first note after a page break can use a nearby unused vocal pitch island instead of leaving that sung bit unassigned.
@@ -84,7 +86,7 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
   - Configure your MVSEP API token first.
   - Open a song that already has a usable `#VOCALS` file.
   - Choose `Extras -> Remove Reverb (MVSEP)`.
-  - Yass uploads the current vocals track, downloads the de-reverbed result into the song folder, and asks whether it should become the new `#VOCALS` file.
+  - Yass Reincarnated uploads the current vocals track, downloads the de-reverbed result into the song folder, and asks whether it should become the new `#VOCALS` file.
 - Reverb Removal is kept separate from the normal MVSEP stem-separation model list, so it no longer appears as if it were a normal separation preset.
 - The reverb-removal status dialog supports progress output and cancellation in the same style as other separation actions.
 
@@ -102,7 +104,7 @@ These release notes summarize the **user-facing changes** planned for `2026.7_re
 ## USDB And Library Workflows
 
 - USDB compare/edit now detects solo-vs-duet mismatches.
-  - If the local song and the selected USDB song are different solo/duet variants, Yass no longer tries to compare incompatible text.
+  - If the local song and the selected USDB song are different solo/duet variants, Yass Reincarnated no longer tries to compare incompatible text.
   - Forced mismatches show a clear message.
   - Automatic compare can fall back to search so the correct variant can be selected.
 - The USDB Syncer metadata dialog is easier to use for long fields.

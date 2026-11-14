@@ -1,5 +1,5 @@
 /*
- * Yass Reloaded - Karaoke Editor
+ * Yass Reincarnated - Karaoke Editor
  * Copyright (C) 2009-2023 Saruta
  * Copyright (C) 2023 DoubleDee
  *
@@ -66,8 +66,8 @@ public class MusicBrainz {
         URI uri = new URI(urlStr);
         HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
         conn.setRequestMethod("GET");
-        conn.setRequestProperty("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion() +
-                " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+        conn.setRequestProperty("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion() +
+                " ( https://github.com/OliBomby/Yass-Reincarnated )");
 
         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

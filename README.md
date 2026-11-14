@@ -1,30 +1,32 @@
-<meta name="description" content="Yass Reloaded is a free, open-source Karaoke editor for Ultrastar songs. Finetune notes, edit lyrics, and manage your song library. Available for Windows, macOS, and Linux.">
-<meta name="keywords" content="Yass, Yass Reloaded, Karaoke, Karaoke Editor, Ultrastar, Ultrastar Deluxe, Song Editor, Lyrics Editor, Open Source, Java, Windows, macOS, Linux">
+<meta name="description" content="Yass Reincarnated is a free, open-source Karaoke editor for Ultrastar songs. Finetune notes, edit lyrics, and manage your song library. Available for Windows, macOS, and Linux.">
+<meta name="keywords" content="Yass, Yass Reincarnated, Karaoke, Karaoke Editor, Ultrastar, Ultrastar Deluxe, Song Editor, Lyrics Editor, Open Source, Java, Windows, macOS, Linux">
 
-# Yass Reloaded – Open-Source Karaoke Editor for UltraStar Songs
-Documentation: [https://doubledee73.github.io/Yass-Reloaded/](https://doubledee73.github.io/Yass-Reloaded/)
+# Yass Reincarnated – Open-Source Karaoke Editor for UltraStar Songs
+Documentation: [https://olibomby.github.io/Yass-Reincarnated/](https://olibomby.github.io/Yass-Reincarnated/)
 
 ## Tutorial Videos
+
+These upstream Yass Reloaded tutorials also cover the inherited editor workflows:
 
 - English: [Yass Reloaded Tutorial](https://youtu.be/7sSvb6YL70Y)
 - German: [Yass Reloaded Tutorial (Deutsch)](https://youtu.be/IB4ik6cxEUY)
 
-## What is Yass Reloaded?
+## What is Yass Reincarnated?
 
-Yass Reloaded is a free, open-source karaoke editor for creating, editing, and maintaining UltraStar and UltraStar Deluxe song files.  
+Yass Reincarnated is a free, open-source karaoke editor for creating, editing, and maintaining UltraStar and UltraStar Deluxe song files.
 It allows karaoke creators to precisely edit notes, timing, and lyrics, manage large song libraries, and fix common errors in existing karaoke tracks.
 
 The application is written in Java and runs on Windows, macOS, and Linux.  
 It is actively developed and based on modern Java (Java 21).
 
-Yass Reloaded provides a graphical user interface for fine-tuning UltraStar karaoke songs.
+Yass Reincarnated provides a graphical user interface for fine-tuning UltraStar karaoke songs.
 You can drag and drop notes, adjust syllables, correct timing issues, and quickly detect common formatting errors.
 
-In addition, Yass Reloaded offers powerful tools for managing karaoke libraries, including filtering, mass-tagging, and batch correction of song metadata.
+In addition, Yass Reincarnated offers powerful tools for managing karaoke libraries, including filtering, mass-tagging, and batch correction of song metadata.
 
 ## Who is this for?
 
-Yass Reloaded is designed for:
+Yass Reincarnated is designed for:
 - UltraStar karaoke song creators
 - Karaoke enthusiasts who want to edit lyrics and timing precisely
 - Users maintaining large UltraStar song libraries
@@ -35,13 +37,13 @@ Yass Reloaded is designed for:
 *   **Graphical Note and Lyric Editing:** Easily drag and drop notes, adjust timing, and edit lyrics with a user-friendly interface.
 *   **Advanced Song Management:** Filter your song library, batch-edit tags, and organize your collection efficiently.
 *   **Error Detection:** Automatically finds common errors in your karaoke files to ensure they play perfectly.
-*   **Wide Audio Format Support:** Thanks to FFmpeg integration, Yass Reloaded supports a vast range of audio formats, including AAC, OGG, and OPUS.
+*   **Wide Audio Format Support:** Thanks to FFmpeg integration, Yass Reincarnated supports a vast range of audio formats, including AAC, OGG, and OPUS.
 *   **Improved User Experience:** Numerous tweaks and improvements make the editing process faster and more intuitive.
 *   **Modern and Actively Developed:** Built on Java 21 and continuously updated with new features and bug fixes.
 
 ## Supported Languages
 
-Yass Reloaded has been localized to:
+Yass Reincarnated has been localized to:
 - English
 - German
 - French
@@ -50,11 +52,13 @@ Yass Reloaded has been localized to:
 - Hungarian
 
 French has just recently been added and been translated by AI. Please let me know, if you find any mistakes or missing translations.
-If you want to help me localize Yass Reloaded to your language, please let me know as well.
+If you want to help me localize Yass Reincarnated to your language, please let me know as well.
 
 ## Project Background
-Yass Reloaded is a fork of Yass 2.4.3, originally developed by Saruta since 2009.  
-Due to limited maintenance and different development goals, this fork was created to modernize the codebase, improve usability, and actively incorporate new UltraStar format extensions.
+Yass Reincarnated is a fork of [Yass Reloaded](https://github.com/DoubleDee73/Yass-Reloaded)
+by DoubleDee. Yass Reloaded is based on Yass 2.4.3, originally developed by Saruta
+since 2009, and modernized the codebase to Java 21. This fork continues that work
+under the Yass Reincarnated name.
 
 ## Differences Compared to the Original Yass
 - Extended audio format support via FFmpeg (AAC, OGG, OPUS and more)
@@ -66,14 +70,14 @@ Due to limited maintenance and different development goals, this fork was create
 ## Downloads
 
 Prebuilt binaries for Windows, macOS, and Linux are available in the GitHub
-[Release Section](https://github.com/DoubleDee73/Yass/releases)
+[Release Section](https://github.com/OliBomby/Yass-Reincarnated/releases)
 
 ### Windows
 
 **Recommended:**  
 Download and run the Windows installer:
 
-- `yass-installer-2026.7.exe`
+- `yass-reincarnated-installer.exe`
 
 Java is bundled. No manual setup required.
 
@@ -81,8 +85,8 @@ Java is bundled. No manual setup required.
 
 Download the macOS build matching your system:
 
-- Apple Silicon (M1/M2/M3): `yass-macos-arm64.dmg`
-- Intel Macs: `yass-macos-x64.dmg`
+- Apple Silicon (M1/M2/M3): `yass-reincarnated-macos-arm64.dmg`
+- Intel Macs: `yass-reincarnated-macos-x64.dmg`
 
 Java is bundled.
 
@@ -92,9 +96,9 @@ If macOS blocks the app:
 ### Linux
 
 Options:
-- Debian/Ubuntu: `yass-linux-amd64.deb`
-- Nix-based Linux package: `yass-linux-x86_64-nix.tar.gz`
-- or run the Fat JAR `Yass-Reloaded.jar` (see below)
+- Debian/Ubuntu: `yass-reincarnated-linux-amd64.deb`
+- Nix-based Linux package: `yass-reincarnated-linux-x86_64-nix.tar.gz`
+- or run the Fat JAR `Yass-Reincarnated.jar` (see below)
 
 FFmpeg must be installed via your package manager.
 
@@ -103,27 +107,27 @@ FFmpeg must be installed via your package manager.
 If no native build is available, you can use the Fat JAR:
 
 ```bash
-java -jar Yass-Reloaded.jar
+java -jar Yass-Reincarnated.jar
 ```
 ### Requirements for starting the JAR
 Minimum requirement is Java 21.
 
-Yass Reloaded also requires FFmpeg to support a variety of audio formats.
+Yass Reincarnated also requires FFmpeg to support a variety of audio formats.
 https://www.ffmpeg.org/download.html
 - Windows (`winget install --id=Gyan.FFmpeg -e`) - Check out: https://www.gyan.dev/ffmpeg/builds/
 - MacOS (`brew install ffmpeg`)
 - Linux (`sudo apt install ffmpeg`)
 
-# Starting Yass Reloaded
-If you install Yass Reloaded with the Windows installer, you can simply run `yass.exe`
+# Starting Yass Reincarnated
+If you install Yass Reincarnated with the Windows installer, you can simply run `yass.exe`
 
 If you use one of the packaged builds (`.exe`, `.dmg`, `.deb`, or the Linux Nix package), no manual JavaFX setup is required.
 
 Alternatively, you can download the jar file and start it from the console:
 
-On Windows, you can simply do this: `java -jar Yass-Reloaded.jar`
+On Windows, you can simply do this: `java -jar Yass-Reincarnated.jar`
 
-On macOS/Linux, `java -jar Yass-Reloaded.jar` also works if your Java installation already includes JavaFX.
+On macOS/Linux, `java -jar Yass-Reincarnated.jar` also works if your Java installation already includes JavaFX.
 
 Only if you use a plain JDK without JavaFX, add a JavaFX SDK manually, for example:
 
@@ -131,7 +135,7 @@ Only if you use a plain JDK without JavaFX, add a JavaFX SDK manually, for examp
 
 and start the jar like this:
 
-`java --module-path $PATH_TO_FX --add-modules javafx.swing,javafx.media -jar Yass-Reloaded-2026.7.jar`
+`java --module-path $PATH_TO_FX --add-modules javafx.swing,javafx.media -jar Yass-Reincarnated.jar`
 
 # Developers
 
@@ -155,14 +159,14 @@ sh ./mvnw compile exec:exec
 Run tests with `.\mvnw.cmd -q test`, or a single Spock spec with
 `.\mvnw.cmd -q "-Dtest=YassRowSpec" test`. Package the application with
 `.\mvnw.cmd -q -DskipTests package`; the resulting JAR is
-`target/Yass-Reloaded.jar`. On macOS/Linux, use `sh ./mvnw` in place of
+`target/Yass-Reincarnated.jar`. On macOS/Linux, use `sh ./mvnw` in place of
 `.\mvnw.cmd` for these commands.
 
 FFmpeg and ffprobe are needed for media handling; see the requirements above.
 Implemented feature specs and code entry points live in `specs/`, and tests live
 in `test/groovy/`.
 
-# Yass Reloaded uses
+# Yass Reincarnated uses
 - Java Look & Feel Graphics Repository
 - FFmpeg
 - [jAudiotagger](https://www.jthink.net/jaudiotagger)
@@ -193,13 +197,13 @@ You should select the package WITHOUT bundled ffMpeg
 
 ## MVSEP
 MVSEP can be configured in `External Tools > MVSEP` and is used for cloud-based stem separation.
-Yass Reloaded can upload the current `#AUDIO` file, monitor the separation job, download the finished stems into the 
+Yass Reincarnated can upload the current `#AUDIO` file, monitor the separation job, download the finished stems into the
 song folder, and link `#VOCALS` / `#INSTRUMENTAL` automatically when possible.
 https://mvsep.com/
 
 # License
 
-Copyright (C) 2009-2023 Saruta, 2023-2026 DoubleDee 
+Copyright (C) 2009-2023 Saruta, 2023-2026 DoubleDee, 2026 OliBomby
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -215,26 +219,26 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # Support
-If you like this  app, feel free (but not pressured!) to buy me coffee. Any support is very much appreciated!
+To support DoubleDee's upstream Yass Reloaded work, you can use the donation link below.
 
 <a target="_blank" rel="noopener noreferrer" href="https://www.buymeacoffee.com/DoubleDee73"><img src="https://github.com/user-attachments/assets/a40f851a-2ef1-46ce-a6d6-0bf6fd0ffb95" alt="image" style="max-width: 100%; width: 200px;"></a>
 
 # Troubleshooting
-## Yass Reloaded does nothing after showing the splash screen
+## Yass Reincarnated does nothing after showing the splash screen
 - Have you checked your Java version? 
   - Open a command line window and type in `java -version`. 
   - You should have Java 21
 - Have you tried opening it as a jar?
-  - Download the jar, open a command line window and type in `java -jar Yass-Reloaded-2026.7.jar`
+  - Download the jar, open a command line window and type in `java -jar Yass-Reincarnated.jar`
   - Any error messages are then printed out in the command line window for debugging
 
 ## Cannot find FFmpeg?
-Yass Reloaded has a built-in auto-detection for FFmpeg. 
+Yass Reincarnated has a built-in auto-detection for FFmpeg.
 It will look in any PATH environment variables and try to find both ffmpeg and ffprobe.  
 If you are sure, you have installed ffmpeg, maybe you did not choose to have the PATH variable automatically configured.  
 If this is the cae, then it is recommended, that you add the FFmpeg path to your PATH variables
 
-You can also add the path to FFmpeg to the Yass Reloaded configuration file. The user.xml should be in the ~/.yass/ folder
+You can also add the path to FFmpeg to the Yass Reincarnated configuration file. The user.xml should be in the ~/.yass/ folder
 
 There should be an entry:
 
@@ -250,8 +254,8 @@ or
 
 depending on your OS.
 
-It is also possible, that when you use Automator on Mac to start Yass Reloaded, 
+It is also possible, that when you use Automator on Mac to start Yass Reincarnated,
 that due to restrictions to the PATH variables, the auto-detection fails.
 
-In this case, start Yass Reloaded from the console. If FFmpeg is then detected, the path
+In this case, start Yass Reincarnated from the console. If FFmpeg is then detected, the path
 will be written into the user.xml, and you can use Automator again.

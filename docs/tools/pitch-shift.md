@@ -30,7 +30,7 @@ is never hidden.
 
 - **Analyze** is available when Aubio is configured and an audio track is loaded.
 - Analysis is always an explicit action — loading audio never scans automatically.
-- Yass prefers the `#INSTRUMENTAL` track when the song declares one, because a
+- Yass Reincarnated prefers the `#INSTRUMENTAL` track when the song declares one, because a
   fixed-pitch instrument holds tuning far better than a sung vocal.
 - The dialog shows the **detected source offset** and, when the measurement is
   marginal, a **low-confidence** note.
@@ -38,7 +38,7 @@ is never hidden.
   meaningfully audible.
 
 If a recording's tuning drifts over time rather than sitting at one consistent
-offset, Yass reports that no single reliable correction exists. A global pitch
+offset, Yass Reincarnated reports that no single reliable correction exists. A global pitch
 shift can only fix a uniform offset.
 
 ## Applying a Correction
@@ -78,7 +78,7 @@ Hearing the correction happens in two stages.
 
 - Playback is automatically heard already corrected.
 - Your original audio files are never touched — the shift lives only in a
-  throwaway temporary file Yass uses for playback.
+  throwaway temporary file Yass Reincarnated uses for playback.
 - Changing the value re-converts the playback audio so the next playback reflects
   it. This is "apply then hear", not real-time scrubbing; an unchanged value
   replays instantly from cache.
@@ -88,7 +88,7 @@ Hearing the correction happens in two stages.
 - **Render to Files…** bakes the current correction into new audio files. It is
   available only when a non-zero correction is stored and an FFmpeg backend is
   available.
-- Yass renders shifted copies of every audio file referenced by the song
+- Yass Reincarnated renders shifted copies of every audio file referenced by the song
   (`#AUDIO`, `#VOCALS`, `#INSTRUMENTAL`) with collision-safe names and never
   overwrites the originals.
 - On full success the song points at the new files and the stored correction is

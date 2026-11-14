@@ -2,12 +2,14 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. MVSEP output choices include Ogg/Vorbis and Ogg/Opus as
 local targets.
 
 ## Purpose
 
-MVSEP does not need to provide Ogg variants directly. Yass can request WAV stems
+MVSEP does not need to provide Ogg variants directly. Yass Reincarnated can request WAV stems
 from MVSEP and transcode them locally with FFmpeg so users can keep smaller open
 audio files in song folders.
 
@@ -29,7 +31,7 @@ audio files in song folders.
 - `Ogg/Opus` stores property value `ogg-opus`.
 - For both Ogg targets, the remote MVSEP request uses WAV as the API output
   format.
-- After download, Yass transcodes WAV stems to the requested local target.
+- After download, Yass Reincarnated transcodes WAV stems to the requested local target.
 - `SeparationResult` must point to the final Ogg/Opus files, not the
   intermediate WAV files.
 - In editor mode, successful intermediate WAV files are moved into the editor

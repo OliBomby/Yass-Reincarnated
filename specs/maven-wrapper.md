@@ -6,7 +6,7 @@ Implemented/current. Apache Maven Wrapper 3.3.4 pins Maven 3.9.16.
 
 ## Purpose
 
-Let Yass Reloaded contributors build with a consistent Maven version without
+Let Yass Reincarnated contributors build with a consistent Maven version without
 installing Maven separately.
 
 ## User-Facing Behavior

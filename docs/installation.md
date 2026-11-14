@@ -4,7 +4,7 @@ title: Installation
 
 # Installation
 
-Yass Reloaded runs on Windows, macOS, and Linux.
+Yass Reincarnated runs on Windows, macOS, and Linux.
 
 ## Recommended Approach
 
@@ -12,7 +12,7 @@ For most users, the easiest option is to use the packaged release from the GitHu
 
 ## Windows
 
-The recommended option is the Windows installer from the [Releases](https://github.com/DoubleDee73/Yass-Reloaded/releases) page.
+The recommended option is the Windows installer from the [Releases](https://github.com/OliBomby/Yass-Reincarnated/releases) page.
 
 - Java is bundled
 - no manual runtime setup is usually required
@@ -42,7 +42,7 @@ If you run the JAR manually, Java 21 is required.
 Example:
 
 ```bash
-java -jar Yass-Reloaded.jar
+java -jar Yass-Reincarnated.jar
 ```
 
 ## FFmpeg
@@ -55,7 +55,7 @@ Typical installation:
 - macOS: `brew install ffmpeg`
 - Linux: install via your package manager
 
-If Yass Reloaded cannot find FFmpeg, check:
+If Yass Reincarnated cannot find FFmpeg, check:
 
 - PATH configuration
 - `External Tools -> Locations`

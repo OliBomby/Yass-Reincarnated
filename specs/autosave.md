@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. A per-song background timer writes a `.bak` backup of the
 open song at a fixed interval. Autosave never mutates the live table model and
 never shows blocking dialogs, so it does not interrupt active editing.

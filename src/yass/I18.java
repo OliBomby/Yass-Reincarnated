@@ -219,12 +219,15 @@ public class I18 {
     @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     public static String getCopyright(String version, String date) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><body><font style=\"font-family: Arial; font-size:2em\"><u>Yass</u> Reloaded</font> by DoubleDee<br>Version: " + version + " (" + date + ")<br>");
-        sb.append("<a href=\"https://github.com/DoubleDee73/Yass\">https://github.com/DoubleDee73/Yass</a><br>");
+        sb.append("<html><body><font style=\"font-family: Arial; font-size:2em\"><u>Yass Reincarnated</u></font> by OliBomby<br>Version: " + version + " (" + date + ")<br>");
+        sb.append("<a href=\"https://github.com/OliBomby/Yass-Reincarnated\">https://github.com/OliBomby/Yass-Reincarnated</a><br>");
         sb.append("<br>");
-        sb.append("Copyright ©2025 DoubleDee<br>");
+        sb.append("Copyright ©2026 OliBomby<br>");
+        sb.append("Copyright ©2023-2026 DoubleDee<br>");
+        sb.append("Copyright ©2009-2023 Saruta<br>");
         sb.append("<br>");
-        sb.append("Forked from <a href=\"https://yass-along.com/\">Yass 2.4.3</a> by Saruta<br>");
+        sb.append("Forked from <a href=\"https://github.com/DoubleDee73/Yass-Reloaded\">Yass Reloaded</a> by DoubleDee<br>");
+        sb.append("Originally based on <a href=\"https://yass-along.com/\">Yass 2.4.3</a> by Saruta<br>");
         sb.append("This program is free software: you can redistribute it and/or modify<br>");
         sb.append("it under the terms of the GNU General Public License as published by<br>");
         sb.append("the Free Software Foundation, either version 3 of the License, or<br>");
@@ -238,7 +241,7 @@ public class I18 {
         sb.append("You should have received a copy of the GNU General Public License<br>");
         sb.append("along with this program. If not, see <a href=\"https://www.gnu.org/licenses/\">https://www.gnu.org/licenses/</a>.<br>");
         sb.append("<br>");
-        sb.append("Yass Reloaded uses: ");
+        sb.append("Yass Reincarnated uses: ");
         sb.append("Java Look & Feel Graphics Repository, jAudiotagger<br>");
         sb.append("iText, TeX Hyphenator, JInput, Java Keyring, FFmpeg, FFmpeg CLI Wrapper, <br>");
         sb.append("Java Media Framework (JMF), Robert Eckstein's Wizard code,<br>");

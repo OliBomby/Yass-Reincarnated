@@ -4,9 +4,9 @@ title: FAQ
 
 # FAQ
 
-## What is Yass Reloaded for?
+## What is Yass Reincarnated for?
 
-Yass Reloaded is an editor for UltraStar songs. It helps with lyrics, notes, timing, metadata, page breaks, playback, and media management.
+Yass Reincarnated is an editor for UltraStar songs. It helps with lyrics, notes, timing, metadata, page breaks, playback, and media management.
 
 ## Should I use relative or absolute pitch view?
 
@@ -37,7 +37,7 @@ They can also fall back to:
 
 - `Settings -> External Tools -> Locations -> Default Python executable`
 
-If the tool-specific Python field is empty and you use `Update package`, Yass can create a dedicated virtual environment for WhisperX or audio-separator automatically.
+If the tool-specific Python field is empty and you use `Update package`, Yass Reincarnated can create a dedicated virtual environment for WhisperX or audio-separator automatically.
 
 ## Where is USDB configured?
 
@@ -48,25 +48,29 @@ USDB-related settings are split across two places:
 
 The Syncer path improves search and refresh workflows, but the direct live USDB integration can still work without it.
 
-## Does Yass Reloaded support LrcLib?
+## Does Yass Reincarnated support LrcLib?
 
 Yes.
 
-LrcLib is available as an online lyrics source in the song creation wizard. It does not require a separate API key or its own settings page. When timed lyrics are available, Yass can use them as structured lyric input before or instead of a full transcription workflow.
+LrcLib is available as an online lyrics source in the song creation wizard. It does not require a separate API key or its own settings page. When timed lyrics are available, Yass Reincarnated can use them as structured lyric input before or instead of a full transcription workflow.
 
 ## Is the GitHub Wiki still relevant?
 
-Yes. The wiki is still useful, especially for older notes and gradually evolving content. The GitHub Pages site is intended to become the better structured main documentation.
+Yes. The upstream Yass Reloaded wiki is still useful for inherited workflows and
+older notes. The Yass Reincarnated GitHub Pages site is the main documentation
+for this fork.
 
-## Is Yass Reloaded a fork of the original Yass?
+## Is Yass Reincarnated a fork of the original Yass?
 
-Yes. Yass Reloaded builds on the original Yass project and extends it with modern Java, improved workflows, and active maintenance.
+Yes. Yass Reincarnated is a fork of Yass Reloaded by DoubleDee, which in turn
+builds on the original Yass project by Saruta. It inherits modern Java support
+and improved editor workflows from those projects.
 
-## Why does this documentation keep saying "Yass Reloaded" instead of just "Yass"?
+## Why does this documentation keep saying "Yass Reincarnated" instead of just "Yass"?
 
-To avoid confusion. Some older tutorials, screenshots, and help texts still refer to the original Yass project, but this documentation is specifically about Yass Reloaded unless stated otherwise.
+To avoid confusion. Some older tutorials, screenshots, and help texts still refer to the original Yass project, but this documentation is specifically about Yass Reincarnated unless stated otherwise.
 
-## Which older Yass topics are still relevant for Yass Reloaded?
+## Which older Yass topics are still relevant for Yass Reincarnated?
 
 A number of classic concepts still carry over well:
 
@@ -78,7 +82,7 @@ A number of classic concepts still carry over well:
 
 ## Does it support UltraStar Deluxe songs?
 
-Yes. Yass Reloaded is designed for UltraStar-style song files and typical UltraStar Deluxe workflows.
+Yes. Yass Reincarnated is designed for UltraStar-style song files and typical UltraStar Deluxe workflows.
 
 ## Which operating systems are supported?
 
@@ -88,7 +92,7 @@ Windows, macOS, and Linux.
 
 Usually yes, especially if you work with a broad set of audio formats or use advanced wizard and analysis features.
 
-## Does Yass Reloaded support transcription and stem separation?
+## Does Yass Reincarnated support transcription and stem separation?
 
 Yes, through external integrations such as:
 
@@ -101,4 +105,4 @@ Yes, through external integrations such as:
 
 Use the project repository:
 
-- [Issues](https://github.com/DoubleDee73/Yass-Reloaded/issues)
+- [Issues](https://github.com/OliBomby/Yass-Reincarnated/issues)

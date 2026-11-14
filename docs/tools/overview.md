@@ -4,7 +4,7 @@ title: External Tools
 
 # External Tools
 
-Yass Reloaded integrates with several external tools to extend song creation and editing workflows.
+Yass Reincarnated integrates with several external tools to extend song creation and editing workflows.
 
 ## Core Tools
 
@@ -90,8 +90,8 @@ Python-based tools use a two-level runtime model:
 
 - `Settings -> External Tools -> Locations` can define a shared `Default Python executable`
 - WhisperX and audio-separator can each use their own tool-specific Python runtime
-- if a tool-specific Python field is empty, Yass falls back to the shared default Python
-- if `Update package` is used while the tool-specific Python field is still empty, Yass creates a dedicated virtual environment for that tool and stores its Python path automatically
+- if a tool-specific Python field is empty, Yass Reincarnated falls back to the shared default Python
+- if `Update package` is used while the tool-specific Python field is still empty, Yass Reincarnated creates a dedicated virtual environment for that tool and stores its Python path automatically
 
 The fanart.tv API key is configured in:
 

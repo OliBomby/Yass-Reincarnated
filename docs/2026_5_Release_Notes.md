@@ -1,4 +1,6 @@
-# Yass Reloaded 2026.5 Release Notes
+# Yass Reincarnated 2026.5 Release Notes
+
+These changes were inherited from Yass Reloaded.
 
 These release notes summarize the **user-facing changes** between `v2026.4` and `2026.5_release`.
 
@@ -41,7 +43,7 @@ These release notes summarize the **user-facing changes** between `v2026.4` and 
 - Better **wizard reuse** of previous work
   - existing separation or transcription data can be reused instead of always starting over
 - Better **separation follow-up**
-  - if the wizard finishes without separation, Yass can still offer separation once the song opens in the editor
+  - if the wizard finishes without separation, Yass Reincarnated can still offer separation once the song opens in the editor
 - Improved lyric transfer and transcript application
   - corrected lyrics are applied more consistently
   - lyric-driven rebuild paths behave more predictably

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Yass Reloaded is a Java 21 karaoke editor for UltraStar/UltraStar Deluxe song files. It provides a GUI (Swing + JavaFX) for editing notes, timing, and lyrics, managing song libraries, and detecting errors in karaoke files. It is a fork of Yass 2.4.3, modernized from Java 8 to Java 21.
+Yass Reincarnated is a Java 21 karaoke editor for UltraStar/UltraStar Deluxe song files. It provides a GUI (Swing + JavaFX) for editing notes, timing, and lyrics, managing song libraries, and detecting errors in karaoke files. It is a fork of Yass Reloaded by DoubleDee, which modernized Saruta's Yass 2.4.3 from Java 8 to Java 21.
 
 ## Documentation Layout
 
@@ -45,10 +45,10 @@ mvn test
 mvn test -Dtest=YassTableSpec
 
 # Run the application (after building)
-java -jar target/Yass-Reloaded.jar
+java -jar target/Yass-Reincarnated.jar
 ```
 
-The build produces `target/Yass-Reloaded.jar` as a fat JAR containing all dependencies.
+The build produces `target/Yass-Reincarnated.jar` as a fat JAR containing all dependencies.
 
 Tests are written in Groovy using the Spock framework and live in `test/groovy/yass/`. There are currently 3 spec files: `YassTableSpec`, `YassRowSpec`, and `TitleCaseConverterSpec`.
 

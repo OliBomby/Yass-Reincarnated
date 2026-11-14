@@ -36,9 +36,9 @@ class ShadedJarPackagingSpec extends Specification {
 
         expect:
         workflow.contains('RELEASE_REF="${{ inputs.tag || github.ref_name }}"')
-        workflow.contains('Yass-Reloaded-${RELEASE_VERSION}-linux-x64.jar')
-        releaseUpload.contains('dist/Yass-Reloaded-*-linux-x64.jar')
-        !releaseUpload.contains('package-input/Yass-Reloaded.jar')
+        workflow.contains('Yass-Reincarnated-${RELEASE_VERSION}-linux-x64.jar')
+        releaseUpload.contains('dist/Yass-Reincarnated-*-linux-x64.jar')
+        !releaseUpload.contains('package-input/Yass-Reincarnated.jar')
     }
 
     def 'nightly workflow publishes a timestamped Linux jar asset instead of a generic nightly jar'() {
@@ -47,8 +47,8 @@ class ShadedJarPackagingSpec extends Specification {
 
         expect:
         workflow.contains("NIGHTLY_STAMP=\$(date -u +'%Y-%m-%d-%H%M%SZ')")
-        workflow.contains('Yass-Reloaded-nightly-${NIGHTLY_STAMP}-linux-x64.jar')
-        !workflow.contains('Yass-Reloaded-nightly.jar')
+        workflow.contains('Yass-Reincarnated-nightly-${NIGHTLY_STAMP}-linux-x64.jar')
+        !workflow.contains('Yass-Reincarnated-nightly.jar')
     }
 
     private static List nodes(def nodeList) {

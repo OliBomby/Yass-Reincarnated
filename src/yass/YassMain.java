@@ -167,7 +167,7 @@ public class YassMain extends JFrame {
                 YassMain y = new YassMain();
                 y.parseCommandLine(argv);
     
-                LOGGER.info("Init... Yass Reloaded " + YassActions.VERSION);
+                LOGGER.info("Init... Yass Reincarnated " + YassActions.VERSION);
                 y.init();
                 LOGGER.info("Initialized.");
                 y.initConvert();
@@ -426,7 +426,7 @@ public class YassMain extends JFrame {
             String dir = prop.getUserDir();
             int ok = JOptionPane.showConfirmDialog(this, "<html>" + I18.get(
                                                            "incompatible_version") + "<br>" + dir + "<br><br>" + I18.get("remove_version"),
-                                                   I18.get("incompatible_version") + " - Yass",
+                                                   I18.get("incompatible_version") + " - Yass Reincarnated",
                                                    JOptionPane.YES_NO_OPTION);
             if (ok == JOptionPane.OK_OPTION) {
                 boolean verify = !dir.contains(".yass");

@@ -353,8 +353,8 @@ public class FanartTvCoverPickerDialog extends JDialog {
                 connection.setConnectTimeout(IMAGE_TIMEOUT_MS);
                 connection.setReadTimeout(IMAGE_TIMEOUT_MS);
                 connection.setRequestProperty("Accept", "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8");
-                connection.setRequestProperty("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion()
-                        + " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+                connection.setRequestProperty("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion()
+                        + " ( https://github.com/OliBomby/Yass-Reincarnated )");
                 connection.setRequestProperty("Connection", "close");
                 LOGGER.info("fanart.tv preview request: url=" + imageUrl + ", attempt=" + attempt
                         + ", route=" + describeProxyRoute(imageUrl)

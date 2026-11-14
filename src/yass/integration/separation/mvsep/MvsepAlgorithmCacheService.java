@@ -92,7 +92,7 @@ public class MvsepAlgorithmCacheService {
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("User-Agent", "Yass Reloaded MVSEP Integration");
+        connection.setRequestProperty("User-Agent", "Yass Reincarnated MVSEP Integration");
         int code = connection.getResponseCode();
         InputStream stream = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
         return readFully(stream);

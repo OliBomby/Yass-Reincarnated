@@ -4,7 +4,7 @@ title: Troubleshooting
 
 # Troubleshooting
 
-## Yass Reloaded does not start correctly
+## Yass Reincarnated does not start correctly
 
 Check:
 

@@ -2,13 +2,15 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. This covers the editor Insert Note/Add Syllable action
 used by `Shift+Enter`, `Ctrl+Enter`, the lyrics menu item, and the insert-note
 toolbar button.
 
 ## Purpose
 
-Yass Reloaded lets chart authors add a missing syllable or a small run of
+Yass Reincarnated lets chart authors add a missing syllable or a small run of
 lyrics while staying in the note editor. The action supports two related
 workflows: inserting typed lyrics at the current editor/playback location, or
 inserting one placeholder tilde note when no text is entered.
@@ -45,7 +47,7 @@ inserting one placeholder tilde note when no text is entered.
   append the preserved remainder of the song. The end row is restored if needed.
 - Blank input creates a single `:` note, never a page break.
 - When blank input inserts the `~` placeholder after a previous note on the
-  same page, and that previous note ends with a stored trailing space, Yass
+  same page, and that previous note ends with a stored trailing space, Yass Reincarnated
   removes that trailing space so the placeholder is treated as a continuation
   rather than a new word.
 - For blank input, the anchor row is the current selection. If there is no
@@ -174,7 +176,7 @@ inserting one placeholder tilde note when no text is entered.
   existing note. For example, a window covering beats `100` through `103`
   before an existing note at `104` can hold at most two inserted notes: `100`,
   free `101`, `102`, free `103`.
-- If the entered text produces more syllables than fit in the window, Yass
+- If the entered text produces more syllables than fit in the window, Yass Reincarnated
   shows a message and leaves the song unchanged.
 - Syllable timing follows the synthetic transcription-segment approach locally:
   the dialog text is split through the same editor lyric splitting path, the
@@ -187,11 +189,11 @@ inserting one placeholder tilde note when no text is entered.
   full song creation/rebuild flows.
 - Alignment may improve timing and pitch only inside the computed local window.
   After alignment, the window bounds and the free beat before the next existing
-  note remain mandatory. If the aligned result violates those bounds, Yass rolls
+  note remain mandatory. If the aligned result violates those bounds, Yass Reincarnated rolls
   back and shows a message.
 - When `#VOCALS` and pitch data are present but the local window has no usable
   pitch frames, has sparse frames, or otherwise cannot produce a safe local
-  insertion, Yass shows a message and leaves the song unchanged rather than
+  insertion, Yass Reincarnated shows a message and leaves the song unchanged rather than
   falling back to coarse legacy insertion.
 
 ## Vocal-Aware Regression Notes

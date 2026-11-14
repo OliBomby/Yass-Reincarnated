@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The editor split action can use pitch data when available
 and falls back to the legacy split behavior when pitch/text evidence is
 ambiguous.
@@ -15,10 +17,10 @@ without replacing the standard split behavior.
 ## User-Facing Behavior
 
 - The normal editor split action remains the entry point.
-- If the selected note has usable detected pitch data, Yass may split by stable
+- If the selected note has usable detected pitch data, Yass Reincarnated may split by stable
   pitch segments.
 - If pitch data is missing, sparse, unstable, or text distribution is ambiguous,
-  Yass falls back to the legacy split.
+  Yass Reincarnated falls back to the legacy split.
 - Existing continuation text such as `~n` stays on the right when split again.
 
 ## Core Rules

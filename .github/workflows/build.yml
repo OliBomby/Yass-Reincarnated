@@ -1,4 +1,4 @@
-name: Build Yass Reloaded
+name: Build Yass Reincarnated
 
 on:
   push:
@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p package-input
-          cp target/Yass-Reloaded.jar package-input/
+          cp target/Yass-Reincarnated.jar package-input/
           [ -d "lib" ] && cp lib/*.jar package-input/ || true
 
       - name: Name Linux release jar
@@ -82,7 +82,7 @@ jobs:
           mkdir -p dist
           RELEASE_REF="${{ inputs.tag || github.ref_name }}"
           RELEASE_VERSION="${RELEASE_REF#v}"
-          cp package-input/Yass-Reloaded.jar "dist/Yass-Reloaded-${RELEASE_VERSION}-linux-x64.jar"
+          cp package-input/Yass-Reincarnated.jar "dist/Yass-Reincarnated-${RELEASE_VERSION}-linux-x64.jar"
 
       # --- WINDOWS: NSIS BUILD ---
       - name: Install NSIS
@@ -93,7 +93,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reloaded.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico"
+          $appVersion = (Get-Content target/classes/version.properties -Raw | ConvertFrom-StringData).version
+          jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reincarnated.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico" --vendor "OliBomby" --description "Yass Reincarnated - Karaoke Editor" --app-version $appVersion
           & "C:\Program Files (x86)\NSIS\makensis.exe" nsis-installer.nsi
           
       # --- LINUX & MACOS: JPACKAGE BUILD ---
@@ -106,21 +107,22 @@ jobs:
 
           if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
             EXTRA_OPTS="--linux-package-deps ffmpeg,aubio-tools"
-            TARGET_FILE="dist/yass-linux-amd64.deb"
+            TARGET_FILE="dist/yass-reincarnated-linux-amd64.deb"
           elif [ "${{ matrix.name }}" == "macOS-ARM" ]; then
-            TARGET_FILE="dist/yass-macos-arm64.dmg"
+            TARGET_FILE="dist/yass-reincarnated-macos-arm64.dmg"
           else
-            TARGET_FILE="dist/yass-macos-x64.dmg"
+            TARGET_FILE="dist/yass-reincarnated-macos-x64.dmg"
           fi
 
           jpackage \
             --type ${{ matrix.artifact_type }} \
             --dest dist \
-            --name "Yass-Reloaded" \
-            --main-jar Yass-Reloaded.jar \
+            --name "Yass-Reincarnated" \
+            --app-version "$(sed -n 's/^version=//p' target/classes/version.properties | tr -d '\r')" \
+            --main-jar Yass-Reincarnated.jar \
             --main-class yass.YassMain \
             --input package-input \
-            --vendor "DoubleDee" \
+            --vendor "OliBomby" \
             $EXTRA_OPTS
 
           GENERATED_FILE=$(find dist -maxdepth 1 -type f \( -name '*.deb' -o -name '*.dmg' \) | head -n 1)
@@ -130,7 +132,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Yass-Reloaded-${{ matrix.name }}
+          name: Yass-Reincarnated-${{ matrix.name }}
           path: |
             dist/*.deb
             dist/*.dmg
@@ -145,11 +147,11 @@ jobs:
           draft: true
           tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
-            dist/yass-macos-x64.dmg
-            dist/yass-macos-arm64.dmg
-            dist/yass-linux-amd64.deb
-            dist/Yass-Reloaded-*-linux-x64.jar
-            yass.exe
+            dist/yass-reincarnated-macos-x64.dmg
+            dist/yass-reincarnated-macos-arm64.dmg
+            dist/yass-reincarnated-linux-amd64.deb
+            dist/Yass-Reincarnated-*-linux-x64.jar
+            yass-reincarnated-installer.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -175,13 +177,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          tar --dereference -czf dist/yass-linux-x86_64-nix.tar.gz result
+          tar --dereference -czf dist/yass-reincarnated-linux-x86_64-nix.tar.gz result
 
       - name: Upload Nix Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Yass-Reloaded-Linux-Nix
-          path: dist/yass-linux-x86_64-nix.tar.gz
+          name: Yass-Reincarnated-Linux-Nix
+          path: dist/yass-reincarnated-linux-x86_64-nix.tar.gz
 
       - name: Upload Nix package to GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
@@ -189,6 +191,6 @@ jobs:
         with:
           draft: true
           tag_name: ${{ inputs.tag || github.ref_name }}
-          files: dist/yass-linux-x86_64-nix.tar.gz
+          files: dist/yass-reincarnated-linux-x86_64-nix.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

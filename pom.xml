@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Yass Reloaded - Karaoke Editor
+  ~ Yass Reincarnated - Karaoke Editor
   ~ Copyright (C) 2009-2023 Saruta / (C) 2023-2025 DoubleDee
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>yass</groupId>
-    <artifactId>Yass-Reloaded</artifactId>
+    <artifactId>Yass-Reincarnated</artifactId>
     <version>${project.version}</version>
     <repositories>
         <repository>
@@ -271,7 +271,7 @@
     </properties>
 
     <build>
-        <finalName>Yass-Reloaded</finalName>
+        <finalName>Yass-Reincarnated</finalName>
         <sourceDirectory>src</sourceDirectory>
         <resources>
             <resource>

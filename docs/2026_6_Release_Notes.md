@@ -1,4 +1,6 @@
-# Yass Reloaded 2026.6 Release Notes
+# Yass Reincarnated 2026.6 Release Notes
+
+These changes were inherited from Yass Reloaded.
 
 These release notes summarize the **user-facing changes** planned for `2026.6_release`.
 
@@ -51,7 +53,7 @@ These release notes summarize the **user-facing changes** planned for `2026.6_re
 - MVSEP output settings now include local Ogg targets:
   - `Ogg/Vorbis`
   - `Ogg/Opus`
-  - Yass requests WAV from MVSEP when needed and transcodes locally with FFmpeg
+  - Yass Reincarnated requests WAV from MVSEP when needed and transcodes locally with FFmpeg
 - USDB Search supports selecting multiple search results and queueing them for import together.
   - songs already in the active import queue are skipped
   - importing more than 10 selected songs asks for confirmation
@@ -63,7 +65,7 @@ These release notes summarize the **user-facing changes** planned for `2026.6_re
 - The Create Song Wizard can separate vocals and transcribe them during the lyrics step when the configured tools are available.
   - generated stems and transcript artifacts are carried into the final song folder
   - completed wizard runs can be reused when their metadata still matches the current song
-- Yass now uses `yass-transcript.json` as the reusable canonical transcript artifact.
+- Yass Reincarnated now uses `yass-transcript.json` as the reusable canonical transcript artifact.
   - wizard output can save it into the song folder
   - editor transcription alignment can reuse it later
   - post-wizard prompts mention reusable transcript data when present
@@ -75,7 +77,7 @@ These release notes summarize the **user-facing changes** planned for `2026.6_re
   - ordinary lines keep the existing dictionary-backed splitting behavior
   - separator markup is not written into generated lyric text
 - Clipboard lyrics can be pasted directly into the wizard.
-  - when transcript data exists, Yass opens a comparison dialog before applying the clipboard text
+  - when transcript data exists, Yass Reincarnated opens a comparison dialog before applying the clipboard text
   - applying corrected lyrics preserves transcript timing where possible
 - OpenAI and WhisperX remain the shared transcription-alignment engines.
   - cached transcription data and `yass-transcript.json` can be reused

@@ -205,8 +205,8 @@ public class FanartTvCoverSearchService {
             connection.setConnectTimeout(TIMEOUT_MS);
             connection.setReadTimeout(TIMEOUT_MS);
             connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion() +
-                    " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+            connection.setRequestProperty("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion() +
+                    " ( https://github.com/OliBomby/Yass-Reincarnated )");
             LOGGER.info("fanart.tv request: GET " + urlString
                     + ", Accept=application/json, User-Agent=" + connection.getRequestProperty("User-Agent"));
             int status = connection.getResponseCode();

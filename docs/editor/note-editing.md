@@ -4,7 +4,7 @@ title: Note and Lyrics Editing
 
 # Note and Lyrics Editing
 
-Yass Reloaded combines note timing, pitch editing, lyrics editing, and page structure in one editor workflow.
+Yass Reincarnated combines note timing, pitch editing, lyrics editing, and page structure in one editor workflow.
 
 ## Note Editing Basics
 
@@ -47,7 +47,7 @@ stored.
 
 ## Copy and Paste Workflows
 
-Copy and paste are central to fast editing in Yass Reloaded, especially for repeated melodies and repeated rhythmic structures.
+Copy and paste are central to fast editing in Yass Reincarnated, especially for repeated melodies and repeated rhythmic structures.
 
 Useful shortcuts:
 
@@ -104,7 +104,7 @@ You can:
 
 - toggle page breaks manually
 - remove them again
-- let Yass Reloaded auto-correct them
+- let Yass Reincarnated auto-correct them
 - shift notes around them until the phrase reads naturally
 
 Relevant shortcuts:
@@ -117,7 +117,7 @@ Relevant shortcuts:
 
 ## Page Trimming Logic
 
-Yass Reloaded inherits the classic idea that pauses between phrases can be trimmed automatically. In practice this means:
+Yass Reincarnated inherits the classic idea that pauses between phrases can be trimmed automatically. In practice this means:
 
 - short pauses break very close to the next phrase
 - longer pauses can leave a more readable gap
@@ -129,13 +129,13 @@ Even with auto-trimming, manual cleanup is still often the final step for natura
 
 Repeated melodic structures are common in songs. The classic copied-melody helper is still useful when a phrase repeats with similar note movement.
 
-In the older help this was exposed as a toggleable "Copied Melody" aid. In Yass Reloaded, the broader idea still matters:
+In the older help this was exposed as a toggleable "Copied Melody" aid. In Yass Reincarnated, the broader idea still matters:
 
 - reuse repeating note shapes where appropriate
 - compare later phrases against earlier melodic material
 - combine copy/paste with melody alignment for faster cleanup
 
-This is one of the places where older Yass workflows still transfer very well into Yass Reloaded.
+This is one of the places where older Yass workflows still transfer very well into Yass Reincarnated.
 
 ## Related Pages
 

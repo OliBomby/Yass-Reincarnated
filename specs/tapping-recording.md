@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. This feature is note-tapping recording, not audio
 recording.
 

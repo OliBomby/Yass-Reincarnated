@@ -1,8 +1,8 @@
 # Polish translation review: skipped keys where Polish still matches English because German also matches English.
 # Keep rows here as accepted exceptions, or translate Polish later if desired.
 key	en	pl
-yass_title	Yass Reloaded - Karaoke Editor	Yass Reloaded - Karaoke Editor
-yass_title_appendix	- Yass Reloaded	- Yass Reloaded
+yass_title	Yass Reincarnated - Karaoke Editor	Yass Reincarnated - Karaoke Editor
+yass_title_appendix	- Yass Reincarnated	- Yass Reincarnated
 options_yass_languages	Default|English|German|French|Spanish|Hungarian|Polish|Swedish	Default|English|German|French|Spanish|Hungarian|Polish|Swedish
 songlist_col_1	V	V
 songlist_col_10	Album	Album
@@ -257,7 +257,7 @@ options_external_tools_audiosep_status_label	Status	Status
 options_external_tools_status_ok	OK	OK
 options_external_tools_whisperx_status_label	Status	Status
 create_lyrics_lrclib_insecure_prompt	The LRCLib certificate is not trusted on this system. Retry once without certificate validation? Only do this if you trust your network connection.	The LRCLib certificate is not trusted on this system. Retry once without certificate validation? Only do this if you trust your network connection.
-create_youtube_existing_files_prompt	Existing temporary files were found for this video.\nAudio: {0}\nVideo: {1}\nSubtitles: {2}\nHow should Yass continue?	Existing temporary files were found for this video.\nAudio: {0}\nVideo: {1}\nSubtitles: {2}\nHow should Yass continue?
+create_youtube_existing_files_prompt	Existing temporary files were found for this video.\nAudio: {0}\nVideo: {1}\nSubtitles: {2}\nHow should Yass Reincarnated continue?	Existing temporary files were found for this video.\nAudio: {0}\nVideo: {1}\nSubtitles: {2}\nHow should Yass Reincarnated continue?
 create_youtube_existing_files_reuse	Reuse existing	Reuse existing
 create_youtube_existing_files_missing	Download missing only	Download missing only
 create_youtube_existing_files_redownload	Redownload all	Redownload all

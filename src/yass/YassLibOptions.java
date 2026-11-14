@@ -277,7 +277,7 @@ public class YassLibOptions extends JDialog {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 try {
-                    YassActions.openURL("https://github.com/DoubleDee73/Yass");
+                    YassActions.openURL("https://github.com/OliBomby/Yass-Reincarnated");
                 } catch (Exception e) {
                     // ok
                 }

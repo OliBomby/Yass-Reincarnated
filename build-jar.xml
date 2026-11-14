@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<project default="exe" name="Create Yass Executables">
+<project default="exe" name="Create Yass Reincarnated Executables">
 
 	<!-- setup -->
 
@@ -8,7 +8,7 @@
 	<property name="nsis.dir" location="C:\Program Files (x86)\NSIS" />
 	<!-- !!! version: don't forget to change launch4j.xml and nsis-installer.nsi !!! -->
 	<!-- !!! version: don't forget to change launch4j.xml and nsis-installer.nsi !!! -->
-	<property name="yass.version" value="2.4.3" />
+	<property name="yass.version" value="2026.7" />
 
 	<!-- don't change anything below -->
 
@@ -23,7 +23,7 @@
 	</target>
 
 	<target name="jar">
-        <jar destfile="./release/yass-${yass.version}.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="./target/Yass-Reincarnated.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="yass.YassMain"/>
                 <attribute name="Class-Path" value="."/>
@@ -33,14 +33,14 @@
         </jar>
     </target>
 
-	<target name="exe" description="Create Yass executable with Launch4J" depends="jar" >
+	<target name="exe" description="Create Yass Reincarnated executable with Launch4J" depends="jar" >
 		<taskdef name="launch4j"
 		    classname="net.sf.launch4j.ant.Launch4jTask"
 		    classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
  		<launch4j configFile="./launch4j.xml" />
 	</target>
 
-	<target name="installer" description="Create Yass installer with NSIS" depends="exe" >
+	<target name="installer" description="Create Yass Reincarnated installer with NSIS" depends="exe" >
 		<taskdef name="nsis" classname="com.danielreese.nsisant.Task">
 			<classpath location="lib/nsisant-1.3.jar"/>
 		</taskdef>

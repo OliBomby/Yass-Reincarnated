@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. WhisperX is the local transcription engine for the shared
 transcription-alignment workflow and includes health checks, package update, and
 VRAM-based auto runtime recommendations.

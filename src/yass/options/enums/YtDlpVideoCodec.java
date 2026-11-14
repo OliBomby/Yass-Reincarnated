@@ -1,5 +1,5 @@
 /*
- * Yass Reloaded - Karaoke Editor
+ * Yass Reincarnated - Karaoke Editor
  * Copyright (C) 2009-2023 Saruta
  * Copyright (C) 2023 DoubleDee
  *

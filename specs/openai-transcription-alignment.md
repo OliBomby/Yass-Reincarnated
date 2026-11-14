@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. OpenAI is one transcription engine for the shared
 transcription-alignment workflow.
 
@@ -18,7 +20,7 @@ lyrics through wizard/LRCLib flows.
 - Editor action: **Align Notes with Transcription**.
 - The action can use OpenAI or WhisperX depending on transcription engine
   settings and availability.
-- If a cached transcription or `yass-transcript.json` exists, Yass can ask the
+- If a cached transcription or `yass-transcript.json` exists, Yass Reincarnated can ask the
   user whether to reuse it.
 - After transcription, the user can apply alignment to existing notes or rebuild
   notes from transcript timing when that flow is available.
@@ -35,7 +37,7 @@ lyrics through wizard/LRCLib flows.
   or the selected/source audio fallback used by the request builder.
 - Requests ask OpenAI for timestamped transcription data.
 - Returned data is converted into `OpenAiTranscriptionResult`.
-- Existing-note alignment tokenizes current Yass lyrics and transcript words,
+- Existing-note alignment tokenizes current Yass Reincarnated lyrics and transcript words,
   finds safe anchors, then redistributes timing without casually changing pitch
   or text.
 - Rebuild mode deletes/replaces note rows from transcript timing and then may
@@ -68,7 +70,7 @@ lyrics through wizard/LRCLib flows.
 - `src/yass/alignment/LyricsAlignmentService.java`
   - existing-note alignment
 - `src/yass/alignment/LyricsAlignmentTokenizer.java`
-  - Yass lyric tokenization
+  - Yass Reincarnated lyric tokenization
 - `src/yass/alignment/TranscriptNoteRebuildService.java`
   - rebuild notes from transcript timing
 - `src/yass/alignment/TranscriptTimingRefinementService.java`

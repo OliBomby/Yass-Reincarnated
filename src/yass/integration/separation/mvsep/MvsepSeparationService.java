@@ -1,5 +1,5 @@
 /*
- * Yass Reloaded - Karaoke Editor
+ * Yass Reincarnated - Karaoke Editor
  * Copyright (C) 2009-2023 Saruta
  * Copyright (C) 2023 DoubleDee
  *
@@ -616,7 +616,7 @@ public class MvsepSeparationService implements SeparationService {
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("User-Agent", "Yass Reloaded MVSEP Integration");
+        connection.setRequestProperty("User-Agent", "Yass Reincarnated MVSEP Integration");
         return connection;
     }
 
@@ -1094,7 +1094,7 @@ public class MvsepSeparationService implements SeparationService {
         HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
-        connection.setRequestProperty("User-Agent", "Yass Reloaded MVSEP Integration");
+        connection.setRequestProperty("User-Agent", "Yass Reincarnated MVSEP Integration");
         connection.setInstanceFollowRedirects(true);
 
         int code = connection.getResponseCode();

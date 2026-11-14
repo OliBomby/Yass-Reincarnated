@@ -1,5 +1,5 @@
 {
-  description = "Yass Reloaded Nix package";
+  description = "Yass Reincarnated Nix package";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
@@ -11,8 +11,8 @@
       let
         pkgs = import nixpkgs { inherit system; };
         lib = pkgs.lib;
-        pname = "yass-reloaded";
-        version = "2026.5";
+        pname = "yass-reincarnated";
+        version = "2026.7";
         runtimeLibs = with pkgs; [
           alsa-lib
           fontconfig
@@ -65,42 +65,42 @@
             mkdir -p "$out/share/applications"
             mkdir -p "$out/share/icons/hicolor/256x256/apps"
 
-            cp target/Yass-Reloaded.jar "$out/share/${pname}/Yass-Reloaded.jar"
-            cp src/yass/resources/icons/yass-icon.png "$out/share/icons/hicolor/256x256/apps/yass-reloaded.png"
+            cp target/Yass-Reincarnated.jar "$out/share/${pname}/Yass-Reincarnated.jar"
+            cp src/yass/resources/icons/yass-icon.png "$out/share/icons/hicolor/256x256/apps/yass-reincarnated.png"
 
-            cat > "$out/share/applications/yass-reloaded.desktop" <<EOF
+            cat > "$out/share/applications/yass-reincarnated.desktop" <<EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Yass Reloaded
+Name=Yass Reincarnated
 Comment=Karaoke editor for UltraStar songs
-Exec=$out/bin/yass-reloaded
-Icon=yass-reloaded
+Exec=$out/bin/yass-reincarnated
+Icon=yass-reincarnated
 Terminal=false
 Categories=AudioVideo;Audio;Music;Utility;
 StartupWMClass=YassMain
 EOF
 
-            makeWrapper ${pkgs.jdk21}/bin/java "$out/bin/yass-reloaded" \
+            makeWrapper ${pkgs.jdk21}/bin/java "$out/bin/yass-reincarnated" \
               --prefix PATH : ${lib.makeBinPath [ pkgs.ffmpeg pkgs.aubio ]} \
               --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath runtimeLibs} \
-              --add-flags "-jar $out/share/${pname}/Yass-Reloaded.jar"
+              --add-flags "-jar $out/share/${pname}/Yass-Reincarnated.jar"
 
             runHook postInstall
           '';
 
           meta = with lib; {
-            description = "Yass Reloaded karaoke editor";
-            homepage = "https://github.com/DoubleDee73/Yass-Reloaded";
+            description = "Yass Reincarnated karaoke editor";
+            homepage = "https://github.com/OliBomby/Yass-Reincarnated";
             license = licenses.gpl3Plus;
-            mainProgram = "yass-reloaded";
+            mainProgram = "yass-reincarnated";
             platforms = platforms.linux;
           };
         };
 
         apps.default = {
           type = "app";
-          program = "${self.packages.${system}.default}/bin/yass-reloaded";
+          program = "${self.packages.${system}.default}/bin/yass-reincarnated";
         };
 
         devShells.default = pkgs.mkShell {

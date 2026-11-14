@@ -7,7 +7,7 @@ the last UltraStar Deluxe session, based on USDX `Error.log` playback markers.
 
 UltraStar Deluxe logs many preview playback events while users browse songs.
 That makes it hard to identify which local songs were actually started in a
-singing session. Yass Reloaded should surface those played songs directly in
+singing session. Yass Reincarnated should surface those played songs directly in
 the Library so users can review or edit them without manually reading the log.
 
 The first version targets UltraStar Deluxe / USDX only. Other UltraStar-family
@@ -27,7 +27,7 @@ Current implemented foundation:
   genre, edition, folder, year, album, duet singer, or length.
 - USDX `src/base/ULog.pas` opens `Error.log` with `Rewrite(...)`, so the log is
   overwritten per game start rather than appended.
-- Yass Reloaded already depends on `sqlite-jdbc`, so future DB enrichment could
+- Yass Reincarnated already depends on `sqlite-jdbc`, so future DB enrichment could
   read `Ultrastar.db` without requiring an external SQLite CLI.
 
 Missing for implementation:
@@ -45,7 +45,7 @@ Missing for implementation:
 
 ## User-Facing Behavior
 
-The Library group dropdown gains a `Last Played` entry only when Yass Reloaded
+The Library group dropdown gains a `Last Played` entry only when Yass Reincarnated
 can automatically find and parse a USDX `Error.log` with at least one matched
 Library song. If no usable log exists, the dropdown looks unchanged.
 
@@ -56,7 +56,7 @@ when the group is selected so users do not need a second click. The Library
 remains song-based: each song appears at most once, even if it was played
 multiple times.
 
-For songs played more than once, Yass uses the latest play as the song's
+For songs played more than once, Yass Reincarnated uses the latest play as the song's
 session value. The extra line in tile mode shows the play clock time. Single
 plays show only `HH:mm`; repeated plays append the count:
 
@@ -110,7 +110,7 @@ Matching must be conservative:
   to that song.
 - If multiple Library songs map to the same folder and the event cannot be
   disambiguated, skip the event rather than attaching it to the wrong song.
-- If the logged song folder is not in the current Yass Library, skip it.
+- If the logged song folder is not in the current Yass Reincarnated Library, skip it.
 
 Song matching should not depend on display title normalization alone because
 the database, log folder, and local `.txt` metadata can use slightly different

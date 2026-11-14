@@ -2,7 +2,9 @@
 
 ## Status
 
-Implemented/current. Yass Reloaded supports external audio separation through
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
+Implemented/current. Yass Reincarnated supports external audio separation through
 MVSEP and local audio-separator, with editor, wizard, and selected import flows.
 
 ## Purpose

@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The Create Song Wizard's manual lyrics path can use explicit
 separator markup when no transcription result, subtitle timing map, or MIDI
 lyrics source is active.
@@ -9,7 +11,7 @@ lyrics source is active.
 ## Purpose
 
 Manual wizard lyrics often already contain the user's intended syllable or note
-boundaries. Respecting explicit separators lets Yass Reloaded create provisional
+boundaries. Respecting explicit separators lets Yass Reincarnated create provisional
 note rows from that markup without asking the dictionary or hyphenator to infer
 a different split.
 

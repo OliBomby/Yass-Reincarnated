@@ -4,7 +4,7 @@ title: Library Overview
 
 # Library Overview
 
-The library is where Yass Reloaded helps you organize, inspect, and maintain large song collections.
+The library is where Yass Reincarnated helps you organize, inspect, and maintain large song collections.
 
 ## What the Library Is Good At
 
@@ -66,11 +66,11 @@ The dialog also prefers smoother browsing over aggressive bulk loading:
 
 - cover previews are loaded lazily
 - only visible candidates are fetched first
-- if a preview host is unavailable, Yass Reloaded can fall back to the original fanart image URL
+- if a preview host is unavailable, Yass Reincarnated can fall back to the original fanart image URL
 
 ## USDB Workflows
 
-Yass Reloaded can integrate directly with USDB from the library and from the song editor.
+Yass Reincarnated can integrate directly with USDB from the library and from the song editor.
 
 ### Search USDB
 
@@ -89,7 +89,7 @@ The match marker column helps you understand the current state quickly:
 - green dot: a local song exists and is already linked through a `.usdb` file
 - red dot: the song is already queued for import
 
-If a USDB Syncer path is configured, Yass Reloaded uses the local Syncer database first and only falls back to the live USDB website when needed.
+If a USDB Syncer path is configured, Yass Reincarnated uses the local Syncer database first and only falls back to the live USDB website when needed.
 
 ### Import Songs from USDB
 
@@ -102,11 +102,11 @@ The queue dialog shows:
 - a detail log for the selected song
 - download, image, finalize, and optional separation progress
 
-After a successful import, Yass Reloaded refreshes only the affected library entry instead of rescanning the entire library.
+After a successful import, Yass Reincarnated refreshes only the affected library entry instead of rescanning the entire library.
 
 ### Compare with USDB
 
-If a song already has a `.usdb` file with a valid USDB song id, or if Yass can identify a matching USDB song, you can use `Compare with USDB`.
+If a song already has a `.usdb` file with a valid USDB song id, or if Yass Reincarnated can identify a matching USDB song, you can use `Compare with USDB`.
 
 This action is available:
 
@@ -129,7 +129,7 @@ If no `.usdb` file exists yet, saving locally or saving to USDB creates one auto
 
 Submitting changes back to USDB is only available when the current USDB login has direct editing rights.
 
-Yass Reloaded distinguishes between:
+Yass Reincarnated distinguishes between:
 
 - regular user access
 - direct edit access for moderator/admin-style accounts
@@ -138,7 +138,7 @@ If direct editing is not available, you can still use the search and comparison 
 
 ## Error-Driven Editing
 
-One of the strongest workflows in Yass Reloaded is:
+One of the strongest workflows in Yass Reincarnated is:
 
 1. find issues in the library or error views
 2. jump directly to the affected song or note

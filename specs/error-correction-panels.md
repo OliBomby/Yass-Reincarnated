@@ -2,13 +2,15 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. This covers the error-correction settings panel
 `yass.options.ErrorPanel`, the editor error dialog `YassErrors`, and the
 library batch-correction flow that applies fixes to song `.txt` files.
 
 ## Purpose
 
-Yass Reloaded checks UltraStar song files for invalid or uncommon rows, tags,
+Yass Reincarnated checks UltraStar song files for invalid or uncommon rows, tags,
 spacing, page breaks, apostrophes, capitalization, scoring, and related metadata
 problems. The ErrorPanel settings do not correct files directly; they store the
 policy values used by the editor and library correction flows when
@@ -65,7 +67,7 @@ policy values used by the editor and library correction flows when
   - `unknown` shows the editor prompt and can persist the user's yes/no choice.
 - Page-break placement is computed by `YassAutoCorrect.getCommonPageBreak(...)`.
   With `correct-uncommon-pagebreaks-fix > 0`, the break is forced to that beat
-  offset from the previous note, clamped inside the pause. With `0`, Yass uses
+  offset from the previous note, clamped inside the pause. With `0`, Yass Reincarnated uses
   pause-length heuristics based on BPM and available beats.
 - Spacing detection depends on `correct-uncommon-spacing`:
   - `after` treats leading spaces as uncommon and expects a trailing space when
@@ -178,7 +180,7 @@ policy values used by the editor and library correction flows when
   distribute golden notes unless a user explicitly triggers the supported error
   correction in an editor context.
 - When there are too many golden-note beats, the error remains a manual finding.
-  Yass does not remove or rebalance existing golden notes automatically.
+  Yass Reincarnated does not remove or rebalance existing golden notes automatically.
 - `YassAutoCorrect` still contains several direct correction branches. Future
   refactors should move those methods toward the `YassAutoCorrectApostrophes`
   pattern: a focused class per message family that extends

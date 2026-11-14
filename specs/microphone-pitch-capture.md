@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. Editor feature: set the height (pitch) of the selected
 note(s) by singing or humming into the configured microphone. Works on a
 single note or a multi-note selection; no captured audio is stored.
@@ -51,7 +53,7 @@ Note-Tapping Recording).
 ## Core Rules
 
 - `YassCaptureAudio.calculatePitch` yields only a **pitch class 0-11 (0 = C)**;
-  Yass note heights use the same convention (`Math.floorMod(height, 12)`,
+  Yass Reincarnated note heights use the same convention (`Math.floorMod(height, 12)`,
   `YassSheet.getNoteName`). Octave is resolved against the active window, not the
   microphone.
 - The detection window is one octave wide. Its low edge is derived from the

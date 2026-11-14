@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Optional;
 
 public class UsdbCredentialStore {
+    // Preserve access to credentials saved before the Yass Reincarnated rename.
     private static final String SERVICE_NAME = "Yass Reloaded / USDB";
 
     public boolean isAvailable() {

@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. Timing tag validation runs automatically during editor
 open and when leaving the editor after a touched song session.
 

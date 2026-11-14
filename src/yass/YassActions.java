@@ -2158,22 +2158,22 @@ public class YassActions implements DropTargetListener {
     };
     private final Action showOnlineHelp = new AbstractAction(I18.get("lib_help_online")) {
         public void actionPerformed(ActionEvent e) {
-            openURL("https://github.com/DoubleDee73/Yass/wiki");
+            openURL("https://olibomby.github.io/Yass-Reincarnated/");
         }
     };
     private final Action showOnlineHelpErrors = new AbstractAction(I18.get("lib_help_online")) {
         public void actionPerformed(ActionEvent e) {
-            openURL("https://github.com/DoubleDee73/Yass/wiki/Errors");
+            openURL("https://github.com/DoubleDee73/Yass-Reloaded/wiki/Errors");
         }
     };
     final Action showOnlineHelpBeat = new AbstractAction(I18.get("lib_help_online")) {
         public void actionPerformed(ActionEvent e) {
-            openURL("https://github.com/DoubleDee73/Yass/wiki/Beats");
+            openURL("https://github.com/DoubleDee73/Yass-Reloaded/wiki/Beats");
         }
     };
     private final Action showOnlineHelpDuet = new AbstractAction(I18.get("lib_help_online")) {
         public void actionPerformed(ActionEvent e) {
-            openURL("https://github.com/DoubleDee73/Yass/wiki/Duets");
+            openURL("https://github.com/DoubleDee73/Yass-Reloaded/wiki/Duets");
         }
     };
     private final Action editLyrics = new AbstractAction(I18.get("edit_lyrics_edit")) {
@@ -10372,7 +10372,7 @@ public class YassActions implements DropTargetListener {
 
     public String getInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Yass Reloaded\nVersion: " + VERSION + " (" + DATE + ")\nhttps://github.com/DoubleDee73/Yass\n\n");
+        sb.append("Yass Reincarnated\nVersion: " + VERSION + " (" + DATE + ")\nhttps://github.com/OliBomby/Yass-Reincarnated\n\n");
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
         GraphicsConfiguration gc = gd.getDefaultConfiguration();
@@ -15418,8 +15418,8 @@ public class YassActions implements DropTargetListener {
             connection.setConnectTimeout(FANART_IMAGE_TIMEOUT_MS);
             connection.setReadTimeout(FANART_IMAGE_TIMEOUT_MS);
             connection.setRequestProperty("Accept", "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8");
-            connection.setRequestProperty("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion()
-                    + " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+            connection.setRequestProperty("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion()
+                    + " ( https://github.com/OliBomby/Yass-Reincarnated )");
             int status = connection.getResponseCode();
             String contentType = connection.getContentType();
             LOGGER.info("fanart.tv download response status=" + status + ", contentType=" + contentType + ", url=" + imageUrl);

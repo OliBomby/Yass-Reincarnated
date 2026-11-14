@@ -765,7 +765,7 @@ public class YassProperties extends Properties {
         connection.setConnectTimeout(15_000);
         connection.setReadTimeout(30_000);
         connection.setRequestProperty("Accept", "application/vnd.github+json");
-        connection.setRequestProperty("User-Agent", "Yass Reloaded");
+        connection.setRequestProperty("User-Agent", "Yass Reincarnated");
         int code = connection.getResponseCode();
         InputStream stream = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
         if (stream == null) throw new IOException("Empty response from " + url);

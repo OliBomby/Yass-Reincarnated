@@ -2,7 +2,9 @@
 
 ## Status
 
-Implemented/current. Yass Reloaded can queue audio separation for multiple
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
+Implemented/current. Yass Reincarnated can queue audio separation for multiple
 existing Library songs and can open the shared song queue directly without
 opening USDB Search.
 

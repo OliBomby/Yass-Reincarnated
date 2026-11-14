@@ -1,5 +1,5 @@
-﻿Name "Yass Reloaded 2026.7"
-OutFile "yass.exe"
+﻿Name "Yass Reincarnated 2026.7"
+OutFile "yass-reincarnated-installer.exe"
 
 Unicode true
 SetCompressor lzma
@@ -7,8 +7,8 @@ XPStyle on
 InstallColors /windows
 Icon .\src\yass\resources\icons\yass-multi-icon.ico
 UninstallIcon .\src\yass\resources\icons\yass-multi-icon.ico
-InstallDir "$PROGRAMFILES\Yass Reloaded"
-InstallDirRegKey HKLM "SOFTWARE\Yass Reloaded" "installdir"
+InstallDir "$PROGRAMFILES\Yass Reincarnated"
+InstallDirRegKey HKLM "SOFTWARE\Yass Reincarnated" "installdir"
 RequestExecutionLevel admin
 !include "FileFunc.nsh"
 
@@ -24,11 +24,11 @@ LicenseLangString myLicenseData ${LANG_POLISH} .\License.txt
 LicenseLangString myLicenseData ${LANG_SPANISH} .\License.txt
 LicenseData $(myLicenseData)
 
-LangString Msg_Prev ${LANG_ENGLISH} "Yass Reloaded is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
-LangString Msg_Prev ${LANG_GERMAN} "Yass Reloaded ist bereits installiert. $\n$\nMit `OK` wird die vorherige Version entfernt, mit `Abbrechen` wird die Aktualisierung abgebrochen."
-LangString Msg_Prev ${LANG_HUNGARIAN} "Yass Reloaded is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
-LangString Msg_Prev ${LANG_POLISH} "Yass Reloaded is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
-LangString Msg_Prev ${LANG_SPANISH} "Yass Reloaded ya está instalado. $\n$\nElija `OK` para desinstalar la versión anterior o `Cancelar` para cancelar la actualización."
+LangString Msg_Prev ${LANG_ENGLISH} "Yass Reincarnated is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
+LangString Msg_Prev ${LANG_GERMAN} "Yass Reincarnated ist bereits installiert. $\n$\nMit `OK` wird die vorherige Version entfernt, mit `Abbrechen` wird die Aktualisierung abgebrochen."
+LangString Msg_Prev ${LANG_HUNGARIAN} "Yass Reincarnated is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
+LangString Msg_Prev ${LANG_POLISH} "Yass Reincarnated is already installed. $\n$\nChoose `OK` to remove the previous version or `Cancel` to cancel this upgrade."
+LangString Msg_Prev ${LANG_SPANISH} "Yass Reincarnated ya está instalado. $\n$\nElija `OK` para desinstalar la versión anterior o `Cancelar` para cancelar la actualización."
 
 LangString Sec_ContextMenuText ${LANG_ENGLISH} "Add context menu item to text files"
 LangString Sec_ContextMenuText ${LANG_GERMAN} "Kontextmenüeintrag für Textdateien"
@@ -48,17 +48,17 @@ LangString Sec_ContextMenuDir ${LANG_HUNGARIAN} "Add context menu item to direct
 LangString Sec_ContextMenuDir ${LANG_POLISH} "Add context menu item to directories"
 LangString Sec_ContextMenuDir ${LANG_SPANISH} "Añadir al menú contextual de directorios"
 
-LangString ContextMenu_Edit ${LANG_ENGLISH} "Edit with Yass"
-LangString ContextMenu_Edit ${LANG_GERMAN} "Bearbeiten mit Yass"
-LangString ContextMenu_Edit ${LANG_HUNGARIAN} "Edit with Yass"
-LangString ContextMenu_Edit ${LANG_POLISH} "Edit with Yass"
-LangString ContextMenu_Edit ${LANG_SPANISH} "Editar con Yass"
+LangString ContextMenu_Edit ${LANG_ENGLISH} "Edit with Yass Reincarnated"
+LangString ContextMenu_Edit ${LANG_GERMAN} "Bearbeiten mit Yass Reincarnated"
+LangString ContextMenu_Edit ${LANG_HUNGARIAN} "Edit with Yass Reincarnated"
+LangString ContextMenu_Edit ${LANG_POLISH} "Edit with Yass Reincarnated"
+LangString ContextMenu_Edit ${LANG_SPANISH} "Editar con Yass Reincarnated"
 
-LangString ContextMenu_Convert ${LANG_ENGLISH} "Convert with Yass"
-LangString ContextMenu_Convert ${LANG_GERMAN} "Konvertieren mit Yass"
-LangString ContextMenu_Convert ${LANG_HUNGARIAN} "Convert with Yass"
-LangString ContextMenu_Convert ${LANG_POLISH} "Convert with Yass"
-LangString ContextMenu_Convert ${LANG_SPANISH} "Convertir con Yass"
+LangString ContextMenu_Convert ${LANG_ENGLISH} "Convert with Yass Reincarnated"
+LangString ContextMenu_Convert ${LANG_GERMAN} "Konvertieren mit Yass Reincarnated"
+LangString ContextMenu_Convert ${LANG_HUNGARIAN} "Convert with Yass Reincarnated"
+LangString ContextMenu_Convert ${LANG_POLISH} "Convert with Yass Reincarnated"
+LangString ContextMenu_Convert ${LANG_SPANISH} "Convertir con Yass Reincarnated"
 
 LangString Sec_Desktop ${LANG_ENGLISH} "Create shortcut on desktop"
 LangString Sec_Desktop ${LANG_GERMAN} "Verknüpfung auf dem Desktop"
@@ -66,11 +66,11 @@ LangString Sec_Desktop ${LANG_HUNGARIAN} "Create shortcut on desktop"
 LangString Sec_Desktop ${LANG_POLISH} "Create shortcut on desktop"
 LangString Sec_Desktop ${LANG_SPANISH} "Crear acceso directo en el escritorio"
 
-LangString Msg_Uninstall ${LANG_ENGLISH} "This will uninstall Yass from your system."
-LangString Msg_Uninstall ${LANG_GERMAN} "Yass wird nun von Ihrem System deinstalliert."
-LangString Msg_Uninstall ${LANG_HUNGARIAN} "This will uninstall Yass from your system."
-LangString Msg_Uninstall ${LANG_POLISH} "This will uninstall Yass from your system."
-LangString Msg_Uninstall ${LANG_SPANISH} "Esto desinstalará Yass de tu sistema."
+LangString Msg_Uninstall ${LANG_ENGLISH} "This will uninstall Yass Reincarnated from your system."
+LangString Msg_Uninstall ${LANG_GERMAN} "Yass Reincarnated wird nun von Ihrem System deinstalliert."
+LangString Msg_Uninstall ${LANG_HUNGARIAN} "This will uninstall Yass Reincarnated from your system."
+LangString Msg_Uninstall ${LANG_POLISH} "This will uninstall Yass Reincarnated from your system."
+LangString Msg_Uninstall ${LANG_SPANISH} "Esto desinstalará Yass Reincarnated de tu sistema."
 
 LangString Msg_RemoveSettings ${LANG_ENGLISH} "Remove user data and settings? This will delete the .yass folder in your home folder. $\n$\nChoose `YES` to remove it, or 'NO' to keep it for future use."
 LangString Msg_RemoveSettings ${LANG_GERMAN} "Persönliche Daten und Einstellungen entfernen? Dies löscht das Verzeichnis .yass in Ihrem Benutzerverzeichnis. $\n$\nMit `Ja` löschen Sie es, mit 'Nein' können Sie es später weiterverwenden."
@@ -105,11 +105,11 @@ Function .onInit
 	StrCmp $LANGUAGE "cancel" 0 +2
 		Abort
 
-  ReadRegStr $R2 HKLM "SOFTWARE\Yass Reloaded" "installdir"
+  ReadRegStr $R2 HKLM "SOFTWARE\Yass Reincarnated" "installdir"
   StrCmp $R2 "" +2 0
     StrCpy $INSTDIR $R2
 
-  ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reloaded" "UninstallString"
+  ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reincarnated" "UninstallString"
   StrCmp $R0 "" done
 
   MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
@@ -118,12 +118,7 @@ Function .onInit
   Abort
 
 uninst:
-  # workaround: cleanup previous start menu entries (all users)
   SetShellVarContext all
-  RMDir /r "$SMPROGRAMS\Yass 1.9.0"
-  RMDir /r "$SMPROGRAMS\Yass 1.8.1"
-  RMDir /r "$SMPROGRAMS\Yass 1.8.0"
-  RMDir /r "$SMPROGRAMS\Yass 1.7.1"
 
   RMDir /r "$INSTDIR\app"
   RMDir /r "$INSTDIR\runtime"
@@ -140,11 +135,11 @@ Page directory
 
 Section $(Sec_ContextMenuText)
   SetOutPath "$INSTDIR"
-  WriteRegStr HKCR "Directory\shell\yass" "" $(ContextMenu_Edit)
+  WriteRegStr HKCR "Directory\shell\yass-reincarnated" "" $(ContextMenu_Edit)
   # Geändert auf yass.exe [cite: 23]
-  WriteRegStr HKCR "Directory\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
-  WriteRegStr HKCR "SystemFileAssociations\.txt\shell\yass" "" $(ContextMenu_Edit)
-  WriteRegStr HKCR "SystemFileAssociations\.txt\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR "Directory\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR "SystemFileAssociations\.txt\shell\yass-reincarnated" "" $(ContextMenu_Edit)
+  WriteRegStr HKCR "SystemFileAssociations\.txt\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
 SectionEnd
 
 Section $(Sec_ContextMenuKar)
@@ -153,37 +148,37 @@ Section $(Sec_ContextMenuKar)
   ReadRegStr $R0 HKCR ".mid" ""
   StrCmp $R0 "" NoDefaultMid DefaultMid
 NoDefaultMid:
-  WriteRegStr HKCR ".mid\shell\yass" "" $(ContextMenu_Convert)
-  WriteRegStr HKCR ".mid\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR ".mid\shell\yass-reincarnated" "" $(ContextMenu_Convert)
+  WriteRegStr HKCR ".mid\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
   Goto EndMid
 DefaultMid:
-  WriteRegStr HKCR "$R0\shell\yass" "" $(ContextMenu_Convert)
-  WriteRegStr HKCR "$R0\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR "$R0\shell\yass-reincarnated" "" $(ContextMenu_Convert)
+  WriteRegStr HKCR "$R0\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
 EndMid:
 
   ReadRegStr $R0 HKCR ".kar" ""
   StrCmp $R0 "" NoDefaultKar DefaultKar
 NoDefaultKar:
-  WriteRegStr HKCR ".kar\shell\yass" "" $(ContextMenu_Convert)
-  WriteRegStr HKCR ".kar\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR ".kar\shell\yass-reincarnated" "" $(ContextMenu_Convert)
+  WriteRegStr HKCR ".kar\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
   Goto EndKar
 DefaultKar:
-  WriteRegStr HKCR "$R0\shell\yass" "" $(ContextMenu_Convert)
-  WriteRegStr HKCR "$R0\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR "$R0\shell\yass-reincarnated" "" $(ContextMenu_Convert)
+  WriteRegStr HKCR "$R0\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
 EndKar:
 
 SectionEnd
 
 Section $(Sec_ContextMenuDir)
   SetOutPath "$INSTDIR"
-  WriteRegStr HKCR "Directory\shell\yass" "" $(ContextMenu_Edit)
-  WriteRegStr HKCR "Directory\shell\yass\command" "" '"$INSTDIR\yass.exe" "%1"'
+  WriteRegStr HKCR "Directory\shell\yass-reincarnated" "" $(ContextMenu_Edit)
+  WriteRegStr HKCR "Directory\shell\yass-reincarnated\command" "" '"$INSTDIR\yass.exe" "%1"'
 SectionEnd
 
 Section $(Sec_Desktop)
   SetOutPath "$INSTDIR"
   # Shortcut auf die neue EXE [cite: 24]
-  CreateShortCut "$DESKTOP\Yass Editor.lnk" "$INSTDIR\yass.exe" "-lib"
+  CreateShortCut "$DESKTOP\Yass Reincarnated Editor.lnk" "$INSTDIR\yass.exe" "-lib"
 SectionEnd
 
 Page instfiles
@@ -198,22 +193,22 @@ Section
 #  File ".\lib\jinput-raw.dll"
 #  File ".\lib\jinput-dx8.dll"
 #  File ".\src\icons\yass-edit.ico"
-  File ".\lib\Yass Reloaded 1.0.1.pref"
-  WriteRegStr HKLM "SOFTWARE\Yass Reloaded" "installdir" "$INSTDIR"
+  File ".\lib\Yass Reincarnated 1.0.1.pref"
+  WriteRegStr HKLM "SOFTWARE\Yass Reincarnated" "installdir" "$INSTDIR"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reloaded" "DisplayName" "Yass Reloaded"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reloaded" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reincarnated" "DisplayName" "Yass Reincarnated"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reincarnated" "UninstallString" '"$INSTDIR\uninstall.exe"'
 
   WriteUninstaller $INSTDIR\uninstall.exe
 
   StrCpy $R1 $R0 1
   StrCmp $R1 ">" skip
-	CreateDirectory "$SMPROGRAMS\Yass Reloaded"
-#	CreateShortCut "$SMPROGRAMS\Yass Reloaded\Yass Player.lnk" "$INSTDIR\yass.exe" "-play"
-	CreateShortCut "$SMPROGRAMS\Yass Reloaded\Yass Editor.lnk" "$INSTDIR\yass.exe" "-lib"
+	CreateDirectory "$SMPROGRAMS\Yass Reincarnated"
+#	CreateShortCut "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Player.lnk" "$INSTDIR\yass.exe" "-play"
+	CreateShortCut "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Editor.lnk" "$INSTDIR\yass.exe" "-lib"
 # "$INSTDIR\yass-edit.ico"
-	CreateShortCut "$SMPROGRAMS\Yass Reloaded\Yass Converter.lnk" "$INSTDIR\yass.exe" "-convert"
-	CreateShortCut "$SMPROGRAMS\Yass Reloaded\Uninstall Yass Reloaded.lnk" "$INSTDIR\uninstall.exe"
+	CreateShortCut "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Converter.lnk" "$INSTDIR\yass.exe" "-convert"
+	CreateShortCut "$SMPROGRAMS\Yass Reincarnated\Uninstall Yass Reincarnated.lnk" "$INSTDIR\uninstall.exe"
   skip:
 SectionEnd
 
@@ -222,43 +217,43 @@ UninstallText $(Msg_Uninstall)
 Section "Uninstall"
   SetShellVarContext all
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reloaded"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Yass Reincarnated"
 
-  DeleteRegKey HKCR "SystemFileAssociations\.txt\shell\yass\command"
-  DeleteRegKey HKCR "SystemFileAssociations\.txt\shell\yass"
+  DeleteRegKey HKCR "SystemFileAssociations\.txt\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "SystemFileAssociations\.txt\shell\yass-reincarnated"
 
-  DeleteRegKey HKCR "Directory\shell\yass\command"
-  DeleteRegKey HKCR "Directory\shell\yass"
-  DeleteRegKey HKCR "txtfile\shell\yass\command"
-  DeleteRegKey HKCR "txtfile\shell\yass"
+  DeleteRegKey HKCR "Directory\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "Directory\shell\yass-reincarnated"
+  DeleteRegKey HKCR "txtfile\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "txtfile\shell\yass-reincarnated"
 
   ReadRegStr $R0 HKCR ".mid" ""
-  DeleteRegKey HKCR "$R0\shell\yass\command"
-  DeleteRegKey HKCR "$R0\shell\yass"
-  DeleteRegKey HKCR ".mid\shell\yass\command"
-  DeleteRegKey HKCR ".mid\shell\yass"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated"
+  DeleteRegKey HKCR ".mid\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR ".mid\shell\yass-reincarnated"
 
   ReadRegStr $R0 HKCR ".midi" ""
-  DeleteRegKey HKCR "$R0\shell\yass\command"
-  DeleteRegKey HKCR "$R0\shell\yass"
-  DeleteRegKey HKCR ".midi\shell\yass\command"
-  DeleteRegKey HKCR ".midi\shell\yass"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated"
+  DeleteRegKey HKCR ".midi\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR ".midi\shell\yass-reincarnated"
 
   ReadRegStr $R0 HKCR ".kar" ""
-  DeleteRegKey HKCR "$R0\shell\yass\command"
-  DeleteRegKey HKCR "$R0\shell\yass"
-  DeleteRegKey HKCR ".kar\shell\yass\command"
-  DeleteRegKey HKCR ".kar\shell\yass"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR "$R0\shell\yass-reincarnated"
+  DeleteRegKey HKCR ".kar\shell\yass-reincarnated\command"
+  DeleteRegKey HKCR ".kar\shell\yass-reincarnated"
 
 
-  Delete "$DESKTOP\Yass Editor.lnk"
-#  delete "$DESKTOP\Yass Player.lnk"
-#  delete "$SMPROGRAMS\Yass Reloaded\Yass Player.lnk"
-  Delete "$SMPROGRAMS\Yass Reloaded\Yass Editor.lnk"
-  Delete "$SMPROGRAMS\Yass Reloaded\Yass Converter.lnk"
-  Delete "$SMPROGRAMS\Yass Reloaded\Uninstall Yass.lnk"
-  RMDir /r "$SMPROGRAMS\Yass Reloaded"
-  Delete "$INSTDIR\Yass Reloaded 1.0.1.pref"
+  Delete "$DESKTOP\Yass Reincarnated Editor.lnk"
+#  delete "$DESKTOP\Yass Reincarnated Player.lnk"
+#  delete "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Player.lnk"
+  Delete "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Editor.lnk"
+  Delete "$SMPROGRAMS\Yass Reincarnated\Yass Reincarnated Converter.lnk"
+  Delete "$SMPROGRAMS\Yass Reincarnated\Uninstall Yass Reincarnated.lnk"
+  RMDir /r "$SMPROGRAMS\Yass Reincarnated"
+  Delete "$INSTDIR\Yass Reincarnated 1.0.1.pref"
   Delete "$INSTDIR\fobs4jmf.dll"
   RMDir /r "$INSTDIR\app"
   RMDir /r "$INSTDIR\runtime"

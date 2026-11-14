@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. Covers the audio/video/cover/background download stage of a
 USDB song import as of 2026.6. Documents current behavior plus the known 403
 failure mode that motivates moving the audio+video download to a single yt-dlp

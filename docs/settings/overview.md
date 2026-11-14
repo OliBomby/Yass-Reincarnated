@@ -4,7 +4,7 @@ title: Settings Overview
 
 # Settings Overview
 
-Yass Reloaded groups its settings into several areas in the options dialog. Open
+Yass Reincarnated groups its settings into several areas in the options dialog. Open
 the dialog from `Extras -> Preferences...` in the English UI, or
 `Extras -> Einstellungen...` in the German UI. This page explains what each area
 is for and when a setting actually matters.
@@ -27,7 +27,7 @@ Not every user needs every area. If you mainly edit existing songs, the most imp
 
 ### Setup
 
-This section defines the practical base environment for Yass Reloaded:
+This section defines the practical base environment for Yass Reincarnated:
 
 - default programs
 - song directory
@@ -40,7 +40,7 @@ This section defines the practical base environment for Yass Reloaded:
 
 Use this area when:
 
-- you set up Yass Reloaded on a new machine
+- you set up Yass Reincarnated on a new machine
 - your library moved to a different folder
 - you want fanart.tv-based cover search to work
 - you want USDB-related library and compare actions to become available
@@ -82,7 +82,7 @@ It becomes important when:
 
 ### Languages
 
-Configure the known language values used throughout Yass Reloaded.
+Configure the known language values used throughout Yass Reincarnated.
 
 This matters for:
 
@@ -105,7 +105,7 @@ This is useful when:
 
 ## Error Checking
 
-These sections define how Yass Reloaded checks songs for common problems.
+These sections define how Yass Reincarnated checks songs for common problems.
 
 ### Tags
 
@@ -155,7 +155,7 @@ It also contains practical editor behavior settings:
 - microphone sensitivity for pitch capture
 
 The microphone settings are used by **Set Pitch From Microphone** in the editor.
-Devices are detected at startup, so restart Yass Reloaded if a newly connected
+Devices are detected at startup, so restart Yass Reincarnated if a newly connected
 microphone does not appear yet.
 
 ### Keyboard
@@ -202,7 +202,7 @@ When `yt-dlp` is available, you can configure:
 - video codec
 - video resolution
 
-If `yt-dlp` is not installed or not detected, this page becomes informational rather than actionable. In that case Yass Reloaded cannot offer the YouTube-driven wizard start in the same way.
+If `yt-dlp` is not installed or not detected, this page becomes informational rather than actionable. In that case Yass Reincarnated cannot offer the YouTube-driven wizard start in the same way.
 
 ## External Tools
 
@@ -261,7 +261,7 @@ USDB-related features depend on a mix of stored settings and external tooling:
 - stored credentials or browser-cookie login can be used for the login dialog
 - a configured USDB Syncer path enables database-backed song search and song-list refresh
 
-If the Syncer path is configured, Yass Reloaded prefers the local Syncer database for USDB search before falling back to the website.
+If the Syncer path is configured, Yass Reincarnated prefers the local Syncer database for USDB search before falling back to the website.
 
 ### Lyrics Sources
 
@@ -294,10 +294,10 @@ If Python is missing or the health check fails, the page still exists, but the u
 Important behavior:
 
 - the `Python executable` on this page is the runtime for audio-separator itself
-- if it is left empty, Yass uses the `Default Python executable` from `Settings -> External Tools -> Locations`
-- if `Update package` is used while the field is empty, Yass creates a dedicated audio-separator virtual environment and writes that Python path back into the page automatically
+- if it is left empty, Yass Reincarnated uses the `Default Python executable` from `Settings -> External Tools -> Locations`
+- if `Update package` is used while the field is empty, Yass Reincarnated creates a dedicated audio-separator virtual environment and writes that Python path back into the page automatically
 - `model directory` is an optional cache location for downloaded separation models
-- `output format` is the raw stem format written by audio-separator before Yass converts the result into the final configured target audio format
+- `output format` is the raw stem format written by audio-separator before Yass Reincarnated converts the result into the final configured target audio format
 
 ### Transcription
 
@@ -322,10 +322,10 @@ WhisperX section:
 Important behavior:
 
 - the WhisperX `Python executable` is the runtime for WhisperX itself
-- if it is left empty, Yass uses the `Default Python executable` from `Settings -> External Tools -> Locations`
-- if `Update package` is used while the field is empty, Yass creates a dedicated WhisperX virtual environment and writes that Python path back into the page automatically
-- if model, device, or compute type are set to `Auto`, Yass Reloaded can apply recommended runtime values after a health check
-- if you choose a manual value, Yass Reloaded should not silently overwrite it
+- if it is left empty, Yass Reincarnated uses the `Default Python executable` from `Settings -> External Tools -> Locations`
+- if `Update package` is used while the field is empty, Yass Reincarnated creates a dedicated WhisperX virtual environment and writes that Python path back into the page automatically
+- if model, device, or compute type are set to `Auto`, Yass Reincarnated can apply recommended runtime values after a health check
+- if you choose a manual value, Yass Reincarnated should not silently overwrite it
 - the update button is only useful once a valid Python-based installation exists
 
 ## Advanced

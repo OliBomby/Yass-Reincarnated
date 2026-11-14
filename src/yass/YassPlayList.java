@@ -607,7 +607,7 @@ public class YassPlayList extends JPanel implements TabChangeListener {
             outputStream.println("######################################");
             outputStream.println("#Ultrastar Deluxe Playlist Format v1.0");
             outputStream.println("#Playlist \"" + listTitle + "\" with " + n + " Songs.");
-            outputStream.println("#Created with Yass " + YassActions.VERSION + ".");
+            outputStream.println("#Created with Yass Reincarnated " + YassActions.VERSION + ".");
             outputStream.println("######################################");
             outputStream.println("#Name: " + listTitle);
             outputStream.println("#Songs:");

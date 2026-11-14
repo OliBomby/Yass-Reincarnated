@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current.
 
 ## Purpose
@@ -17,9 +19,9 @@ library contains both solo and duet versions.
 `.usdb` metadata file or an exact artist/title search, then opens the diff
 dialog.
 
-If no suitable USDB ID can be resolved, Yass Reloaded opens the USDB search
+If no suitable USDB ID can be resolved, Yass Reincarnated opens the USDB search
 dialog prefilled with the local artist and title. If the automatically resolved
-USDB song is a solo/duet mismatch, Yass Reloaded also falls back to that search
+USDB song is a solo/duet mismatch, Yass Reincarnated also falls back to that search
 dialog instead of opening a misleading diff.
 
 When the user explicitly selects a mismatching result from the search dialog,

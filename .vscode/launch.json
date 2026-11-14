@@ -3,10 +3,9 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Yass Reloaded",
+            "name": "Yass Reincarnated",
             "request": "launch",
             "mainClass": "yass.YassMain",
-            "projectName": "Yass-Reloaded",
             "cwd": "${workspaceFolder}",
             "javaExec": "${env:JAVA_HOME}/bin/java",
             "windows": {
@@ -20,7 +19,7 @@
             "modulePaths": [],
             "console": "integratedTerminal",
             "shortenCommandLine": "argfile",
-            "preLaunchTask": "Yass Reloaded: compile"
+            "preLaunchTask": "Yass Reincarnated: compile"
         }
     ]
 }

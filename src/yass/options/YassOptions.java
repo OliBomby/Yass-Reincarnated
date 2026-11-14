@@ -72,7 +72,7 @@ public class YassOptions extends JDialog {
         String ytDlpVersion = StringUtils.trimToNull(prop.getProperty("ytdlp-version"));
         LOGGER.info(OPTIONS_DEBUG + "Using cached yt-dlp version=" + StringUtils.defaultString(ytDlpVersion, "<none>"));
         panels = new Hashtable<>();
-        DefaultMutableTreeNode top = new DefaultMutableTreeNode("Yass");
+        DefaultMutableTreeNode top = new DefaultMutableTreeNode("Yass Reincarnated");
         DefaultMutableTreeNode library = new DefaultMutableTreeNode(I18.get("options_library"));
         DefaultMutableTreeNode meta = new DefaultMutableTreeNode(I18.get("options_metadata"));
         DefaultMutableTreeNode checker = new DefaultMutableTreeNode(I18.get("options_errors"));

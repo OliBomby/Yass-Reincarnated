@@ -4,7 +4,7 @@ title: Wizard Overview
 
 # Wizard Overview
 
-The song creation wizard helps you build a new Yass Reloaded song step by step. Which pages appear depends on the available inputs and configured tools.
+The song creation wizard helps you build a new Yass Reincarnated song step by step. Which pages appear depends on the available inputs and configured tools.
 
 ## Main Idea
 
@@ -54,20 +54,20 @@ This page can also expose additional helper actions when the environment is read
 
 Important behavior:
 
-- when the lyrics page is shown for the first time, Yass Reloaded can ask for `Artist` and `Title` immediately
+- when the lyrics page is shown for the first time, Yass Reincarnated can ask for `Artist` and `Title` immediately
 - these suggested values are typically derived from YouTube metadata or the source filename
 - the values are then reused later for MusicBrainz lookup, LrcLib lookup, and song/file naming in the wizard flow
 
 If LrcLib is used from this page:
 
-- Yass Reloaded first asks whether to search LrcLib online or import an existing `.lrc` file
+- Yass Reincarnated first asks whether to search LrcLib online or import an existing `.lrc` file
 - the previously confirmed artist/title values are reused automatically
-- Yass Reloaded can import either plain lyric text or already timed lyric lines when available
+- Yass Reincarnated can import either plain lyric text or already timed lyric lines when available
 - the result is meant as a lightweight lyrics source, not as a full replacement for every transcription workflow
 
 Subtitle, LRC, and LRCLib timing can be converted into the same reusable
 transcript model used by the transcription engines. When separated vocals are
-available, Yass Reloaded can refine those coarse timings against vocal pitch and
+available, Yass Reincarnated can refine those coarse timings against vocal pitch and
 energy before rebuilding notes.
 
 ### Lyrics for MIDI
@@ -102,7 +102,7 @@ This step helps place the song into the right folder or collection context.
 
 ### Tap
 
-This final step is for note-tapping preparation and follow-up. In Yass Reloaded, "recording" in this context means **note-tapping recording**, not microphone or raw audio recording.
+This final step is for note-tapping preparation and follow-up. In Yass Reincarnated, "recording" in this context means **note-tapping recording**, not microphone or raw audio recording.
 
 ## Separation and Transcription in the Wizard
 
@@ -118,9 +118,9 @@ If these are not available, the feature may be disabled or not useful yet.
 
 The helper can also reuse earlier work:
 
-- if a previous wizard run already created usable separation or transcription data for the same source, Yass Reloaded can reuse that state instead of starting from zero again
+- if a previous wizard run already created usable separation or transcription data for the same source, Yass Reincarnated can reuse that state instead of starting from zero again
 - if a YouTube subtitle file is available and no full transcript was produced, the subtitle can become a fallback transcript artifact
-- if you finish the wizard without running separation first, Yass Reloaded can still offer separation once the new song opens in the editor
+- if you finish the wizard without running separation first, Yass Reincarnated can still offer separation once the new song opens in the editor
 
 ## When Steps Are Missing
 

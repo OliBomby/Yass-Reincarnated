@@ -1,4 +1,4 @@
-name: Nightly Build
+name: Yass Reincarnated Nightly Build
 
 on:
   push:
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p package-input
-          cp target/Yass-Reloaded.jar package-input/
+          cp target/Yass-Reincarnated.jar package-input/
           [ -d "lib" ] && cp lib/*.jar package-input/ || true
 
       - name: Install NSIS
@@ -87,10 +87,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reloaded.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico"
+          $appVersion = (Get-Content target/classes/version.properties -Raw | ConvertFrom-StringData).version
+          jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reincarnated.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico" --vendor "OliBomby" --description "Yass Reincarnated - Karaoke Editor" --app-version $appVersion
           & "C:\Program Files (x86)\NSIS\makensis.exe" nsis-installer.nsi
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Copy-Item yass.exe dist\yass-nightly-installer.exe
+          Copy-Item yass-reincarnated-installer.exe dist\yass-reincarnated-nightly-installer.exe
 
       - name: Build Linux/macOS Package
         if: matrix.os != 'windows-latest'
@@ -101,21 +102,22 @@ jobs:
 
           if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
             EXTRA_OPTS="--linux-package-deps ffmpeg,aubio-tools"
-            TARGET_FILE="dist/yass-linux-amd64-nightly.deb"
+            TARGET_FILE="dist/yass-reincarnated-linux-amd64-nightly.deb"
           elif [ "${{ matrix.name }}" == "macOS-ARM" ]; then
-            TARGET_FILE="dist/yass-macos-arm64-nightly.dmg"
+            TARGET_FILE="dist/yass-reincarnated-macos-arm64-nightly.dmg"
           else
-            TARGET_FILE="dist/yass-macos-x64-nightly.dmg"
+            TARGET_FILE="dist/yass-reincarnated-macos-x64-nightly.dmg"
           fi
 
           jpackage \
             --type ${{ matrix.artifact_type }} \
             --dest dist \
-            --name "Yass-Reloaded" \
-            --main-jar Yass-Reloaded.jar \
+            --name "Yass-Reincarnated" \
+            --app-version "$(sed -n 's/^version=//p' target/classes/version.properties | tr -d '\r')" \
+            --main-jar Yass-Reincarnated.jar \
             --main-class yass.YassMain \
             --input package-input \
-            --vendor "DoubleDee" \
+            --vendor "OliBomby" \
             $EXTRA_OPTS
 
           GENERATED_FILE=$(find dist -maxdepth 1 -type f \( -name '*.deb' -o -name '*.dmg' \) | head -n 1)
@@ -123,7 +125,7 @@ jobs:
 
           if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
             NIGHTLY_STAMP=$(date -u +'%Y-%m-%d-%H%M%SZ')
-            cp package-input/Yass-Reloaded.jar "dist/Yass-Reloaded-nightly-${NIGHTLY_STAMP}-linux-x64.jar"
+            cp package-input/Yass-Reincarnated.jar "dist/Yass-Reincarnated-nightly-${NIGHTLY_STAMP}-linux-x64.jar"
           fi
 
       - name: Upload Nightly Artifacts
@@ -154,13 +156,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          tar --dereference -czf dist/yass-linux-x86_64-nightly-nix.tar.gz result
+          tar --dereference -czf dist/yass-reincarnated-linux-x86_64-nightly-nix.tar.gz result
 
       - name: Upload Nix Artifact
         uses: actions/upload-artifact@v4
         with:
           name: nightly-linux-nix
-          path: dist/yass-linux-x86_64-nightly-nix.tar.gz
+          path: dist/yass-reincarnated-linux-x86_64-nightly-nix.tar.gz
 
   publish-nightly:
     name: Publish Nightly Release
@@ -193,7 +195,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.NIGHTLY_TAG }}
-          name: Nightly Build
+          name: Yass Reincarnated Nightly Build
           body_path: nightly-notes.md
           prerelease: true
           draft: false

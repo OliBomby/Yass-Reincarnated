@@ -2,12 +2,14 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The editor can suggest golden notes and can manually toggle
 plain/golden and rap/rap-golden note types.
 
 ## Purpose
 
-Golden notes provide the golden bonus portion of an UltraStar score. Yass
+Golden notes provide the golden bonus portion of an UltraStar score. Yass Reincarnated
 validates whether the current golden-note duration matches the configured target
 and offers an editor action that marks suitable notes automatically.
 

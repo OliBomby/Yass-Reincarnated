@@ -4,7 +4,7 @@ title: Recording and Tapping
 
 # Recording and Tapping
 
-Yass Reloaded supports **note-tapping recording**, meaning you record note timing by tapping along with playback. This does **not** mean microphone or audio recording.
+Yass Reincarnated supports **note-tapping recording**, meaning you record note timing by tapping along with playback. This does **not** mean microphone or audio recording.
 
 ## When to Use It
 
@@ -20,7 +20,7 @@ Note-tapping recording is especially useful when:
 1. Select the note or note range you want to record
 2. Start the note-tapping recording mode
 3. Tap note start and release for note end
-4. Let Yass Reloaded place the tapped notes
+4. Let Yass Reincarnated place the tapped notes
 5. Refine with editing tools or Align to Melody
 
 ## During Recording
@@ -35,7 +35,7 @@ The note-tapping recording UI can show:
 
 ## Typical Outcomes
 
-After tapping, Yass Reloaded can:
+After tapping, Yass Reincarnated can:
 
 - keep the recorded result
 - continue from the first remaining untapped note

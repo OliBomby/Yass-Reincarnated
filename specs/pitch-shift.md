@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. Song-level global pitch-shift correction covering metadata
 storage, tuning analysis, a dialog UI, non-destructive live playback preview, and
 an optional permanent bake into audio files.
@@ -9,7 +11,7 @@ an optional permanent bake into audio files.
 ## Purpose
 
 Some recordings are tuned slightly above or below concert pitch while remaining
-internally consistent. Yass estimates that global tuning offset from Aubio pitch
+internally consistent. Yass Reincarnated estimates that global tuning offset from Aubio pitch
 data and lets the user apply a controlled, song-local correction so that audio
 playback, detected pitch lines, and melody alignment all sit on the chromatic
 grid. Cents are the precise unit; semitones are the musician-friendly display

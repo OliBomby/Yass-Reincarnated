@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. Covers the editor's keyboard multi-note selection via
 `Shift-Up` / `Shift-Down`, including the repeated-press escalation to word and
 page boundaries. Single-press extend-by-one is the base behavior; the 2x/3x

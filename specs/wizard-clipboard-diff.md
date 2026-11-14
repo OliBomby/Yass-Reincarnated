@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The Create Song Wizard can paste lyrics directly or compare
 clipboard lyrics against an existing transcript before applying them.
 
@@ -16,7 +18,7 @@ rewriting transcript timing when transcript data already exists.
 - Wizard lyrics step has **Paste Lyrics**.
 - If no transcript exists, clipboard text is normalized and pasted directly into
   the lyrics field.
-- If a transcript exists, Yass opens a diff dialog:
+- If a transcript exists, Yass Reincarnated opens a diff dialog:
   - left side: transcript text
   - right side: clipboard text
   - differences are highlighted

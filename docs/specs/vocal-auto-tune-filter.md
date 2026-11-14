@@ -7,7 +7,7 @@ vocal tracks.
 
 Some karaoke source material has vocal stems that are internally consistent but
 slightly off concert pitch, or vocals that would be easier to author if a
-pitch-corrected helper stem were available. Yass should investigate whether it
+pitch-corrected helper stem were available. Yass Reincarnated should investigate whether it
 can offer an optional "auto-tuned vocal helper" workflow without changing the
 original song audio unless the user explicitly asks for it.
 
@@ -56,18 +56,18 @@ assigned only after user confirmation.
 
 1. User selects a song with a configured vocal track.
 2. User runs a new tool action such as `Create Pitch-Corrected Vocals`.
-3. Yass analyzes the vocal track and proposes correction settings.
+3. Yass Reincarnated analyzes the vocal track and proposes correction settings.
 4. User chooses an output mode:
    - create a helper file only
    - assign as `#VOCALS`
    - cancel
-5. Yass renders a new file next to the song, for example
+5. Yass Reincarnated renders a new file next to the song, for example
    `<Artist> - <Title> (Vocals Tuned).ogg`.
 6. The original vocal file remains untouched.
 
 ## Technical Direction
 
-GSnap itself is a VST plugin, and relying on arbitrary VST hosting from Yass is
+GSnap itself is a VST plugin, and relying on arbitrary VST hosting from Yass Reincarnated is
 likely fragile across Windows, macOS, and Linux. The first implementation should
 therefore prefer a command-line or library-backed pitch processing route.
 
@@ -90,7 +90,7 @@ Useful existing data:
 - `PitchDetector.TuningOffsetAnalysis` for global tuning offset
 - optional `#COMMENT:key=...` for scale-aware correction decisions
 
-For strict auto-tune behavior, a key or scale is important. Without a key, Yass
+For strict auto-tune behavior, a key or scale is important. Without a key, Yass Reincarnated
 should either use chromatic correction or ask the user to choose one.
 
 ## Output
@@ -98,7 +98,7 @@ should either use chromatic correction or ask the user to choose one.
 Rendered output should:
 
 - preserve duration as closely as possible
-- use a format Yass can play reliably
+- use a format Yass Reincarnated can play reliably
 - avoid clipping
 - log the applied correction settings
 - be recoverable from the song folder without relying on temp files
@@ -131,7 +131,7 @@ When implemented, cover:
 
 ## Open Questions
 
-- Which backend is good enough and redistributable enough for Yass Reloaded?
+- Which backend is good enough and redistributable enough for Yass Reincarnated?
 - Should the feature require a key, or allow chromatic correction?
 - Should the action operate on `#VOCALS` only, or also on `#AUDIO`?
 - Should rendered helper files be tracked in `#COMMENT` metadata?

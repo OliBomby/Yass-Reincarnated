@@ -1,9 +1,10 @@
-# Yass Reloaded Agent Notes
+# Yass Reincarnated Agent Notes
 
 ## Project Identity
 
-This repository is **Yass Reloaded**, a fork of Yass. User-facing documentation,
-release notes, UI copy, and new specs should use the name "Yass Reloaded" when
+This repository is **Yass Reincarnated**, a fork of Yass Reloaded (itself a fork
+of Yass). User-facing documentation,
+release notes, UI copy, and new specs should use the name "Yass Reincarnated" when
 the project identity matters.
 
 ## Documentation Layout

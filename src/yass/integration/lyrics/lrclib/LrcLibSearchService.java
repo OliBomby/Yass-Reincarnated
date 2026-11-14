@@ -138,8 +138,8 @@ public class LrcLibSearchService {
                     .GET()
                     .timeout(java.time.Duration.ofMillis(READ_TIMEOUT_MS))
                     .header("Accept", "application/json")
-                    .header("User-Agent", "Yass Reloaded/" + VersionUtils.getVersion()
-                            + " ( https://github.com/DoubleDee73/Yass-Reloaded )")
+                    .header("User-Agent", "Yass Reincarnated/" + VersionUtils.getVersion()
+                            + " ( https://github.com/OliBomby/Yass-Reincarnated )")
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             int responseCode = response.statusCode();
@@ -173,7 +173,7 @@ public class LrcLibSearchService {
             command.add("-k");
         }
         command.add("-A");
-        command.add("Yass Reloaded/" + VersionUtils.getVersion() + " ( https://github.com/DoubleDee73/Yass-Reloaded )");
+        command.add("Yass Reincarnated/" + VersionUtils.getVersion() + " ( https://github.com/OliBomby/Yass-Reincarnated )");
         command.add("-H");
         command.add("Accept: application/json");
         command.add("-w");

@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The Create Song Wizard can separate vocals and transcribe
 them during the lyrics step, then carry generated assets into the final song
 folder.

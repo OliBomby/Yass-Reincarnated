@@ -13,12 +13,12 @@ Narzędzia zewnętrzne
 
 <h3>Narzędzia zewnętrzne</h3>
 
-<p>Yass Reloaded integruje się z kilkoma opcjonalnymi narzędziami zewnętrznymi do separacji wokali i transkrypcji tekstu.
+<p>Yass Reincarnated integruje się z kilkoma opcjonalnymi narzędziami zewnętrznymi do separacji wokali i transkrypcji tekstu.
 Otwórz <b>Ustawienia &gt; Narzędzia zewnętrzne</b>, aby je skonfigurować.</p>
 
 <h4>FFmpeg</h4>
 <p>FFmpeg jest wymagany do konwersji audio (AAC, OGG, OPUS itd.) oraz do procesu separacji wokali.
-Yass może pobrać FFmpeg automatycznie albo możesz wskazać istniejącą instalację w
+Yass Reincarnated może pobrać FFmpeg automatycznie albo możesz wskazać istniejącą instalację w
 <b>Narzędzia zewnętrzne &gt; Lokalizacje</b>.</p>
 <ul>
   <li>Pobierz: <code>https://ffmpeg.org/download.html</code></li>
@@ -27,12 +27,12 @@ Yass może pobrać FFmpeg automatycznie albo możesz wskazać istniejącą insta
 
 <h4>Środowiska Python</h4>
 <p>Kilka lokalnych narzędzi używa Pythona. W <b>Narzędzia zewnętrzne &gt; Lokalizacje</b> możesz ustawić
-<b>domyślny executable Pythona</b>. Yass używa go jako wspólnego fallbacku dla lekkich pomocników Pythonowych
+<b>domyślny executable Pythona</b>. Yass Reincarnated używa go jako wspólnego fallbacku dla lekkich pomocników Pythonowych
 oraz jako interpretera bazowego do tworzenia środowisk specyficznych dla poszczególnych narzędzi.</p>
 <ul>
-  <li>Jeśli pole Python dla danego narzędzia jest puste, Yass użyje domyślnego Pythona z <b>Lokalizacji</b>.</li>
+  <li>Jeśli pole Python dla danego narzędzia jest puste, Yass Reincarnated użyje domyślnego Pythona z <b>Lokalizacji</b>.</li>
   <li>Jeśli klikniesz <b>Update package</b> dla WhisperX lub audio-separator, a pole Python dla narzędzia jest puste,
-      Yass automatycznie utworzy dedykowane środowisko wirtualne i zapisze tam ścieżkę do Pythona.</li>
+      Yass Reincarnated automatycznie utworzy dedykowane środowisko wirtualne i zapisze tam ścieżkę do Pythona.</li>
   <li>Dzięki temu ciężkie zależności, takie jak WhisperX i audio-separator, pozostają odizolowane, a mniejsze helpery Pythonowe mogą współdzielić domyślnego Pythona.</li>
 </ul>
 
@@ -68,7 +68,7 @@ Obsługuje te same modele MDX-Net, VR Architecture i Demucs co Ultimate Vocal Re
   </li>
   <li>Otwórz <b>Ustawienia &gt; Narzędzia zewnętrzne &gt; audio-separator</b>.</li>
   <li>Wskaż executable Pythona dla tego narzędzia albo zostaw pole puste, aby użyć domyślnego Pythona z <b>Lokalizacji</b>.</li>
-  <li>Jeśli użyjesz <b>Update package</b> przy pustym polu Python dla narzędzia, Yass utworzy dedykowane środowisko wirtualne dla audio-separator i automatycznie uzupełni to pole.</li>
+  <li>Jeśli użyjesz <b>Update package</b> przy pustym polu Python dla narzędzia, Yass Reincarnated utworzy dedykowane środowisko wirtualne dla audio-separator i automatycznie uzupełni to pole.</li>
   <li>Wybierz model. Znane modele są pokazywane czytelną nazwą, a nieznane pozostają przy nazwie pliku. Polecane modele:
     <ul>
       <li><code>Kim_Vocal_2.onnx</code> - szybki, dobra jakość (domyślny)</li>
@@ -78,7 +78,7 @@ Obsługuje te same modele MDX-Net, VR Architecture i Demucs co Ultimate Vocal Re
     </ul>
   </li>
   <li>Opcjonalnie ustaw katalog pamięci podręcznej modeli. Pobrane modele będą tam przechowywane, aby nie trzeba było pobierać ich ponownie.</li>
-  <li><b>Output format</b> określa surowy format plików zapisywanych przez audio-separator, zanim Yass przekonwertuje stemsy do skonfigurowanego formatu docelowego.</li>
+  <li><b>Output format</b> określa surowy format plików zapisywanych przez audio-separator, zanim Yass Reincarnated przekonwertuje stemsy do skonfigurowanego formatu docelowego.</li>
   <li>Kliknij <b>Test configuration</b>, aby sprawdzić konfigurację.</li>
   <li>Po pomyślnym teście przycisk <b>Separate Vocals + Transcribe</b> w kreatorze stanie się dostępny.
       Jeśli skonfigurowane są zarówno MVSEP, jak i audio-separator, preferowany będzie audio-separator.</li>
@@ -101,7 +101,7 @@ Wymaga klucza API OpenAI.</p>
   <li>Zainstaluj WhisperX: <code>pip install whisperx</code></li>
   <li>Otwórz <b>Ustawienia &gt; Narzędzia zewnętrzne &gt; WhisperX</b>.</li>
   <li>Wskaż executable Pythona dla WhisperX albo zostaw pole puste, aby użyć domyślnego Pythona z <b>Lokalizacji</b>.</li>
-  <li>Jeśli użyjesz <b>Update package</b> przy pustym polu Python dla WhisperX, Yass automatycznie utworzy dedykowane środowisko wirtualne i zapisze tę runtime.</li>
+  <li>Jeśli użyjesz <b>Update package</b> przy pustym polu Python dla WhisperX, Yass Reincarnated automatycznie utworzy dedykowane środowisko wirtualne i zapisze tę runtime.</li>
   <li>Wybierz tryb uruchamiania (<i>python -m whisperx</i> jest zalecane).</li>
   <li>Wybierz model (np. <i>large-v2</i>) i urządzenie (<i>cpu</i> albo <i>cuda</i>).</li>
   <li>Kliknij <b>Test configuration</b>, aby uruchomić test. Wynik zostanie zapisany i włączy przycisk
@@ -114,7 +114,7 @@ Wymaga klucza API OpenAI.</p>
 <ol>
   <li>Wpisz adres YouTube na stronie <b>YouTube</b> i pobierz audio.</li>
   <li>Na stronie <b>Lyrics</b> kliknij <b>Separate Vocals + Transcribe</b>.</li>
-  <li>Yass konwertuje audio do WAV, oddziela wokale (audio-separator albo MVSEP) i transkrybuje je (WhisperX).</li>
+  <li>Yass Reincarnated konwertuje audio do WAV, oddziela wokale (audio-separator albo MVSEP) i transkrybuje je (WhisperX).</li>
   <li>Tekst zostanie wypełniony automatycznie. Możesz go poprawić przed kontynuacją.</li>
   <li>Zakończ kreator, aby utworzyć piosenkę z już wypełnionymi timestampami z transkrypcji.</li>
 </ol>

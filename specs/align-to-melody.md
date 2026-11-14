@@ -2,6 +2,8 @@
 
 ## Status
 
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
 Implemented/current. The feature includes full melody alignment plus separate
 timing-only and pitch-only variants.
 

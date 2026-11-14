@@ -2,13 +2,15 @@
 
 ## Status
 
-Implemented/current. Yass persists canonical transcript artifacts and can reuse
+Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
+
+Implemented/current. Yass Reincarnated persists canonical transcript artifacts and can reuse
 them across wizard and editor flows.
 
 ## Purpose
 
 Lyrics and timing can come from LRCLib, OpenAI, WhisperX, or downloaded
-subtitles. Yass normalizes those sources into one transcript model so wizard and
+subtitles. Yass Reincarnated normalizes those sources into one transcript model so wizard and
 editor workflows can reuse text and timing without caring where the data
 originated.
 
