@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Yass Reloaded",
+            "request": "launch",
+            "mainClass": "yass.YassMain",
+            "projectName": "Yass-Reloaded",
+            "cwd": "${workspaceFolder}",
+            "javaExec": "${env:JAVA_HOME}/bin/java",
+            "windows": {
+                "javaExec": "${env:JAVA_HOME}/bin/java.exe"
+            },
+            "classPaths": [
+                "${workspaceFolder}/target/classes",
+                "$Runtime",
+                "${workspaceFolder}/lib/*.jar"
+            ],
+            "modulePaths": [],
+            "console": "integratedTerminal",
+            "shortenCommandLine": "argfile",
+            "preLaunchTask": "Yass Reloaded: compile"
+        }
+    ]
+}

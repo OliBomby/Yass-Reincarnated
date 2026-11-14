@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Yass Reloaded: compile",
+            "type": "shell",
+            "command": "sh",
+            "args": [
+                "${workspaceFolder}/mvnw",
+                "-q",
+                "-DskipTests",
+                "compile"
+            ],
+            "windows": {
+                "command": "${workspaceFolder}/mvnw.cmd",
+                "args": [
+                    "-q",
+                    "-DskipTests",
+                    "compile"
+                ]
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        }
+    ]
+}
