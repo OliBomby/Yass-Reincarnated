@@ -528,7 +528,9 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     while (pos > 0 && c != ' ' && c != '-' && c != '\n') {
                         c = txt.charAt(--pos);
                     }
-                    if (c == '-' || c == '\n') {
+                    // In trailing-space mode the word separator belongs to the previous note.
+                    // Legacy leading-space mode includes it in the current note's offset.
+                    if (c == '-' || c == '\n' || (c == ' ' && prop.isUncommonSpacingAfter())) {
                         pos++;
                     }
                     pos = dot - pos;

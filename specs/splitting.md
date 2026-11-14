@@ -2,37 +2,29 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. The editor split action can use pitch data when available
-and falls back to the legacy split behavior when pitch/text evidence is
-ambiguous.
+Implemented/current in Yass Reincarnated.
 
 ## Purpose
 
-Pitch-guided splitting reduces manual cleanup when a single written syllable
-spans multiple sung pitches. It helps with obvious held syllables and melismas
-without replacing the standard split behavior.
+Let users split notes and syllables with less manual cleanup, including held
+syllables sung across multiple pitches and text split at the lyrics caret.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- The normal editor split action remains the entry point.
-- If the selected note has usable detected pitch data, Yass Reincarnated may split by stable
-  pitch segments.
-- If pitch data is missing, sparse, unstable, or text distribution is ambiguous,
-  Yass Reincarnated falls back to the legacy split.
+- The editor's split action can split a selected note according to clear changes
+  in its detected pitch. When pitch or text information is insufficient or
+  ambiguous, the normal split behavior is used as the fallback.
 - Existing continuation text such as `~n` stays on the right when split again.
-
-## Core Rules
-
-- Pitch-guided splitting is single-note oriented; it does not restructure a full
-  phrase.
-- A stable pitch segment needs at least three beats.
-- Adjacent pitch changes within one semitone are treated as the same segment.
-- Transition beats may remain attached to the previous segment.
-- Non-final segments leave the usual one-beat gap when touching syllables are
-  enabled.
-- Explicit hyphenation or hyphenator syllables are preferred when available.
+- In lyrics editing mode (`F4`), pressing `-` inside a syllable splits its text
+  at the caret and shifts subsequent lyrics one note to the right. It must not
+  insert `~` before the whole syllable instead.
+- Pressing space inside a syllable also splits at the caret and shifts subsequent
+  lyrics right, adding a word boundary between the resulting parts.
+- Lyrics splitting works with both spaces after words and legacy spaces before
+  words, including after word boundaries, between syllables, after line breaks,
+  and at the start of a song.
+- Splitting respects the editor's touching-syllable setting.
+- Explicit syllable divisions are preferred when available.
 - Matching syllable and segment counts map one-to-one.
 - With two pitch segments and more than two syllables, the first syllable maps
   to the first segment and the remaining syllables map to the second segment.
@@ -42,44 +34,28 @@ without replacing the standard split behavior.
 - Contraction apostrophes move from the apostrophe onward to the final segment.
 - Two-letter words remain intact on the first segment.
 - Punctuation and trailing spacing stay on the final segment.
-- If pitch-guided splitting falls back but detects a sustained changed-pitch
-  right side, the right-hand note still receives the changed pitch.
+- When a normal split is used but a clear changed pitch is available for the
+  right-hand note, that note receives the changed pitch.
 
-## Data And Configuration
+## Acceptance Scenarios
 
-- Input pitch data comes from `PitchDetector.PitchData`.
-- Touching-syllable behavior follows the existing editor split settings.
-- No persistent properties or song tags are changed beyond the split note rows.
+- With spaces after words enabled, a note containing `sou` follows a word
+  boundary and is followed by a `~` continuation note. Enter lyrics editing
+  mode, place the caret at `so|u`, and press `-`. The notes contain `so` and `u`,
+  and subsequent lyrics shift right. The whole `sou` does not move to the next
+  note with a new `~` before it.
+- Repeat the same split with spaces before words enabled. The syllable still
+  splits at the caret, preserving the existing word boundary.
+- Press space at `so|u`. The result is two words, `so` and `u`, rather than two
+  connected syllables.
+- Split a held syllable with clear detected pitch changes. The resulting notes
+  follow those pitches and retain the lyric text in order.
+- Split a note without usable pitch information. The normal split behavior is
+  used.
+- Split an existing `~n` continuation again. The continuation text remains on
+  the right-hand note.
 
-## Code Entry Points
+## Scope And Constraints
 
-- `src/yass/YassActions.java`
-  - split action loading pitch data and calling the table split path
-- `src/yass/YassTable.java`
-  - `splitRowsByPitch(...)`
-  - legacy split implementation and text distribution helpers
-- `src/yass/analysis/PitchDetector.java`
-  - pitch data used by the split heuristics
-
-## Regression Coverage
-
-- `YassTableSpec`
-  - stable pitch segment detection
-  - transition beat handling
-  - one-to-one syllable/segment mapping
-  - first-syllable/rest mapping for two segments
-  - final consonant cluster mapping
-  - contraction apostrophe mapping
-  - two-letter words staying intact
-  - punctuation preservation
-  - sustained-run fallback pitch assignment
-  - repeated split of tilde continuations
-
-## Extension Notes
-
-- Keep this conservative. If segment detection or text mapping is uncertain,
-  fall back to legacy split.
-- Add tests before changing consonant cluster lists or syllable distribution
-  rules; small text changes can produce very visible chart cleanup regressions.
-- Keep debug logging useful but preferably at debug/fine level unless the user
-  explicitly needs split diagnostics.
+- Pitch-guided splitting acts on a single selected note rather than
+  restructuring an entire phrase.

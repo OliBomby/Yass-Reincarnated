@@ -1,11 +1,11 @@
 # Feature Spec Format
 
-`specs/` contains current-state documentation for implemented or accepted
-features. These files are written for future agents and maintainers, not as
-polished user documentation.
+`specs/` contains functional requirements for implemented or accepted features in
+Yass Reincarnated. Specs capture the user's intent and the behavior the product
+must provide.
 
-Open, planned, or speculative work belongs in `docs/specs/`. Once implemented,
-move the file here and convert it to the structure below.
+Open or planned requirements belong in `docs/specs/`. Once implemented, move the
+spec here and describe the accepted behavior in the present tense.
 
 ## Required Structure
 
@@ -16,46 +16,40 @@ Each completed feature spec should use these sections in this order:
 
 ## Status
 
-Implemented/current. Mention important version or scope notes if useful.
+State whether the feature is implemented or accepted, including relevant scope.
 
 ## Purpose
 
-Explain why the feature exists and what problem it solves.
+Describe the user's problem and desired outcome from the originating request.
 
-## User-Facing Behavior
+## Functional Requirements
 
-Describe menus, shortcuts, dialogs, visible workflow, and important disabled or
-fallback states.
+Describe what the user can do and the observable behavior the product must
+provide, including relevant settings, shortcuts, and fallback or error states.
 
-## Core Rules
+## Acceptance Scenarios
 
-Document the domain rules and heuristics that must stay true when the feature is
-extended.
+Give concise examples of user actions and expected results. Include edge cases
+that clarify the requested behavior.
 
-## Data And Configuration
+## Scope And Constraints
 
-List relevant UltraStar tags, properties, cache files, generated filenames, and
-external tool assumptions.
-
-## Code Entry Points
-
-List the classes and methods future agents should inspect first.
-
-## Regression Coverage
-
-List the test specs or specific scenarios currently covered.
-
-## Extension Notes
-
-Call out known limitations, intentional non-goals, and rules of thumb for safe
-future changes.
+Record explicit limits, exclusions, and compatibility requirements from the
+request. Omit this section if there are none.
 ```
 
 ## Style
 
-- Prefer current behavior over historical planning notes.
-- If a historical decision still matters, rewrite it as a current rule.
-- Keep future ideas in `Extension Notes`, not mixed into the main behavior.
-- Use concrete class, method, property, and file names.
-- Keep specs concise enough to scan, but complete enough that an agent can make
-  a safe first change without rediscovering the whole feature from scratch.
+- Stay close to the originating prompt or bug report in scope and level of detail.
+- Describe requirements and observable outcomes, not how they are implemented.
+- Do not derive new requirements merely from the current code or tests.
+- Include user-visible settings, file formats, and domain rules only when they
+  help define the requested behavior.
+- Exclude code paths, class and method names, internal algorithms and thresholds,
+  test inventories, root-cause analysis, debugging details, and implementation
+  advice. Keep engineering documentation separate.
+- Acceptance scenarios describe expected behavior; they are not reports of which
+  automated tests currently pass.
+- Keep future proposals in `docs/specs/` until accepted.
+- Apply this format when creating or revising specs; older engineering-oriented
+  sections should be removed or moved to separate documentation as they are revised.
