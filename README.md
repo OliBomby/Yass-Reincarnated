@@ -51,21 +51,15 @@ Yass Reincarnated has been localized to:
 - Polish
 - Hungarian
 
-French has just recently been added and been translated by AI. Please let me know, if you find any mistakes or missing translations.
-If you want to help me localize Yass Reincarnated to your language, please let me know as well.
-
 ## Project Background
 Yass Reincarnated is a fork of [Yass Reloaded](https://github.com/DoubleDee73/Yass-Reloaded)
 by DoubleDee. Yass Reloaded is based on Yass 2.4.3, originally developed by Saruta
 since 2009, and modernized the codebase to Java 21. This fork continues that work
 under the Yass Reincarnated name.
 
-## Differences Compared to the Original Yass
-- Extended audio format support via FFmpeg (AAC, OGG, OPUS and more)
+## Differences Compared to the Yass Reloaded
 - Improved user experience focused on real-world karaoke song creation
-- Faster bug fixing and active maintenance
-- Support for new and extended UltraStar song format tags
-- Modern Java 21 codebase instead of legacy Java 8
+- Fixed bugs so editing lyrics is no longer a pain
 
 ## Downloads
 
@@ -219,9 +213,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # Support
-To support DoubleDee's upstream Yass Reloaded work, you can use the donation link below.
+To support OliBomby's Yass Reincarnated work, you can use the donation link below.
 
-<a target="_blank" rel="noopener noreferrer" href="https://www.buymeacoffee.com/DoubleDee73"><img src="https://github.com/user-attachments/assets/a40f851a-2ef1-46ce-a6d6-0bf6fd0ffb95" alt="image" style="max-width: 100%; width: 200px;"></a>
+<a href='https://ko-fi.com/V7V2HPH5F' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 # Troubleshooting
 ## Yass Reincarnated does nothing after showing the splash screen
