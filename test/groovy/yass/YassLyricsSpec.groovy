@@ -873,6 +873,155 @@ class YassLyricsSpec extends Specification {
         true         | KeyEvent.VK_BACK_SPACE
     }
 
+    def 'lyric edits confirm whole song spacing conversion before changing text'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) { isUncommonSpacingAfter() >> preferredAfter }
+        def original = originalAfter ? ['One ', 'two ', 'Three ', 'four ']
+                : ['One', ' two', 'Three', ' four']
+        def snapshots = []
+        def geometry = []
+        def promptStates = []
+        int prompts
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            original.eachWithIndex { text, index ->
+                if (index == 2) {
+                    model.addRow(new YassRow('-', '11', '', '', ''))
+                }
+                model.addRow(new YassRow(':', (index * 6) as String, '5', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            def table = new ConfirmingSpacingTable(model, props)
+            table.setModel(model)
+            def attachListener = YassTable.getDeclaredMethod('addTableModelListener')
+            attachListener.accessible = true
+            attachListener.invoke(table)
+            table.setSaved(true)
+            table.addUndo()
+            def lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setTable(table)
+            lyrics.editLyrics()
+            def area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            def originalDisplay = area.text
+            table.response = {
+                promptStates << [area.text == originalDisplay, table.saved, !table.canUndo()]
+                // Modal dialogs pump events and temporarily take focus away.
+                def loop = Toolkit.defaultToolkit.systemEventQueue.createSecondaryLoop()
+                SwingUtilities.invokeLater {
+                    area.focusListeners.each { it.focusLost(new FocusEvent(area, FocusEvent.FOCUS_LOST, true)) }
+                    assert lyrics.editable
+                    def key = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0,
+                            KeyEvent.VK_MINUS, '-' as char)
+                    area.keyListeners.each { it.keyPressed(key) }
+                    assert key.consumed
+                    area.document.insertString(0, 'unexpected', null)
+                    loop.exit()
+                }
+                loop.enter()
+                accept
+            }
+            def takeSnapshot = {
+                snapshots << table.noteRows.collect { it.text.replace(YassRow.SPACE, ' ' as char) }
+                geometry << table.noteRows.collect { [it.beatInt, it.lengthInt, it.heightInt] }
+            }
+            assert table.promptCount == 0
+            takeSnapshot()
+            switch (edit) {
+                case 'insert': area.document.insertString(1, 'x', null); break
+                case 'remove': area.document.remove(1, 1); break
+                case 'replace': area.document.replace(1, 1, 'x', null); break
+                case 'replaceAll':
+                    def replaceAll = YassLyrics.getDeclaredMethod('replaceLyricsText', String)
+                    replaceAll.accessible = true
+                    assert replaceAll.invoke(lyrics, originalDisplay.replace('One', 'Oxe')) == accept
+                    break
+                case 'overwrite':
+                    area.caretPosition = 1
+                    def overwrite = YassLyrics.getDeclaredMethod('overwriteCharacter', JTextPane, Character.TYPE)
+                    overwrite.accessible = true
+                    overwrite.invoke(lyrics, area, 'x' as char)
+                    break
+            }
+            assert lyrics.editable
+            takeSnapshot()
+            if (accept) {
+                lyrics.undoRedoWhileEditing(table::undoRows)
+                takeSnapshot()
+                assert !table.canUndo()
+                lyrics.undoRedoWhileEditing(table::redoRows)
+                takeSnapshot()
+                // Continuing to type after the conversion must not prompt again.
+                area.document.insertString(1, 'y', null)
+            } else {
+                assert area.text == originalDisplay
+                assert table.saved
+                assert !table.canUndo()
+            }
+            prompts = table.promptCount
+            lyrics.finishEditing()
+        }
+
+        then:
+        prompts == (preferredAfter == originalAfter ? 0 : 1)
+        promptStates.every { it == [true, true, true] }
+        geometry.every { it == geometry.first() }
+        snapshots[0] == original
+        if (accept) {
+            def word = edit == 'insert' ? 'Oxne' : edit == 'remove' ? 'Oe' : 'Oxe'
+            def expected = preferredAfter ? [word + ' ', 'two ', 'Three ', 'four ']
+                    : [word, ' two', 'Three', ' four']
+            assert snapshots == [original, expected, original, expected]
+        } else {
+            assert snapshots == [original, original]
+        }
+
+        where:
+        preferredAfter | originalAfter | accept | edit
+        true           | false         | true   | 'insert'
+        true           | false         | true   | 'remove'
+        true           | false         | true   | 'replace'
+        true           | false         | true   | 'overwrite'
+        true           | false         | true   | 'replaceAll'
+        false          | true          | true   | 'insert'
+        false          | true          | true   | 'remove'
+        false          | true          | true   | 'replace'
+        false          | true          | true   | 'overwrite'
+        false          | true          | true   | 'replaceAll'
+        true           | false         | false  | 'insert'
+        true           | false         | false  | 'remove'
+        true           | false         | false  | 'replace'
+        true           | false         | false  | 'overwrite'
+        true           | false         | false  | 'replaceAll'
+        false          | true          | false  | 'insert'
+        false          | true          | false  | 'remove'
+        false          | true          | false  | 'replace'
+        false          | true          | false  | 'overwrite'
+        false          | true          | false  | 'replaceAll'
+        true           | true          | true   | 'insert'
+        false          | false         | true   | 'insert'
+    }
+
+    private static class ConfirmingSpacingTable extends YassTable {
+        Closure response
+        int promptCount
+
+        ConfirmingSpacingTable(YassTableModel model, YassProperties props) {
+            super(model, props)
+        }
+
+        @Override
+        protected boolean confirmSpacingCorrection() {
+            promptCount++
+            response.call()
+        }
+    }
+
     private static class PromptingRollTable extends YassTable {
         Closure prompt
 

@@ -7947,17 +7947,24 @@ public class YassTable extends JTable {
 
     private boolean skipRollingOrSplitting() {
         if (prop.isUncommonSpacingAfter() != isSongWithTrailingSpaces()) {
-            int autocorrect = JOptionPane.showConfirmDialog(this, I18.get("edit_rollsplit_spacing_conflict"),
-                                                            I18.get("edit_rollsplit_failed"),
-                                                            JOptionPane.OK_CANCEL_OPTION,
-                                                            JOptionPane.INFORMATION_MESSAGE);
-            if (autocorrect == JOptionPane.OK_OPTION) {
+            if (confirmLyricSpacing()) {
                 auto.autoCorrectSpacing(this);
                 return false;
             }
             return true;
         }
         return false;
+    }
+
+    boolean confirmLyricSpacing() {
+        return prop.isUncommonSpacingAfter() == isSongWithTrailingSpaces()
+                || confirmSpacingCorrection();
+    }
+
+    protected boolean confirmSpacingCorrection() {
+        return JOptionPane.showConfirmDialog(this, I18.get("edit_rollsplit_spacing_conflict"),
+                I18.get("edit_rollsplit_failed"), JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION;
     }
 
     private void rollRightWithTrailingSpaces(int row, int rowCount, char splitCode, int pos) {

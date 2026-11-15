@@ -77,6 +77,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
 
     private boolean preventFireUpdate = false;
     private boolean editingTable = false;
+    private boolean confirmingSpacing = false;
     private boolean preventHyphenKeys = true;
     private boolean isFormatting = false;
 
@@ -303,6 +304,32 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
 
         init(prop);
 
+        // Ask before the document changes so Cancel cannot rewrite any lyrics.
+        doc.setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (text != null && !text.isEmpty() && confirmLyricsEdit()) {
+                    super.insertString(fb, offset, text, attrs);
+                }
+            }
+
+            @Override
+            public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                if (length > 0 && confirmLyricsEdit()) {
+                    super.remove(fb, offset, length);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if ((length > 0 || (text != null && !text.isEmpty())) && confirmLyricsEdit()) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+        });
+
         // compound editing instead of character-based:
 
         // http://forum.java.sun.com/thread.jspa?forumID=57&threadID=637225
@@ -350,7 +377,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             public void focusLost(FocusEvent e) {
                 // LOGGER.info("lyrics focus lost");
                 
-                if (!editingTable && (frDialog == null || !frDialog.isVisible())) {
+                if (!editingTable && !confirmingSpacing && (frDialog == null || !frDialog.isVisible())) {
                     finishEditing();
                 }
             }
@@ -418,6 +445,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
 
         lyricsArea.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e) {
+                if (confirmingSpacing) {
+                    e.consume();
+                    return;
+                }
                 if (e.isConsumed()) {
                     return;
                 }
@@ -680,6 +711,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             }
 
             public void keyTyped(KeyEvent e) {
+                if (confirmingSpacing) {
+                    e.consume();
+                    return;
+                }
                 if (e.isConsumed()) {
                     return;
                 }
@@ -908,6 +943,22 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                                                               notSelectStyle,
                                                               false);
 
+    }
+
+    private boolean confirmLyricsEdit() {
+        if (preventFireUpdate || editingTable || table == null) {
+            return true;
+        }
+        if (confirmingSpacing) {
+            return false;
+        }
+        confirmingSpacing = true;
+        try {
+            // applyLyrics performs the conversion together with the text edit.
+            return table.confirmLyricSpacing();
+        } finally {
+            confirmingSpacing = false;
+        }
     }
 
     /** Runs Undo/Redo without leaving lyrics editing or restoring an old selection. */
@@ -2229,7 +2280,11 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             table.getSelectionModel().removeListSelectionListener(
                     tableSelectionListener);
             lyricsArea.removeCaretListener(caretListener);
-            lyricsArea.setText(sb.toString());
+            if (!replaceLyricsText(sb.toString())) {
+                lyricsArea.addCaretListener(caretListener);
+                table.getSelectionModel().addListSelectionListener(tableSelectionListener);
+                return;
+            }
             lyricsArea.getCaret().setDot(in);
             lyricsArea.getCaret().moveDot(out);
             lyricsArea.getStyledDocument().setCharacterAttributes(0,
@@ -2268,7 +2323,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     tableSelectionListener);
             lyricsArea.removeCaretListener(caretListener);
 
-            lyricsArea.setText(txt);
+            replaceLyricsText(txt);
 
             lyricsArea.addCaretListener(caretListener);
             table.getSelectionModel().addListSelectionListener(
@@ -2282,15 +2337,28 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         }
     }
 
+    private boolean replaceLyricsText(String text) {
+        if (text.equals(lyricsArea.getText())) {
+            return true;
+        }
+        try {
+            AbstractDocument doc = (AbstractDocument) lyricsArea.getDocument();
+            // A whole-text replacement must ask once before either removal or insertion.
+            doc.replace(0, doc.getLength(), text, null);
+            return text.equals(lyricsArea.getText());
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            return false;
+        }
+    }
+
     private void overwriteCharacter(JTextPane textPane, char c) {
         try {
             int pos = textPane.getCaretPosition();
-            Document doc = textPane.getDocument();
+            AbstractDocument doc = (AbstractDocument) textPane.getDocument();
             String nextChar = doc.getText(pos, 1);
-            if (pos < doc.getLength() && !isWordDelimiter(nextChar)) {
-                doc.remove(pos, 1);
-            }
-            doc.insertString(pos, String.valueOf(c), null);
+            int length = pos < doc.getLength() && !isWordDelimiter(nextChar) ? 1 : 0;
+            doc.replace(pos, length, String.valueOf(c), null);
         } catch (BadLocationException ex) {
             ex.printStackTrace();
         }
