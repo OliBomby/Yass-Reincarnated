@@ -157,8 +157,8 @@ Run tests with `.\mvnw.cmd -q test`, or a single Spock spec with
 `.\mvnw.cmd` for these commands.
 
 FFmpeg and ffprobe are needed for media handling; see the requirements above.
-Implemented feature specs and code entry points live in `specs/`, and tests live
-in `test/groovy/`.
+Implemented and accepted functional requirements live in
+[`specs/`](specs/README.md); tests live in `test/groovy/`.
 
 ## Building GitHub Releases
 

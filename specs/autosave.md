@@ -2,107 +2,43 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. A per-song background timer writes a `.bak` backup of the
-open song at a fixed interval. Autosave never mutates the live table model and
-never shows blocking dialogs, so it does not interrupt active editing.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded.
 
 ## Purpose
 
-Editing sessions can be long, and a crash, power loss, or accidental close would
-otherwise lose unsaved work. Autosave periodically writes a recoverable `.bak`
-copy next to the song file without requiring the user to save manually.
+Protect unsaved editing work with a recoverable backup next to the song file,
+without interrupting the editing session.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- Autosave runs silently in the background; there is no toolbar/menu action.
-- The interval is configured in the Sketch options panel
-  (`options_autosave_interval`, in seconds). `0` disables autosave.
-- On opening a song, if a newer `.bak` than the song file exists, the editor
-  asks whether to restore it (`edit_autosave_hint` / `edit_autosave_title`).
-  - Restore: the current file is copied to `.old`, then the `.bak` overwrites
-    the song file.
-  - Decline: the `.bak` is deleted.
-- A `.bak` that is older than the song file, or whose table has been saved
-  normally, is cleaned up automatically when the song set is disposed.
-- Autosave does not steal focus, move the selection or caret, change scroll
-  position, or pop a dialog during normal operation. Failures are logged only.
+- Autosave runs silently for open songs. The Sketch options set its interval in
+  seconds: the default is 300, the maximum is 600, and 0 disables autosave.
+  With autosave enabled, the first opportunity is 30 seconds after opening.
+- A changed song is backed up to `<song>.txt.bak`. Unchanged content is not
+  repeatedly rewritten. Later edits make the song eligible for another backup.
+- Backups contain a consistent song, including the open tracks of a duet.
+  Writing a backup preserves the live notes, lyrics, tags, and manual save state.
+- Autosave preserves focus, selection, caret, scrolling, and active editing.
+  A background backup failure does not open a blocking dialog.
+- Opening a song with a newer `.bak` offers restoration. Accepting copies the
+  current song file to `<song>.txt.old`, then restores the backup to the song file.
+  Declining deletes that backup.
+- An older backup, or one made unnecessary by a normal save, is cleaned up when
+  the song closes. Closing also stops that song's autosave.
 
-## Core Rules
+## Acceptance Scenarios
 
-- **Never touch the live model off the EDT.** The autosave write executes on
-  the Swing EDT (via `SwingUtilities.invokeAndWait` from the timer thread) so it
-  cannot interleave with active edits. This guarantees a race-free, consistent
-  snapshot without duplicating `storeFile`'s relative-format serialization. The
-  background timer thread itself must never read or mutate the live table.
-- **No verify-reload, no dialog for `.bak` writes.** Autosave does not re-read
-  the written file and compare it against the live table; that comparison races
-  with concurrent edits and previously produced spurious "could not be verified"
-  popups. Verification and user-facing error dialogs remain only on the explicit
-  user-initiated save path.
-- **Skip when nothing changed.** Autosave is a no-op when the table is already
-  saved (`isSaved()`) or already autosaved (`isAutosaved()`).
-- **State flag lifecycle:**
-  - `setSaved(true)` implies autosaved as well; `setSaved(false)` (any edit)
-    clears both, re-arming autosave.
-  - A successful autosave sets `autosaved = true` so it does not rewrite the
-    same content until the next real edit.
-  - `saved`, `autosaved`, and the autosave re-entry guard are visible across
-    threads (EDT writer / timer reader).
-- **One timer per song table.** `initAutoSave()` starts it when the song opens;
-  `removeAutoSave()` cancels it and marks the table autosaved when the song
-  closes. A skipped or overlapping tick must never queue a second concurrent
-  write.
-- **`.bak` writes skip version/dedup handling.** Backup files intentionally do
-  not run `setVersion()`, `handleDeprecations()`, or `handleAudio()`; only the
-  real save path does.
+- Edit lyrics and wait for autosave. A recoverable `.bak` appears while focus,
+  caret, selection, and the visible timeline stay in place.
+- Leave the song unchanged after a successful backup. Autosave does not keep
+  rewriting the same content. Edit again and a later backup contains that edit.
+- Open a song with a newer backup and accept restoration. The restored song
+  contains the backup's changes, and `.old` retains the previous song file.
+- Decline restoration. The song file remains unchanged and the backup is removed.
+- Autosave an edited duet. Reopening the backup recovers both tracks together.
+- Set the interval to 0. No periodic backup is written.
 
-## Data And Configuration
+## Scope And Constraints
 
-- Property: `options_autosave_interval` (seconds; default `300`, `0` disables).
-  Interval is clamped to a maximum of `600` seconds. First tick fires 30s after
-  the song opens.
-- Generated files:
-  - `<song>.txt.bak` — autosave backup written next to the song file.
-  - `<song>.txt.old` — copy of the previous song file, created only when the
-    user accepts a `.bak` restore on open.
-- Duet songs: the `.bak` is produced by merging open tracks
-  (`YassTable.mergeTables`) into a single merged table before writing.
-
-## Code Entry Points
-
-- `src/yass/YassAutoSave.java`
-  - `TimerTask.run()` — the autosave tick; gating, snapshot, write.
-- `src/yass/YassTable.java`
-  - `initAutoSave()` / `removeAutoSave()` — timer lifecycle.
-  - `storeFile(String)` — file serialization (shared with the normal save).
-  - `isSaved()` / `isAutosaved()` / `setSaved(boolean)` / `setAutosaved(boolean)`
-    — state flags.
-  - table model listener (`addTableModelListener`) — clears saved/autosaved on
-    every edit.
-- `src/yass/YassActions.java`
-  - `mergeTableAndSave(YassTable, boolean)` — chooses `.bak` vs real save and
-    handles duet merge.
-  - `checkAutosaveBackup(String)` — restore-on-open prompt.
-  - `disposeAutosaveFiles(Vector<YassTable>)` — cleanup of stale `.bak`.
-
-## Regression Coverage
-
-- No dedicated spec exists yet. Behavior is exercised indirectly through
-  `YassTableSpec` (table model / save) and manual testing.
-- Recommended scenarios to add: edit during an in-flight autosave does not throw
-  or corrupt the `.bak`; autosave is a no-op when already saved; `.bak` restore
-  prompt fires only for a newer backup; duet merge produces a loadable `.bak`.
-
-## Extension Notes
-
-- The expensive part of autosave is full-table serialization plus disk I/O. Keep
-  the EDT snapshot cheap (string/row copy) and do everything else off-EDT.
-- Do not reintroduce a verify-reload or any dialog on the autosave path — that
-  was the primary source of mid-edit interruption.
-- If autosave ever needs to report a failure to the user, debounce it and route
-  it through the EDT; never block the timer thread on a modal dialog.
-- Consider fixed-delay scheduling (`Timer.schedule`) over fixed-rate
-  (`scheduleAtFixedRate`) so a slow write cannot cause back-to-back catch-up
-  ticks.
+Autosave writes recovery files; explicit Save retains its own validation and
+error reporting.

@@ -35,3 +35,8 @@ lyrics without leaving lyrics editing mode.
   break with Enter or the page break button. Undo and Redo the change. The
   selected syllable and lyrics cursor remain at that later boundary. Removing
   a page break and undoing or redoing it preserves the same syllable as well.
+
+## Scope And Constraints
+
+Shared focus, selection, and timeline preservation during Undo/Redo follows
+[Undo And Redo Context](editor-undo-redo-context.md).

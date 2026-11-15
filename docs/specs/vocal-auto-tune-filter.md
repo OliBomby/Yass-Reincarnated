@@ -1,137 +1,62 @@
 # Vocal Auto-Tune Filter
 
-This internal spec explores optional pitch-correction processing for separated
-vocal tracks.
+## Status
+
+Exploratory proposal, not implemented. The workflow below is a candidate;
+backend, correction modes, and output choices remain open.
 
 ## Purpose
 
-Some karaoke source material has vocal stems that are internally consistent but
-slightly off concert pitch, or vocals that would be easier to author if a
-pitch-corrected helper stem were available. Yass Reincarnated should investigate whether it
-can offer an optional "auto-tuned vocal helper" workflow without changing the
-original song audio unless the user explicitly asks for it.
+Explore an optional pitch-corrected vocal helper that makes chart authoring
+easier while preserving original song audio.
 
-## Implementation Gap Assessment
+## Functional Requirements
 
-Current implemented foundation:
+- A candidate **Create Pitch-Corrected Vocals** action uses the configured
+  `#VOCALS` track and explains missing vocals or processing prerequisites.
+- The workflow analyzes vocals and lets the user choose correction settings,
+  create a helper file only, assign the result as vocals, or cancel.
+- Key/scale information may come from `#COMMENT:key=...` or user selection.
+  Chromatic behavior without a key remains an open decision.
+- Processing creates a deliberate offline render next to the song, with a
+  collision-safe name such as
+  `<Artist> - <Title> (Vocals Tuned).ogg`.
+- The helper preserves duration as closely as possible, avoids clipping, uses a
+  reliably playable format, and records the applied correction settings.
+- Original audio and stems remain untouched. Assigning the helper requires
+  user confirmation and changes only `#VOCALS`.
+- Cancellation creates no output or tag changes. Failure leaves the song unchanged.
+- The interface distinguishes note-level auto-tuning from uniform global pitch
+  correction.
 
-- `#VOCALS` assignment and separated vocal workflows exist.
-- `PitchDetector.TuningOffsetAnalysis` can estimate global tuning drift, but not
-  note-by-note correction.
-- FFmpeg location and health/prompt support exist.
-- MVSEP Ogg output work already introduced local FFmpeg transcode patterns and
-  collision-aware stem output handling that can be reused.
+## Acceptance Scenarios
 
-Missing for implementation:
+These examples describe the proposed behavior rather than implemented support.
 
-- Backend decision. No usable auto-tune backend is integrated today.
-- A capability check for the chosen backend, including clear error messaging.
-- UI action such as `Create Pitch-Corrected Vocals`.
-- Dialog to choose correction mode, key/scale behavior, output format, and
-  whether to assign the result to `#VOCALS`.
-- Key/scale resolution rules from `#COMMENT:key=...` or user selection.
-- Offline render pipeline that preserves duration and avoids clipping.
-- Collision-safe helper filename generation.
-- Confirmation flow before updating `#VOCALS`.
-- Logging of applied correction settings.
-- Tests for missing vocals, missing backend, cancel behavior, safe filenames,
-  assignment behavior, and original-file preservation.
+- Start without a vocal track or usable processing backend. A clear message
+  identifies the missing prerequisite.
+- Create a helper without assigning it. A new song-local file is available,
+  while the original vocal file and all song tags remain unchanged.
+- Confirm assignment of a successful helper. Only `#VOCALS` changes;
+  the original file remains available.
+- Repeat rendering with an existing proposed filename. The existing file is
+  preserved and the helper gets a distinct name.
+- Cancel or fail processing. Song assignments and original files remain unchanged.
 
-Important dependency:
+## Scope And Constraints
 
-- The **Global Pitch Shift** spec should probably land first. It covers the
-  simpler and more common case of a uniformly sharp/flat source and establishes
-  the comment metadata, cents/semitone UI, and helper-render patterns that this
-  feature can reuse.
-
-## Non-Goals
-
-This feature is not meant to be real-time live pitch correction during playback.
-
-It should also not silently replace the original `#AUDIO`, `#VOCALS`, or
-`#INSTRUMENTAL` files. Any rendered helper file must be created deliberately and
-assigned only after user confirmation.
-
-## Candidate User Flow
-
-1. User selects a song with a configured vocal track.
-2. User runs a new tool action such as `Create Pitch-Corrected Vocals`.
-3. Yass Reincarnated analyzes the vocal track and proposes correction settings.
-4. User chooses an output mode:
-   - create a helper file only
-   - assign as `#VOCALS`
-   - cancel
-5. Yass Reincarnated renders a new file next to the song, for example
-   `<Artist> - <Title> (Vocals Tuned).ogg`.
-6. The original vocal file remains untouched.
-
-## Technical Direction
-
-GSnap itself is a VST plugin, and relying on arbitrary VST hosting from Yass Reincarnated is
-likely fragile across Windows, macOS, and Linux. The first implementation should
-therefore prefer a command-line or library-backed pitch processing route.
-
-Possible approaches:
-
-- use FFmpeg only for global pitch shifting, not note-level correction
-- use an external command-line pitch correction tool if a stable one is found
-- use a Python-based processing pipeline in a managed environment
-- expose a configurable external command template for advanced users
-
-The feature should start as an offline render workflow. It can reuse existing
-FFmpeg location handling and progress-dialog patterns.
-
-## Data Inputs
-
-Useful existing data:
-
-- vocal track file from `#VOCALS`
-- detected pitch frames from `PitchDetector`
-- `PitchDetector.TuningOffsetAnalysis` for global tuning offset
-- optional `#COMMENT:key=...` for scale-aware correction decisions
-
-For strict auto-tune behavior, a key or scale is important. Without a key, Yass Reincarnated
-should either use chromatic correction or ask the user to choose one.
-
-## Output
-
-Rendered output should:
-
-- preserve duration as closely as possible
-- use a format Yass Reincarnated can play reliably
-- avoid clipping
-- log the applied correction settings
-- be recoverable from the song folder without relying on temp files
-
-The first supported output format should probably be Ogg/Opus or WAV depending
-on the chosen backend. If FFmpeg is used for the final encoding step, reuse the
-same encoder checks planned for MVSEP Ogg output.
-
-## UI Considerations
-
-The UI should clearly distinguish between:
-
-- global pitch correction, which shifts all audio equally
-- auto-tune, which changes individual notes toward a scale or chromatic grid
-
-The action should not be prominent in the normal editing path until the result
-quality is proven. A good first home is an external-tools or song-extras action.
-
-## Regression Coverage
-
-When implemented, cover:
-
-- missing vocal track shows a clear message
-- missing FFmpeg or external backend shows a clear message
-- cancel does not create files or alter song tags
-- helper file uses collision-safe naming
-- assigning the rendered file updates only `#VOCALS`
-- original files are not overwritten
-- processing failure leaves the song unchanged
+This proposal is an offline helper workflow, not live pitch correction.
+[Pitch Shift](../../specs/pitch-shift.md) already covers uniform source tuning;
+that implemented feature does not establish note-level auto-tune support.
 
 ## Open Questions
 
-- Which backend is good enough and redistributable enough for Yass Reincarnated?
-- Should the feature require a key, or allow chromatic correction?
-- Should the action operate on `#VOCALS` only, or also on `#AUDIO`?
-- Should rendered helper files be tracked in `#COMMENT` metadata?
+- Which backend provides sufficient quality and distribution compatibility
+  across Windows, macOS, and Linux?
+- Which correction modes and key/scale controls should be offered? Is
+  chromatic correction allowed without a key?
+- Should input remain limited to `#VOCALS` or also allow `#AUDIO`?
+- Which output formats should be supported first, such as Ogg/Opus or WAV?
+- Should rendered helpers be tracked in comment metadata?
+- Where should the action appear, and when is its quality sufficient for a
+  prominent place in the editing workflow?

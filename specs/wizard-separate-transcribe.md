@@ -2,108 +2,51 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. The Create Song Wizard can separate vocals and transcribe
-them during the lyrics step, then carry generated assets into the final song
-folder.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded.
 
 ## Purpose
 
-The wizard can automate a strong first draft: download/prepare audio, separate
-vocals, transcribe the vocal stem, populate lyrics, and later generate notes
-from transcript timing instead of only from plain lyric splitting.
+Produce an editable first draft by separating prepared audio, transcribing vocals,
+populating lyrics, and generating notes from transcript timing.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- The lyrics step can show **Separate Vocals + Transcribe**.
-- The button is hidden or disabled when prerequisites are missing.
-- The unavailable tooltip/message explains the missing prerequisite:
-  - no audio source
-  - no configured separation provider
-  - WhisperX health check required for local transcription
-- The workflow shows a modal progress dialog with cancel support.
-- Existing completed wizard separation/transcription runs can be reused.
-- After completion, lyrics are populated and wizard status indicates ready
-  transcript state.
-- On wizard finish, separated stems and transcript artifacts are copied into the
-  final song directory and applied to the song.
+- The lyrics step offers **Separate Vocals + Transcribe** when prerequisites
+  allow it. A disabled or unavailable state explains missing audio, separation
+  configuration, or a required WhisperX health check.
+- The flow follows the [separation preference](separation-feature.md), then uses
+  OpenAI or WhisperX according to configuration and availability.
+- A modal progress dialog shows progress and supports cancellation.
+- Completed work can be reused only for the same source and base-song identity,
+  including the YouTube ID where relevant.
+- A matching separation-only run can reuse stems but still needs transcription
+  before lyrics are ready.
+- Completion populates lyrics and shows a ready transcript state.
+- Finishing the wizard copies separated stems, the canonical transcript, and
+  available transcript cache/debug files into the final song folder, and assigns
+  the applicable assets.
+- Outputs are applied once; existing user-selected stems are not silently
+  overwritten.
+- When separated vocals are available, generated notes can use
+  [vocal timing refinement](transcript-timing-refinement.md) and
+  [melody alignment](align-to-melody.md).
 
-## Core Rules
+## Acceptance Scenarios
 
-- The wizard uses `WizardTranscriptionState` to carry:
-  - run directory
-  - source audio
-  - converted source WAV
-  - `SeparationResult`
-  - `OpenAiTranscriptionResult`
-- Reuse is allowed only when persisted metadata matches the current source/base
-  song identity, including YouTube id where applicable.
-- Separation-only persisted state can skip re-separation but still needs
-  transcription before lyrics are ready.
-- Audio is converted to WAV for separation/transcription when needed.
-- The selected separation provider follows `separation-preference`.
-- Transcription uses OpenAI or WhisperX depending on configured availability and
-  flow rules.
-- Wizard finish saves `yass-transcript.json` and copies relevant transcript
-  cache/debug files.
-- Rebuilt notes can be aligned to detected melody in create-wizard context so
-  detected octave is preserved.
+- Start with audio and configured providers. Run Separate Vocals + Transcribe.
+  Progress is visible and completion populates the lyrics.
+- Attempt the flow without a healthy required WhisperX setup. The unavailable
+  state explains the health-check prerequisite.
+- Reopen a completed run for the same song source. It can be reused.
+  Change the source identity; the stale run is not reused.
+- Reuse a matching run containing only stems. Separation is skipped, but
+  transcription still runs before the lyrics are ready.
+- Finish after a successful run. The final folder contains the stems and
+  `yass-transcript.json`, and the song uses those assets.
 
-## Data And Configuration
+## Scope And Constraints
 
-- Temp workspace:
-  - `.yass` temp base
-  - `wizard-separation` run directories
-  - persisted wizard run metadata
-- Final song artifacts:
-  - copied vocal/instrumental stems
-  - `yass-transcript.json`
-  - copied transcript cache where available
-- Uses separation and transcription properties from their respective settings
-  panels.
-
-## Code Entry Points
-
-- `src/yass/wizard/CreateSongWizard.java`
-  - button availability
-  - `startSeparateAndTranscribeFromLyrics()`
-  - persisted run reuse
-  - separation/transcription worker
-  - applying `WizardTranscriptionState`
-- `src/yass/wizard/WizardTranscriptionState.java`
-- `src/yass/YassActions.java`
-  - `applyWizardTranscriptionOutputs(...)`
-  - post-wizard separation prompt
-  - final song folder asset application
-- `src/yass/alignment/TranscriptNoteRebuildService.java`
-  - transcript-as-truth note creation
-- `src/yass/integration/separation/*`
-  - separation providers
-- `src/yass/integration/transcription/*`
-  - OpenAI/WhisperX transcript providers and artifacts
-
-## Regression Coverage
-
-- `YassActionsWizardSpec`
-  - post-wizard separation offer rules
-  - transcript artifact lookup
-  - prompt text when transcript artifact exists
-- `TranscriptNoteRebuildServiceSpec`
-  - transcript-as-truth note generation
-- `LyricsAlignmentServiceSpec`
-  - real transcript fixture rebuild behavior
-- `WhisperXHealthCheckServiceSpec`
-  - local transcription availability assumptions
-- Add focused wizard worker tests before changing reuse/cancel/final-copy
-  behavior.
-
-## Extension Notes
-
-- Keep wizard temp reuse strict. Reusing a stale run is worse than redoing work.
-- Do not show YouTube URL inputs if yt-dlp is not available; this belongs to the
-  broader wizard availability model.
-- Keep cancellation cooperative: external processes may need explicit cancel or
-  interruption handling.
-- Apply generated outputs only once and avoid overwriting user-selected stems
-  without a clear decision.
+Transcript file reuse is specified in
+[Transcription Artifacts](transcription-artifacts.md). Provider configuration
+and editor alignment follow [Transcription Alignment](transcription-alignment.md)
+and [WhisperX Alignment](whisperx-alignment.md).

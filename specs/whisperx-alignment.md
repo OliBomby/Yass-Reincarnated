@@ -2,117 +2,48 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. WhisperX is the local transcription engine for the shared
-transcription-alignment workflow and includes health checks, package update, and
-VRAM-based auto runtime recommendations.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded. WhisperX is the
+local provider for the shared transcription workflow.
 
 ## Purpose
 
-WhisperX lets users generate timestamped transcripts locally for note alignment
-and wizard transcription. It avoids OpenAI API cost and can run offline when the
-local environment is configured.
+Generate timestamped transcripts locally for note alignment and wizard creation,
+without OpenAI API cost. A configured local environment can run offline.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- External Tools / Transcription exposes WhisperX settings:
-  - Python executable
-  - module invocation toggle
-  - command override
-  - model
-  - device
-  - compute type
-  - cache folder
-  - health check
-  - package update/cancel button
-- `Auto` is available for model, device, and compute type.
-- Health check reports Python, WhisperX, FFmpeg, GPU name, VRAM, MPS/CUDA
-  status, recommendation, applied values, and reason.
-- Auto-apply only changes fields that are set to `auto`; manual choices are not
-  overwritten.
-- During transcription, WhisperX output is streamed into progress UI.
-- If float16 fails on the current backend, transcription retries with CPU/int8.
+- External Tools / Transcription exposes Python executable, module invocation,
+  command override, model, device, compute type, cache folder, health check,
+  and package update controls.
+- Model, device, and compute type each support Auto. Hardware-aware choices
+  favor a stable runtime; manual selections are not overwritten by auto-apply.
+- Health check reports Python, WhisperX, FFmpeg, GPU, VRAM, CUDA/MPS status,
+  recommended and applied values, and the reason for the recommendation.
+- Automatic choices use CUDA when suitable, MPS where available, and a
+  conservative `small / cpu / int8` fallback for weak or unknown hardware.
+- Transcription output streams into progress UI. If float16 fails on the
+  backend, transcription retries with CPU/int8.
+- Package updates show progress and can be cancelled.
+- A reusable cached transcript is checked before a fresh local run. The default
+  cache folder is `.yass-cache`.
+- Opus source audio remains usable even when conversion is needed for WhisperX.
+- Local results support the same [alignment](transcription-alignment.md) and
+  [artifact reuse](transcription-artifacts.md) behavior as other transcript sources.
 
-## Core Rules
+## Acceptance Scenarios
 
-- Health check probes Python, WhisperX availability/version, FFmpeg, CUDA,
-  VRAM, and MPS where possible.
-- Runtime recommendations prioritize stability:
-  - CUDA with at least 12288 MiB VRAM: `large-v3`, `cuda`, `float16`
-  - CUDA with 8192-12287 MiB VRAM: `medium`, `cuda`, `float16`
-  - CUDA with 6144-8191 MiB VRAM: `small`, `cuda`, `float16`
-  - CUDA below 6144 MiB: `small`, `cpu`, `int8`
-  - MPS without CUDA: `medium`, `mps`, `float32`
-  - no usable telemetry: `small`, `cpu`, `int8`
-- Effective values are stored separately and used only when the visible setting
-  is `auto`.
-- WhisperX JSON is converted into `OpenAiTranscriptionResult`.
-- Opus input is converted to temporary WAV before WhisperX if needed.
-- Cache lookup happens before running WhisperX.
-- Advanced WhisperX flags are intentionally reserved in code but not exposed in
-  UI yet.
+- Run health check on a configured machine. The report shows available tools,
+  hardware, recommended runtime, and why it was selected.
+- Set model to a manual value and device/compute to Auto. Auto-apply changes
+  only the Auto fields and retains the manual model.
+- Run without usable GPU telemetry. Auto uses the conservative CPU fallback.
+- Encounter a float16 backend failure. The workflow retries with CPU/int8
+  instead of ending at that failure alone.
+- Start a package update. Progress is visible and cancellation is available.
+- Align using a reusable local transcript. It is reused without starting a fresh
+  WhisperX process.
 
-## Data And Configuration
+## Scope And Constraints
 
-- Properties:
-  - `whisperx-python`
-  - `whisperx-use-module`
-  - `whisperx-command`
-  - `whisperx-model`
-  - `whisperx-device`
-  - `whisperx-compute-type`
-  - `whisperx-effective-model`
-  - `whisperx-effective-device`
-  - `whisperx-effective-compute-type`
-  - `whisperx-cache-folder`
-  - `whisperx-health-ok`
-- Managed environment:
-  - `%USERPROFILE%\.yass\whisperx-venv`
-- Default cache folder:
-  - `.yass-cache`
-
-## Code Entry Points
-
-- `src/yass/integration/transcription/whisperx/WhisperXHealthCheckService.java`
-  - health check
-  - VRAM/MPS/CUDA telemetry
-  - package update
-  - runtime recommendation
-- `src/yass/integration/transcription/whisperx/WhisperXHealthCheckResult.java`
-- `src/yass/integration/transcription/whisperx/WhisperXTranscriptionService.java`
-  - request execution
-  - command building
-  - cache loading
-  - CPU/int8 fallback
-  - JSON conversion
-- `src/yass/integration/transcription/whisperx/WhisperXModel.java`
-- `src/yass/integration/transcription/whisperx/WhisperXDevice.java`
-- `src/yass/integration/transcription/whisperx/WhisperXComputeType.java`
-- `src/yass/options/WhisperXPanel.java`
-  - settings UI, health check, update/cancel, auto-apply
-- `src/yass/YassActions.java`
-  - editor transcription flow
-- `src/yass/wizard/CreateSongWizard.java`
-  - wizard transcription flow
-
-## Regression Coverage
-
-- `WhisperXHealthCheckServiceSpec`
-  - VRAM recommendation matrix
-  - auto/effective value resolution
-  - manual choices not overridden
-  - managed venv path
-- `WhisperXTranscriptionServiceSpec`
-  - timeout classification and messages
-- `LyricsAlignmentServiceSpec`
-  - WhisperX transcript fixtures for alignment/rebuild
-
-## Extension Notes
-
-- Keep the stable fallback `small/cpu/int8` for weak or unknown hardware.
-- Do not auto-change manual model/device/compute selections.
-- If adding beam/VAD options, keep them in advanced flags and test command
-  construction separately from UI.
-- Package update must remain cancelable and must stream progress; long pip logs
-  are expected.
+This spec covers the local provider and its setup. It does not introduce
+additional advanced transcription controls.

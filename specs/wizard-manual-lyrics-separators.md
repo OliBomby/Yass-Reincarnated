@@ -2,85 +2,44 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. The Create Song Wizard's manual lyrics path can use explicit
-separator markup when no transcription result, subtitle timing map, or MIDI
-lyrics source is active.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded.
 
 ## Purpose
 
-Manual wizard lyrics often already contain the user's intended syllable or note
-boundaries. Respecting explicit separators lets Yass Reincarnated create provisional
-note rows from that markup without asking the dictionary or hyphenator to infer
-a different split.
+Respect explicit syllable or note boundaries in manually entered wizard lyrics
+instead of replacing them with dictionary-inferred splits.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- In the Create Song Wizard lyrics page, manually entered plain lyrics can use
-  `•` or `+` as explicit note boundaries.
-- A manual line without `•` or `+` keeps the existing dictionary-backed word and
-  syllable splitting behavior.
-- A manual line containing at least one `•` or `+` is split only by those
-  separators.
-- The separator characters are markup and do not appear in generated lyric
-  text.
-- Spaces around a separator are ignored for the boundary. Spaces inside a
-  resulting fragment remain part of that lyric fragment.
-- Song-part marker lines such as `[chorus]` are still skipped before lyric
-  splitting.
+- Manual lyrics in the Create Song Wizard can use `•` or `+` as explicit
+  note boundaries when no transcript, subtitle timing map, or MIDI lyric source
+  is active.
+- A line containing either separator is split only at those explicit separators.
+  A line without them retains dictionary-backed word and syllable splitting.
+- Separators do not appear in generated lyric text. Spaces around a separator
+  are ignored; spaces within a fragment remain.
+- Leading, trailing, or repeated separators do not create accidental empty
+  fragments. A literal `~` fragment remains an explicit empty-syllable marker.
+- Punctuation stays with its fragment. Song-part marker lines such as
+  `[chorus]` are skipped.
+- Generated word spacing follows the configured spaces-before or spaces-after
+  convention. Generated notes retain the wizard's default manual timing and pitch.
 
-## Core Rules
+## Acceptance Scenarios
 
-- Recognized explicit separators are `•` and `+`; both have the same meaning.
-- Explicit-separator handling is opt-in in `YassUtils.splitLyricsToLines(...)`.
-  The default overload keeps legacy behavior for editor insertion and subtitle
-  paths.
-- Empty fragments from leading, trailing, or repeated separators are ignored.
-  A literal `~` fragment is retained as an explicit empty syllable marker.
-- Punctuation stays attached to the fragment where the user entered it.
-- Normal spacing mode prefixes the first generated explicit fragment for the
-  line. Spacing-after mode appends spacing to the final generated explicit
-  fragment, matching the existing generated-row convention.
-- Transcript, subtitle-backed wizard, LRCLIB-with-transcript-structure, editor
-  insert-note, and editor rehyphenation flows do not opt in to this behavior.
+- Enter `hel•lo+world`. Three notes are generated in that order without
+  dictionary re-splitting or literal separator characters.
+- Enter `one two + three`. The first fragment keeps its internal space;
+  separator-adjacent spaces do not become extra notes.
+- Enter `+hello++~+world!+`. Empty fragments are ignored, while `~` and
+  the final punctuation are retained.
+- Enter an ordinary line without explicit separators. Dictionary-backed
+  syllable splitting still applies.
+- Include `[chorus]` before a manually separated line. The marker does not
+  become a lyric note.
 
-## Data And Configuration
+## Scope And Constraints
 
-- No persistent properties or UltraStar tags are added.
-- Generated rows still use the current default manual wizard note length and
-  pitch.
-- The behavior uses the existing `isUncommonSpacingAfter()` setting when writing
-  generated row text.
-
-## Code Entry Points
-
-- `src/yass/wizard/Lyrics.java`
-  - `getTable()` enables explicit separators only for the manual no-subtitles
-    path.
-- `src/yass/YassUtils.java`
-  - `splitLyricsToLines(String[], int, boolean)`
-  - `hasExplicitWizardSeparators(String)`
-  - explicit separator row creation helpers near `createRowsFromLine(...)`
-- `src/yass/YassTable.java`
-  - editor insertion still calls the default `splitLyricsToLines(String[], int)`
-    overload.
-
-## Regression Coverage
-
-- `YassUtilsSpec`
-  - mixed `•` and `+` separators split in input order without hyphenator lookup
-  - `+` separators bypass dictionary syllabification
-  - ordinary opt-in lines still use dictionary-backed syllable splitting
-  - punctuation and `~` fragments survive while accidental empty fragments are
-    ignored
-  - default `splitLyricsToLines(...)` behavior remains unchanged for non-wizard
-    callers
-
-## Extension Notes
-
-- Keep this behavior scoped to the manual wizard path unless a future spec
-  deliberately expands explicit separator support to subtitles, transcript
-  alignment, or editor workflows.
-- If word-boundary spacing rules are expanded later, test raw lyric cell text in
-  addition to trimmed text so UltraStar spacing behavior remains intentional.
+This syntax applies only to manual wizard lyrics. It does not change editor
+insertion, rehyphenation, or transcript/subtitle-backed note generation.
+No persistent settings or song tags are added.

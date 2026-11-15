@@ -2,95 +2,50 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. Timing tag validation runs automatically during editor
-open and when leaving the editor after a touched song session.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded. Validation runs
+when opening songs and when returning to the Library after a touched session.
 
 ## Purpose
 
-Malformed timing tags can make the editor view unusable. Extremely negative or
-large values in tags such as `#START`, `#END`, `#GAP`, `#VIDEOGAP`,
-`#PREVIEWSTART`, `#MEDLEYSTARTBEAT`, or `#MEDLEYENDBEAT` can push the audio,
-video, timeline, preview markers, or grid far outside the useful range.
+Keep malformed timing metadata from placing audio, video, preview markers, or
+the editor view far outside a song's useful range.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- Unsafe timing tags are cleaned automatically.
-- Wizard-created songs can be cleaned silently.
-- Normal editor-open cleanup may notify the user with the tags that were
-  removed or corrected.
-- Returning to the library revalidates timing only if the open song was touched
-  during the editor session.
-- If cleanup changes anything, the table remains marked modified so the user can
-  save through the normal flow.
+- Unsafe timing tags are cleaned automatically. Ordinary editor opening may
+  report the removed or corrected tags; wizard-created songs can be cleaned
+  silently.
+- Cleanup leaves the song marked modified for a normal user save.
+- Returning to the Library revalidates a song only after a touched editor
+  session. Opening starts a fresh session; writing the song during the session
+  makes it eligible for this revalidation.
+- `#GAP` cannot be negative; an invalid value is corrected to 0.
+- `#START`, `#END`, and `#PREVIEWSTART` cannot be negative or exceed known
+  audio duration. Invalid optional values are removed.
+- A nonzero `#END` must be after a nonzero `#START`. `#START` must precede
+  the first singable note in audio time.
+- Negative `#VIDEOGAP` is allowed, but implausibly large offsets are removed.
+- `#MEDLEYENDBEAT` must follow `#MEDLEYSTARTBEAT`. If either is invalid,
+  both medley tags are removed.
+- Negative note beats remain valid when plausible relative to `#GAP`.
+  Every negative note position is considered, not just the first note.
+- The song file stores `#END` in milliseconds while the editor displays it
+  in seconds.
 
-## Core Rules
+## Acceptance Scenarios
 
-- `#GAP` must be greater than or equal to `0`; invalid `#GAP` is corrected to
-  `0`.
-- `#START`, `#END`, and `#PREVIEWSTART` must be greater than or equal to `0`.
-- `#END` must be after `#START` when both are present and non-zero.
-- `#START`, `#END`, and `#PREVIEWSTART` must not exceed actual audio duration
-  when duration is known; invalid values are removed.
-- `#START` must be before the first singable note in audio time.
-- `#VIDEOGAP` may be negative, but implausibly large values are removed.
-- `#MEDLEYENDBEAT` must be after `#MEDLEYSTARTBEAT`.
-- If either medley tag is invalid, both medley tags are removed.
-- Negative note beats are allowed only when plausible relative to `#GAP`.
-- Every negative note beat must be checked, not only the first note.
-- The touched flag lifecycle:
-  - set to untouched when a song is opened
-  - set to touched when `storeFile(...)` is called
-  - reset when the song is closed
+- Open a song with negative GAP and a preview beyond its known audio duration.
+  GAP becomes 0, the invalid preview tag is removed, and the song is modified.
+- Open a song whose end precedes its start. The invalid optional timing is
+  removed rather than leaving an unusable playback range.
+- Open a song with a reversed medley range. Both medley tags are removed.
+- Open a song with a plausible negative note beat and enough GAP to accommodate
+  it. Its valid timing is preserved.
+- Include an implausible negative note later in the song. Validation considers
+  that note even when the first note is valid.
+- Open a song with no optional timing tags. Cleanup does not invent those tags.
 
-## Data And Configuration
+## Scope And Constraints
 
-- Validated tags:
-  - `#GAP`
-  - `#START`
-  - `#END`
-  - `#PREVIEWSTART`
-  - `#MEDLEYSTARTBEAT`
-  - `#MEDLEYENDBEAT`
-  - `#VIDEOGAP`
-- Audio duration is used when available.
-- `#END` is persisted in milliseconds; the in-memory editor representation remains
-  seconds and converts at the file/UI boundary.
-- Cleanup removes invalid optional header rows except `#GAP`, which is corrected
-  to `0`.
-
-## Code Entry Points
-
-- `src/yass/SongTimingTagSanityService.java`
-  - validation rules and cleanup findings
-- `src/yass/YassActions.java`
-  - editor-open integration
-  - return-to-library revalidation
-  - touched-song tracking
-- `src/yass/YassTable.java`
-  - header tag storage and cleanup application
-
-## Regression Coverage
-
-- `SongTimingTagSanityServiceSpec`
-  - negative and out-of-range `#START`
-  - `#END` before `#START`
-  - preview after song duration
-  - `#START` after first singable note
-  - negative `#GAP` correction
-  - plausible and implausible negative note beats
-  - medley pair removal
-  - extreme `#VIDEOGAP`
-  - normal missing optional tags
-- Integration coverage in action/table tests covers touched-song behavior and
-  wizard silent cleanup where applicable.
-
-## Extension Notes
-
-- Keep validation conservative. The goal is to prevent broken editor geometry,
-  not to reject every unusual but valid authoring choice.
-- If adding more timing tags, define whether invalid values are removed,
-  corrected, or reported only.
-- Do not show cleanup prompts in wizard-controlled flows unless users need to
-  make a decision.
+Validation prevents unusable timing without rejecting unusual but valid
+authoring choices.

@@ -2,124 +2,71 @@
 
 ## Status
 
-Originally implemented in Yass Reloaded; inherited by Yass Reincarnated.
-
-Implemented/current. Yass Reincarnated supports external audio separation through
-MVSEP and local audio-separator, with editor, wizard, and selected import flows.
+Implemented in Yass Reincarnated, inherited from Yass Reloaded. Covers MVSEP
+and local audio-separator, including MVSEP output formats and reverb removal.
 
 ## Purpose
 
-Audio separation creates vocals and instrumental stems for a song and can assign
-them to UltraStar audio tags. It supports manual editor workflows and automated
-wizard/import workflows while keeping external service/tool details behind a
-shared separation interface.
+Create song-local vocal and instrumental stems for editing, transcription, and
+playback while preserving valid existing audio assignments.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- External Tools settings include MVSEP and audio-separator configuration.
-- Wizard settings expose a separation preference:
-  - local first
-  - online first
-  - MVSEP only
-  - audio-separator only
-- Editor separation chooses configured services according to the current
-  preference and availability.
-- The editor exposes **Remove Reverb (MVSEP)** for existing `#VOCALS` files.
-  It uploads the configured vocal file to MVSEP Reverb Removal, downloads the
-  de-reverbed result into the song folder, and asks whether the result should
-  replace the current `#VOCALS` assignment.
-- The wizard can run separation before transcription when **Separate Vocals +
-  Transcribe** is available.
-- USDB import can queue audio separation after import when separation is
-  configured.
-- Existing `#VOCALS` and `#INSTRUMENTAL` assignments should not be overwritten
-  silently when they already point to configured files.
+### Providers And Assignment
 
-## Core Rules
+- External Tools settings configure MVSEP and local audio-separator. Wizard
+  settings choose local first, online first, MVSEP only, or audio-separator only.
+- Separation follows the chosen preference and available providers. MVSEP
+  requires an API token and uploads audio to the online service; audio-separator
+  requires a working local Python environment and health check.
+- Users can choose the provider's model and output format. MVSEP also supports
+  model type and a preferred instrumental assignment; local settings include
+  the Python executable and model directory.
+- Generated stems have predictable song-based names in the song folder.
+  Successful assignment updates `#VOCALS` and `#INSTRUMENTAL`, following the
+  preferred instrumental setting.
+- Valid existing stem assignments are not silently overwritten.
+- Background separation keeps the interface responsive and reports progress
+  and failures.
+- The [wizard](wizard-separate-transcribe.md) can separate before transcription.
+  USDB imports can queue separation afterward, and existing Library songs use
+  the [Library Separation Queue](library-separation-queue.md).
 
-- `SeparationService` is the shared service interface.
-- `SeparationRequest` carries source audio, target directory, model, output
-  format, base name, and optional model type.
-- `SeparationResult` carries vocals/lead/instrumental/backing files.
-- MVSEP requires an API token and performs remote upload, job creation, polling,
-  result download, and optional local transcode.
-- MVSEP reverb removal is a separate post-processing action, not part of the
-  normal separation model list. It uses the current `#VOCALS` file as input and
-  maps MVSEP `noreverb`/de-reverbed output back to a vocal file.
-- audio-separator requires a working Python environment and health check.
-- Quiet/background separation should report status through a consumer/listener
-  and keep the UI responsive.
-- Automatic tag assignment uses the preferred instrumental file from
-  `SeparationResult` and configured instrumental-default rules.
-- Generated file names should be song-local, predictable, and based on the song
-  base name.
+### MVSEP Output Formats
 
-## Data And Configuration
+- Output choices include WAV, FLAC, MP3, Ogg/Vorbis, and Ogg/Opus, both in
+  preferences and per-job choices.
+- Ogg/Vorbis produces `.ogg`; Ogg/Opus produces `.opus`. These choices use
+  local FFmpeg conversion after receiving WAV stems from MVSEP.
+- Encoding quality follows the existing yt-dlp audio-quality settings.
+- Successful Ogg separation assigns the final Ogg/Opus files to song tags.
+  Intermediate WAV audio remains usable by the editor's audio cache.
+- Missing FFmpeg or failed conversion makes separation fail; song tags must not
+  be updated to nonexistent Ogg/Opus files. A failure to cache an intermediate
+  WAV does not invalidate successfully produced final files.
+- Existing saved format choices remain compatible, including `ogg-vorbis` and
+  `ogg-opus`.
 
-- MVSEP properties:
-  - `mvsep-api-token`
-  - `mvsep-model`
-  - `mvsep-model-type`
-  - `mvsep-output-format`
-  - `mvsep-instrumental-default`
-  - `mvsep-poll-interval`
-- audio-separator properties:
-  - `audiosep-python`
-  - `audiosep-model`
-  - `audiosep-model-dir`
-  - `audiosep-output-format`
-  - `audiosep-health-ok`
-- Shared property:
-  - `separation-preference`
-- Song tags affected by successful assignment:
-  - `#VOCALS`
-  - `#INSTRUMENTAL`
+### Vocal Reverb Removal
 
-## Code Entry Points
+- **Remove Reverb (MVSEP)** uses the existing `#VOCALS` file as input, uploads
+  it to MVSEP, and downloads a de-reverbed vocal file into the song folder.
+- It is a separate post-processing action, rather than a normal separation
+  model choice.
+- The user is asked whether to replace the current `#VOCALS` assignment with
+  the result.
 
-- `src/yass/integration/separation/SeparationService.java`
-- `src/yass/integration/separation/SeparationRequest.java`
-- `src/yass/integration/separation/SeparationResult.java`
-- `src/yass/integration/separation/SeparationPreference.java`
-- `src/yass/integration/separation/mvsep/MvsepSeparationService.java`
-- `src/yass/integration/separation/audioseparator/AudioSeparatorSeparationService.java`
-- `src/yass/options/MvsepPanel.java`
-- `src/yass/options/AudioSeparatorPanel.java`
-- `src/yass/options/WizardPanel.java`
-- `src/yass/YassActions.java`
-  - configured separation checks
-  - editor separation
-  - post-wizard application
-  - quiet separation for import queue
-- `src/yass/wizard/CreateSongWizard.java`
-  - wizard separation/transcription flow
-- `src/yass/usdb/UsdbImportQueueService.java`
-  - queued import separation
+## Acceptance Scenarios
 
-## Regression Coverage
-
-- `MvsepSeparationServiceSpec`
-  - FFmpeg transcode arguments, intermediate cache handling, and reverb-removal
-    request/result mapping
-- `MvsepOutputFormatSpec`
-  - output format parsing and local-transcode metadata
-- `MvsepDefaultsSpec`
-  - default model/output behavior and hidden internal reverb-removal model
-- `AudioSeparatorHealthCheckServiceSpec`
-  - managed environment and health detection
-- `AudioSeparatorModelSpec`
-  - local model metadata
-- `YassActionsWizardSpec`
-  - post-wizard separation prompt behavior
-- USDB/import queue behavior has service-level coverage where available; add
-  tests before changing queue state transitions.
-
-## Extension Notes
-
-- Keep provider-specific behavior inside provider services. UI/workflow code
-  should depend on `SeparationService` and `SeparationResult`.
-- Do not silently overwrite valid existing audio tag assignments.
-- MVSEP is remote and privacy-sensitive; keep upload/account/status messaging
-  explicit.
-- audio-separator and WhisperX both use managed Python environments; keep their
-  update/cancel/status UX consistent.
+- Configure local-first separation with a healthy local provider. Separation
+  uses that preference and produces assignable song-local stems.
+- Separate a song with valid existing stem assignments in a background flow.
+  Those assignments are preserved without an implicit overwrite.
+- Choose Ogg/Vorbis or Ogg/Opus. Successful output has the corresponding
+  extension and song tags refer to the final files.
+- Choose Ogg output with FFmpeg missing or conversion failing. The job fails
+  and tags are not changed to missing files.
+- Successfully generate Ogg output but fail to cache an intermediate WAV.
+  The final Ogg result remains usable.
+- Run Remove Reverb on assigned vocals. A new result is downloaded and the
+  user decides whether it becomes the vocal assignment.

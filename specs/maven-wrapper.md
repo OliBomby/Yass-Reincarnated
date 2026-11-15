@@ -2,75 +2,44 @@
 
 ## Status
 
-Implemented/current. Apache Maven Wrapper 3.3.4 pins Maven 3.9.16.
+Implemented in Yass Reincarnated.
 
 ## Purpose
 
-Let Yass Reincarnated contributors build with a consistent Maven version without
-installing Maven separately.
+Let contributors build with a consistent Maven version without installing
+Maven separately.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- Windows contributors use `.\mvnw.cmd` from PowerShell.
-- macOS/Linux contributors use `sh ./mvnw`.
-- The first invocation downloads Maven; later invocations reuse the cached copy.
-- A JDK is still required. Use JDK 21 and set `JAVA_HOME` to its installation.
-- Launch with `.\mvnw.cmd compile exec:exec` on Windows or
-  `sh ./mvnw compile exec:exec` on macOS/Linux.
+- Windows contributors use `.\mvnw.cmd`; macOS/Linux contributors use
+  `sh ./mvnw` from the repository root.
+- A JDK is required. The supported development setup uses JDK 21 with
+  `JAVA_HOME` pointing to its installation.
+- The wrapper downloads the repository's pinned Maven distribution on first
+  use and reuses it afterward. The distribution is verified against its pinned
+  SHA-256 checksum.
+- First use requires internet access; dependencies also require downloading
+  unless already cached.
+- The default wrapper cache is `~/.m2/wrapper/dists`; `MAVEN_USER_HOME`
+  can override the cache location.
+- `compile`, `test`, and `package` are available through the wrapper.
+  `compile exec:exec` builds and launches the application with its production
+  dependencies, including legacy media libraries.
+- The same wrapper workflow supports Windows, macOS, and Linux release builds.
 
-## Core Rules
+## Acceptance Scenarios
 
-- Keep the upstream wrapper scripts unmodified.
-- Use the `only-script` distribution; no wrapper JAR is checked in.
-- Pin the Maven version and its SHA-256 checksum together.
-- Preserve LF line endings for `mvnw` and CRLF for `mvnw.cmd`.
-- Development launch forks the JDK running Maven and uses a classpath containing
-  all production dependencies, including system-scoped legacy JARs. The Exec
-  plugin's `provided` scope includes compile, runtime, provided, and system
-  dependencies without test dependencies.
-- Do not use JavaFX Maven Plugin 0.0.8 for this non-modular application: its
-  module discovery rejects the JMF and JDOM JARs and omits them from the runtime
-  classpath, causing `NoClassDefFoundError: javax/media/ControllerListener`.
+- On a machine with JDK 21 and no separate Maven installation, run the wrapper
+  version command. Maven downloads, verifies, and reports the pinned version.
+- Run the wrapper again. The downloaded distribution is reused.
+- Run `.\mvnw.cmd compile exec:exec` on Windows or
+  `sh ./mvnw compile exec:exec` on macOS/Linux. The application launches
+  with its required media and JavaFX components available.
+- Compile, test, and package through the wrapper. Each command uses the same
+  pinned Maven distribution.
 
-## Data And Configuration
+## Scope And Constraints
 
-- `.mvn/wrapper/maven-wrapper.properties` selects the Maven Central distribution
-  and its SHA-256 checksum.
-- Maven is cached under `~/.m2/wrapper/dists` by default. `MAVEN_USER_HOME` can
-  override the wrapper cache location.
-- First use requires internet access. Project dependencies also require a
-  download unless already cached in the Maven local repository.
-
-## Code Entry Points
-
-- `mvnw` and `mvnw.cmd`: official Apache Maven Wrapper 3.3.4 scripts.
-- `.mvn/wrapper/maven-wrapper.properties`: pinned distribution configuration.
-- `pom.xml`: Java 21 compilation, dependencies, tests, and packaging.
-- `pom.xml` / `exec-maven-plugin`: forked development launch. `longClasspath`
-  uses a temporary manifest JAR to avoid Windows command-line length limits.
-- `README.md`: contributor setup and build commands.
-
-## Regression Coverage
-
-Manual verification with JDK 21:
-
-- Fresh Windows wrapper bootstrap with `mvnw.cmd -version`.
-- Fresh Unix wrapper bootstrap under Git Bash with `bash ./mvnw -version`.
-- `sh -n ./mvnw` shell syntax check.
-- Windows wrapper compilation and `YassRowSpec` execution.
-- Runtime class-loading smoke check: the original JavaFX launch classpath fails
-  to load `javax.media.ControllerListener`; the Exec launcher successfully loads
-  it along with JMF Manager, JDOM Document, JavaFX JFXPanel, YassSongInfo, and
-  YassMain.
-- Startup smoke check calls `YassMain.init()` on the Swing event thread with an
-  isolated temporary user home and disposes the test windows. The library,
-  editor, and JavaFX video components initialize successfully.
-- `ShadedJarPackagingSpec` and `YassRowSpec`: 7 tests pass after the launch change.
-
-The wrapper uses upstream scripts; application tests remain under `test/groovy/`.
-
-## Extension Notes
-
-The release matrix uses the wrapper on all platforms. The Nix package uses
-Maven from its Nix environment. When updating Maven, update the distribution URL
-and checksum and verify a fresh wrapper bootstrap.
+The wrapper supplies Maven, not a JDK or the external media tools. Nix packaging
+uses Maven from its Nix environment. VS Code launch behavior is specified in
+[VS Code Development](vscode-development.md).

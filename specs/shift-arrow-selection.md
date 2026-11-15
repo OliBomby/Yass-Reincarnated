@@ -47,10 +47,6 @@ behavior.
   word-boundary, and page-boundary tap behavior, note-by-note behavior when
   disabled, and the click/F8 toggle. The tooltip is available in either state
   and is absent outside the indicator or when the indicator is hidden.
-- The adjacent "Mic" indicator is lit while microphone pitch capture is
-  listening. Clicking it starts capture on the selected notes or commits and
-  stops an active capture, matching `Ctrl+Shift+M`. Starting without a note
-  selection shows the existing selection error.
 - Zoom accommodates selections spanning pages, and playback and scrolling
   positions follow the moving end of the selection.
 

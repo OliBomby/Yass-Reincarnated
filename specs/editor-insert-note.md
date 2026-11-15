@@ -33,7 +33,12 @@ without losing existing notes or leaving the current lyric page.
   trailing hyphen connects to the next syllable. The connector itself is not
   stored as lyric text. Spaces still separate words. Connections to existing
   notes do not cross page breaks.
-- Successful additions select the new notes and refresh the editor view.
+- Successful additions select only the newly inserted notes and refresh the
+  editor view. Preserved earlier/later notes, page breaks, and the end marker
+  are not included in the selection.
+- Cancelling the dialog preserves the selection as well as the song.
+- Selection behavior is the same for the lyrics menu, toolbar, `Shift+Enter`,
+  and `Ctrl+Enter`, including its ordinary-insertion fallback.
 - `Ctrl+Enter` uses loaded vocal pitch when the selected audio track is
   `#VOCALS` and pitch data is available. Other cases use ordinary insertion.
 - Vocal-aware insertion keeps the generated group within its local page and
@@ -63,6 +68,12 @@ without losing existing notes or leaving the current lyric page.
   as one connected word, with no literal hyphens or separating word spaces.
 - After a syllable `pre` with no trailing space, add `fix`. The lyrics read
   `pre fix`. Adding `-fix` instead reads `prefix`.
+- Insert one or several syllables in the middle of a longer song. Only the
+  inserted notes are selected; preserved notes on either side remain unselected.
+- Insert at the end of a song. New notes are selected without the end marker.
+- Use `Ctrl+Enter` when vocal-aware insertion falls back to ordinary insertion.
+  Only the resulting new notes are selected.
+- Cancel the dialog. Song content and selection remain unchanged.
 
 ## Scope And Constraints
 

@@ -53,3 +53,21 @@ request. Omit this section if there are none.
 - Keep future proposals in `docs/specs/` until accepted.
 - Apply this format when creating or revising specs; older engineering-oriented
   sections should be removed or moved to separate documentation as they are revised.
+
+## Choosing Spec Boundaries
+
+- Give each spec a coherent user task or observable behavior. Do not split a
+  bugfix into a separate spec when it only refines an existing feature.
+- Merge requirements that describe the same action and inputs, keeping the
+  acceptance examples that distinguish its cases.
+- Split independent user tasks even when they share an implementation. Lyric
+  text splitting and timed-note splitting, for example, have different outcomes.
+- Keep shared behavior in one owning spec and link to it from related workflows.
+  Provider setup, transcript persistence, timing refinement, and note alignment
+  can evolve independently.
+- A short spec is acceptable when its behavior is independently useful. Related
+  filenames alone are not a reason to merge.
+- After a merge, split, or rename, update repository references.
+- Planned specs should state Planned or Exploratory in Status and use the same
+  functional sections where practical. They may add Open Questions for unsettled
+  decisions; do not present proposals as implemented behavior.

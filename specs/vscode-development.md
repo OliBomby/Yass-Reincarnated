@@ -2,68 +2,40 @@
 
 ## Status
 
-Implemented/current. The repository includes a Java Run/Debug configuration.
+Implemented in Yass Reincarnated.
 
 ## Purpose
 
-Let contributors build and launch Yass Reincarnated with VS Code's Run button while
-preserving the JDK and classpath requirements of the application.
+Let contributors build, run, and debug Yass Reincarnated with VS Code's Run
+button using the project's supported JDK and dependencies.
 
-## User-Facing Behavior
+## Functional Requirements
 
-- Open the repository folder and install the recommended Java language support
-  and debugger extensions.
-- Set `JAVA_HOME` to JDK 21 and restart VS Code after changing it.
-- Wait for the Maven project import, select **Yass Reincarnated** in **Run and Debug**,
-  then press the green Run button or F5. Ctrl+F5 runs without debugging.
-- The required **Yass Reincarnated: compile** task builds through the Maven Wrapper
-  before the application starts. Compilation failures must stop launch.
+- Contributors open the repository folder, install the recommended Java
+  language/debugger extensions, and allow Maven project import to complete.
+- VS Code uses JDK 21 from `JAVA_HOME`. After changing it, contributors restart
+  VS Code so the new environment is available.
+- Run and Debug offers **Yass Reincarnated**. F5 starts debugging; Ctrl+F5
+  runs without debugging.
+- The **Yass Reincarnated: compile** task builds through the
+  [Maven Wrapper](maven-wrapper.md) before launch. A compilation failure stops
+  the launch.
+- Launch starts from the repository root with all production dependencies,
+  including legacy media libraries.
+- Launch continues to work after a project rename without a machine-specific
+  Java project name or JDK installation path in shared configuration.
+- The launch workflow accommodates long dependency paths on Windows.
 
-## Core Rules
+## Acceptance Scenarios
 
-- Launch `yass.YassMain` from the repository root with the JDK in `JAVA_HOME`.
-- Omit `projectName` from the launch configuration. The debugger discovers the
-  project containing the main class, so a cached Maven project name cannot
-  invalidate launch after a rename. This repository has one application project.
-- Include `target/classes`, Maven runtime dependencies, and `lib/*.jar` on the
-  classpath so legacy JMF classes are available.
-- Keep module paths empty for this non-modular application and use a JVM
-  argument file to avoid Windows command-line length limits.
-- Maven owns pre-launch compilation. Disable the Java debugger's additional
-  Eclipse build: it rejects the existing package/folder mismatch in the resource
-  utility `CoverGenerator.java`, which Maven accepts.
+- Import the repository with JDK 21 and the recommended extensions, select
+  Yass Reincarnated, and press F5. Compilation completes and debugging starts.
+- Use Ctrl+F5. Compilation completes and the application runs without debugging.
+- Introduce a compilation error and launch. The build failure prevents startup.
+- Rename the imported project and complete import again. The shared launch
+  configuration still starts the application.
 
-## Data And Configuration
+## Scope And Constraints
 
-- `.vscode/launch.json`: Java executable, main class, classpath,
-  integrated terminal, and pre-launch task.
-- `.vscode/tasks.json`: wrapper compile task with Windows and Unix commands.
-- `.vscode/extensions.json`: `redhat.java` and `vscjava.vscode-java-debug`.
-- `.vscode/settings.json`: `java.debug.settings.forceBuildBeforeLaunch=false`.
-- Wrapper bootstrap and cache behavior are documented in
-  [Maven Wrapper](maven-wrapper.md).
-
-## Code Entry Points
-
-- `.vscode/launch.json` and `.vscode/tasks.json`: launch/build integration.
-- `src/yass/YassMain.java`: application entry point.
-- `pom.xml`: Maven project layout, dependencies, and compilation.
-- `README.md`, Developers / VS Code: contributor setup instructions.
-
-## Regression Coverage
-
-Manual verification with JDK 21:
-
-- VS Code configuration JSON validates.
-- The wrapper compile task passes.
-- F5 launches the actual application with the existing song library.
-- Run Without Debugging (Ctrl+F5) launches after the project rename without a
-  hardcoded Java project name; verified in the existing VS Code window.
-
-No automated VS Code UI regression test is included.
-
-## Extension Notes
-
-Keep machine-specific JDK paths out of shared configuration. VS Code inherits
-`JAVA_HOME` when it starts; existing windows may retain an outdated environment.
-This configuration requires the Java extensions and completed project import.
+The configuration requires the Java extensions and a completed Maven import.
+Contributor setup commands remain in the repository README.
