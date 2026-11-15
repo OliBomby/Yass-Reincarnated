@@ -29,10 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Enable Pages once in Settings > Pages > Source: GitHub Actions.
+      # GITHUB_TOKEN can deploy the site, but cannot enable it.
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
