@@ -4197,26 +4197,24 @@ public class YassActions implements DropTargetListener {
     private final Action undo = new AbstractAction(I18.get("edit_undo")) {
         public void actionPerformed(ActionEvent e) {
             interruptPlay();
-            if (lyrics.isEditable()) {
-                lyrics.finishEditing();
-            }
             Point viewportBeforeUndo = sheet != null ? new Point(sheet.getViewPosition()) : null;
-            table.undoRows();
-            checkData(table, false, true);
-            updateGapBpm(false);
+            lyrics.undoRedoWhileEditing(() -> {
+                table.undoRows();
+                checkData(table, false, true);
+                updateGapBpm(false);
+            });
             restoreSheetViewportAfterUndoRedo(viewportBeforeUndo);
         }
     };
     private final Action redo = new AbstractAction(I18.get("edit_redo")) {
         public void actionPerformed(ActionEvent e) {
             interruptPlay();
-            if (lyrics.isEditable()) {
-                lyrics.finishEditing();
-            }
             Point viewportBeforeRedo = sheet != null ? new Point(sheet.getViewPosition()) : null;
-            table.redoRows();
-            checkData(table, false, true);
-            updateGapBpm(false);
+            lyrics.undoRedoWhileEditing(() -> {
+                table.redoRows();
+                checkData(table, false, true);
+                updateGapBpm(false);
+            });
             restoreSheetViewportAfterUndoRedo(viewportBeforeRedo);
         }
     };

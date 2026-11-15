@@ -451,9 +451,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                 int keyCode = e.getKeyCode();
                 if (keyCode == KeyEvent.VK_Z && e.isControlDown()) {
                     if (isEditable()) {
-                        finishEditing();
-                        table.undoRows();
-                        editLyrics();
+                        undoRedoWhileEditing(table::undoRows);
                         e.consume();
                     }
                     return;
@@ -462,9 +460,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     return;
                 } else if (keyCode == KeyEvent.VK_Y && e.isControlDown()) {
                     if (isEditable()) {
-                        finishEditing();
-                        table.redoRows();
-                        editLyrics();
+                        undoRedoWhileEditing(table::redoRows);
                         e.consume();
                     }
                     return;
@@ -912,6 +908,89 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                                                               notSelectStyle,
                                                               false);
 
+    }
+
+    /** Runs Undo/Redo without leaving lyrics editing or restoring an old selection. */
+    public void undoRedoWhileEditing(Runnable action) {
+        if (!isEditable()) {
+            action.run();
+            return;
+        }
+        int[] dot = lyricsPosition(lyricsArea.getCaret().getDot());
+        int[] mark = lyricsPosition(lyricsArea.getCaret().getMark());
+        Vector<Integer> selectedNotes = new Vector<>();
+        int note = 0;
+        for (int row = 0; row < table.getRowCount(); row++) {
+            if (table.getRowAt(row).isNote()) {
+                if (table.isRowSelected(row)) {
+                    selectedNotes.add(note);
+                }
+                note++;
+            }
+        }
+        boolean oldPreventFireUpdate = preventFireUpdate;
+        pendingSelector = null;
+        preventFireUpdate = true;
+        disconnectTable();
+        try {
+            action.run();
+            String text = table.getText();
+            boolean textChanged = !text.equals(lyricsArea.getText());
+            if (textChanged) {
+                lyricsArea.setText(text);
+                // Replacing the document can spread the first syllable's highlight.
+                lyricsArea.getStyledDocument().setCharacterAttributes(0,
+                        lyricsArea.getDocument().getLength(), notSelectStyle, false);
+            }
+            hyphenationChanged = true;
+            myUndo = null;
+            // Page breaks can change row numbers, but the selected notes stay put.
+            ListSelectionModel selection = table.getSelectionModel();
+            selection.setValueIsAdjusting(true);
+            selection.clearSelection();
+            note = 0;
+            for (int row = 0; row < table.getRowCount(); row++) {
+                if (table.getRowAt(row).isNote()) {
+                    if (selectedNotes.contains(note)) {
+                        selection.addSelectionInterval(row, row);
+                    }
+                    note++;
+                }
+            }
+            selection.setValueIsAdjusting(false);
+            if (textChanged) {
+                lyricsArea.getCaret().setDot(lyricsOffset(mark));
+                lyricsArea.getCaret().moveDot(lyricsOffset(dot));
+            }
+        } finally {
+            connectTable();
+            preventFireUpdate = oldPreventFireUpdate;
+        }
+        checkLength();
+    }
+
+    // Anchor each selection endpoint within its syllable so changes to earlier
+    // text or page separators do not move it to another part of the song.
+    private int[] lyricsPosition(int offset) {
+        int syllable = 0;
+        int[] range = nextSyllable(0);
+        while (range != null) {
+            if (offset <= range[1]) {
+                return new int[]{syllable, Math.max(0, offset - range[0])};
+            }
+            syllable++;
+            range = nextSyllable(range[1] + 1);
+        }
+        return new int[]{syllable, 0};
+    }
+
+    private int lyricsOffset(int[] position) {
+        int[] range = nextSyllable(0);
+        for (int syllable = 0; range != null && syllable < position[0]; syllable++) {
+            range = nextSyllable(range[1] + 1);
+        }
+        return range == null ? lyricsArea.getDocument().getLength()
+                : Math.min(range[0] + position[1], range[1]);
     }
 
     private void editTableLyrics(Runnable edit) {

@@ -24,6 +24,11 @@ does not move the current syllable to the left edge and lose page boundaries.
   syllable instead of jumping to the start of the song.
 - Undo and Redo preserve the current timeline position, horizontal zoom, and
   playback cursor, so reversing a lyric edit does not jump to an earlier page.
+- While editing lyrics, Undo (`Ctrl+Z`) and Redo (`Ctrl+Y`) keep the lyrics editor
+  focused and editable. The current syllable, cursor position within it, and
+  text selection stay in place instead of returning to a selection from an
+  earlier edit. If a syllable becomes shorter, its cursor or selection endpoint
+  stays as close as possible within that syllable.
 
 ## Acceptance Scenarios
 
@@ -44,3 +49,12 @@ does not move the current syllable to the left edge and lose page boundaries.
 - Split a lyric on a later page after earlier edits used a different page zoom.
   Undo and Redo the split. The lyrics change while the same timeline section,
   zoom, and playback cursor remain in place, in both pitch-view modes.
+- Edit lyrics on a later page after making an earlier edit elsewhere in the
+  song. Undo and Redo using the shortcuts or menu. Lyrics editing remains active
+  at the current syllable, and typing can continue immediately.
+- Select text in the lyrics editor and Undo or Redo an edit. The selection and
+  its direction remain at the same syllables, including when an earlier word
+  or page break changes the text positions before the selection.
+- Select a syllable, type its replacement, and Undo or Redo. The change is
+  reversed or reapplied while the editor stays focused, without selecting or
+  highlighting all lyrics. This also works for the first syllable of the song.
