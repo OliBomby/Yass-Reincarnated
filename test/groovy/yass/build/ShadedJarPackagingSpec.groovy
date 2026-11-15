@@ -35,20 +35,10 @@ class ShadedJarPackagingSpec extends Specification {
         def releaseUpload = blockAfter(workflow, 'Upload to GitHub Release')
 
         expect:
-        workflow.contains('RELEASE_REF="${{ inputs.tag || github.ref_name }}"')
+        workflow.contains('RELEASE_REF="$RELEASE_TAG"')
         workflow.contains('Yass-Reincarnated-${RELEASE_VERSION}-linux-x64.jar')
-        releaseUpload.contains('dist/Yass-Reincarnated-*-linux-x64.jar')
+        releaseUpload.contains('release-artifacts/Yass-Reincarnated-*-linux-x64.jar')
         !releaseUpload.contains('package-input/Yass-Reincarnated.jar')
-    }
-
-    def 'nightly workflow publishes a timestamped Linux jar asset instead of a generic nightly jar'() {
-        given:
-        def workflow = Files.readString(Path.of('.github/workflows/nightly.yml'))
-
-        expect:
-        workflow.contains("NIGHTLY_STAMP=\$(date -u +'%Y-%m-%d-%H%M%SZ')")
-        workflow.contains('Yass-Reincarnated-nightly-${NIGHTLY_STAMP}-linux-x64.jar')
-        !workflow.contains('Yass-Reincarnated-nightly.jar')
     }
 
     private static List nodes(def nodeList) {

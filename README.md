@@ -160,6 +160,18 @@ FFmpeg and ffprobe are needed for media handling; see the requirements above.
 Implemented feature specs and code entry points live in `specs/`, and tests live
 in `test/groovy/`.
 
+## Building GitHub Releases
+
+The **Build Yass Reincarnated** action runs when a version tag such as `v2026.7`
+is pushed. Ordinary branch pushes do not build installers, and there are no
+nightly builds.
+
+To rebuild an existing version, open **Actions > Build Yass Reincarnated > Run
+workflow** and enter its tag. The action builds that tag for every platform and
+publishes the downloads to its GitHub Release after all builds succeed. Select
+**Keep the GitHub release as a draft** to prepare a draft instead of publishing.
+Tag-triggered builds publish automatically.
+
 # Yass Reincarnated uses
 - Java Look & Feel Graphics Repository
 - FFmpeg

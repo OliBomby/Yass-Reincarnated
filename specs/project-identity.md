@@ -22,8 +22,8 @@ and contributor tooling while preserving attribution and existing user data.
 - Windows installs into `Yass Reincarnated` and creates matching Start Menu and
   desktop shortcuts. The downloadable installer is
   `yass-reincarnated-installer.exe`; the installed launcher remains `yass.exe`.
-- macOS/Linux packages and Nix commands use the reincarnated name. Release and
-  nightly asset names match their workflow upload paths and README examples.
+- macOS/Linux packages and Nix commands use the reincarnated name. Release
+  asset names match their workflow upload paths and README examples.
 - VS Code's Run/Debug entry is **Yass Reincarnated** and its build task is
   **Yass Reincarnated: compile**.
 
@@ -60,7 +60,7 @@ and contributor tooling while preserving attribution and existing user data.
 ## Code Entry Points
 
 - `pom.xml`, `launch4j.xml`, `nsis-installer.nsi`, `flake.nix`: build/distribution.
-- `.github/workflows/build.yml` and `nightly.yml`: release assets.
+- `.github/workflows/build.yml`: release assets.
 - `src/yass/I18.java`, `YassMain.java`, `YassActions.java`: About/startup/help.
 - `src/yass/resources/i18/`: language bundles, help, translation review tables.
 - `src/yass/usdb/UsdbCredentialStore.java`: saved-password compatibility key.
@@ -75,7 +75,7 @@ and contributor tooling while preserving attribution and existing user data.
 
 ## Regression Coverage
 
-- `ShadedJarPackagingSpec`: release/nightly Linux JAR names and upload patterns.
+- `ShadedJarPackagingSpec`: release Linux JAR names and upload patterns.
 - `NsisInstallerEncodingSpec`: UTF-8 BOM, translated installer messages, renamed
   registration, safe app-image upgrades, and preservation of user settings.
 - `UiLanguageSupportSpec`: supported language resource loading.

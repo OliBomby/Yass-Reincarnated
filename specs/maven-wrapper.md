@@ -71,6 +71,6 @@ The wrapper uses upstream scripts; application tests remain under `test/groovy/`
 
 ## Extension Notes
 
-CI currently uses the runners' installed Maven. Changing CI to use the wrapper
-is a separate build-pipeline change. When updating Maven, update the distribution
-URL and checksum and verify a fresh wrapper bootstrap.
+The release matrix uses the wrapper on all platforms. The Nix package uses
+Maven from its Nix environment. When updating Maven, update the distribution URL
+and checksum and verify a fresh wrapper bootstrap.

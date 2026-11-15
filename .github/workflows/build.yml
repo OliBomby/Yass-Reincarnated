@@ -2,17 +2,29 @@ name: Build Yass Reincarnated
 
 on:
   push:
-    branches:
-      - master
     tags:
       - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release'
+        description: 'Existing version tag to build and release (for example v2026.7)'
         required: true
+        type: string
+      draft:
+        description: 'Keep the GitHub release as a draft'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 env:
   JAVA_VERSION: "21"
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
@@ -39,7 +51,7 @@ jobs:
             arch: aarch64
             classifier: mac-aarch64
             artifact_type: dmg
-          - os: macos-latest
+          - os: macos-15-intel
             name: macOS-x64
             arch: x64
             classifier: mac
@@ -47,6 +59,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -62,11 +76,11 @@ jobs:
           echo "=== Java ==="
           java -version
           echo "=== Maven ==="
-          mvn -version
+          bash ./mvnw -version
       
       - name: Build with Maven
         shell: bash
-        run: mvn clean package -DskipTests -Djavafx.platform=${{ matrix.classifier }}
+        run: bash ./mvnw -B -ntp clean package -DskipTests -Djavafx.platform=${{ matrix.classifier }}
 
       - name: Prepare Package Input
         shell: bash
@@ -76,11 +90,11 @@ jobs:
           [ -d "lib" ] && cp lib/*.jar package-input/ || true
 
       - name: Name Linux release jar
-        if: matrix.classifier == 'linux' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+        if: matrix.classifier == 'linux'
         shell: bash
         run: |
           mkdir -p dist
-          RELEASE_REF="${{ inputs.tag || github.ref_name }}"
+          RELEASE_REF="$RELEASE_TAG"
           RELEASE_VERSION="${RELEASE_REF#v}"
           cp package-input/Yass-Reincarnated.jar "dist/Yass-Reincarnated-${RELEASE_VERSION}-linux-x64.jar"
 
@@ -95,7 +109,11 @@ jobs:
         run: |
           $appVersion = (Get-Content target/classes/version.properties -Raw | ConvertFrom-StringData).version
           jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reincarnated.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico" --vendor "OliBomby" --description "Yass Reincarnated - Karaoke Editor" --app-version $appVersion
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "C:\Program Files (x86)\NSIS\makensis.exe" nsis-installer.nsi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item yass-reincarnated-installer.exe dist/
           
       # --- LINUX & MACOS: JPACKAGE BUILD ---
       - name: Build Linux/macOS Package
@@ -133,27 +151,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Yass-Reincarnated-${{ matrix.name }}
+          if-no-files-found: error
           path: |
             dist/*.deb
             dist/*.dmg
             dist/*.jar
-            *.exe
-
-      # -------- RELEASE --------
-      - name: Upload to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          files: |
-            dist/yass-reincarnated-macos-x64.dmg
-            dist/yass-reincarnated-macos-arm64.dmg
-            dist/yass-reincarnated-linux-amd64.deb
-            dist/Yass-Reincarnated-*-linux-x64.jar
-            yass-reincarnated-installer.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            dist/*.exe
 
   build-linux-nix:
     name: Build Linux (Nix)
@@ -161,6 +164,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@v30
@@ -183,14 +188,38 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Yass-Reincarnated-Linux-Nix
+          if-no-files-found: error
           path: dist/yass-reincarnated-linux-x86_64-nix.tar.gz
 
-      - name: Upload Nix package to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-22.04
+    needs:
+      - build
+      - build-linux-nix
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Yass-Reincarnated-*
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          files: dist/yass-reincarnated-linux-x86_64-nix.tar.gz
+          draft: ${{ inputs.draft || false }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          fail_on_unmatched_files: true
+          files: |
+            release-artifacts/yass-reincarnated-macos-x64.dmg
+            release-artifacts/yass-reincarnated-macos-arm64.dmg
+            release-artifacts/yass-reincarnated-linux-amd64.deb
+            release-artifacts/Yass-Reincarnated-*-linux-x64.jar
+            release-artifacts/yass-reincarnated-installer.exe
+            release-artifacts/yass-reincarnated-linux-x86_64-nix.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
