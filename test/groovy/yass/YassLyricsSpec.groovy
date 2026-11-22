@@ -11,6 +11,7 @@ import javax.swing.JTextPane
 import javax.swing.JViewport
 import javax.swing.SwingUtilities
 import javax.swing.text.DefaultEditorKit
+import javax.swing.text.StyleConstants
 import java.awt.Dimension
 import java.awt.DefaultKeyboardFocusManager
 import java.awt.KeyboardFocusManager
@@ -414,6 +415,77 @@ class YassLyricsSpec extends Specification {
 
         cleanup:
         SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+    }
+
+    def 'editing highlights the selected characters and keeps the corresponding notes selected'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties)
+        YassLyrics lyrics
+        YassTable table
+        JTextPane area
+        def backgroundAt = { int offset ->
+            StyleConstants.getBackground(area.styledDocument.getCharacterElement(offset).attributes)
+        }
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            ['sou', 've', 'nir'].eachWithIndex { syllable, index ->
+                model.addRow(new YassRow(':', (index * 8) as String, '6', '10', syllable))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            table = new YassTable(model, props)
+            table.setModel(model)
+            table.setRowSelectionInterval(0, 0)
+            def sheet = new YassSheet()
+            sheet.darkMode = darkMode
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(Stub(YassAutoCorrect))
+            lyrics.setSheet(sheet)
+            lyrics.setTable(table)
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+        }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        area.text == 'sou-ve-nir'
+        (0..<3).every { backgroundAt(it) == area.selectionColor }
+
+        when:
+        SwingUtilities.invokeAndWait {
+            lyrics.editLyrics()
+            area.caret.setSelectionVisible(true)
+            area.caret.setDot(anchor)
+            area.caret.moveDot(end)
+        }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        area.selectedText == selectedText
+        area.highlighter.highlights.collect { [it.startOffset, it.endOffset] } ==
+                [[Math.min(anchor, end), Math.max(anchor, end)]]
+        (0..<area.document.length).every { backgroundAt(it).alpha == 0 }
+        table.selectedRows.toList() == selectedRows
+
+        when:
+        SwingUtilities.invokeAndWait { area.caretPosition = 1 }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        area.highlighter.highlights.length == 0
+        (0..<3).every { backgroundAt(it) == area.selectionColor }
+        backgroundAt(4).alpha == 0
+        table.selectedRows.toList() == [0]
+
+        cleanup:
+        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+
+        where:
+        darkMode | anchor | end || selectedText | selectedRows
+        false    | 1      | 3   || 'ou'         | [0]
+        true     | 6      | 1   || 'ou-ve'      | [0, 1]
     }
 
     def 'lyrics cursor follows whole pages without moving visible syllables to the left edge'() {

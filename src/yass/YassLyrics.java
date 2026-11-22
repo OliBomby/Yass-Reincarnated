@@ -398,6 +398,9 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             public void mousePressed(MouseEvent e) {
                 YassLyrics.this.firePropertyChange("play", null, "stop");
                 if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (lyricsArea.isEditable()) {
+                        return;
+                    }
                     Runnable later = new Runnable() {
                         public synchronized void run() {
                             try {
@@ -1568,11 +1571,12 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             pendingSelector = null;
             preventFireUpdate = true;
             try {
-                lyricsArea.getStyledDocument().setCharacterAttributes(0,
-                                                                      lyricsArea.getStyledDocument().getLength(),
-                                                                      notSelectStyle, false);
-                lyricsArea.getStyledDocument().setCharacterAttributes(in,
-                                                                      out - in, selectStyle, false);
+                StyledDocument document = lyricsArea.getStyledDocument();
+                document.setCharacterAttributes(0, document.getLength(), notSelectStyle, false);
+                // Swing paints the exact character range during text selection.
+                if (!lyricsArea.isEditable() || lyricsArea.getSelectionStart() == lyricsArea.getSelectionEnd()) {
+                    document.setCharacterAttributes(in, out - in, selectStyle, false);
+                }
 
                 if (!lyricsArea.isEditable()) {
                     lyricsArea.requestFocusInWindow();

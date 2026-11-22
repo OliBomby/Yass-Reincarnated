@@ -12,6 +12,10 @@ syllable when switching from note navigation to lyrics editing.
 ## Functional Requirements
 
 - Moving the lyrics cursor selects the corresponding note.
+- In lyrics editing mode (`F4`), selecting with the mouse or Shift+Arrow highlights
+  exactly the selected characters. The corresponding notes stay selected.
+- When browsing notes or editing with a caret and no text selected, the lyrics
+  highlight shows the whole syllable.
 - If that note is already visible, moving the cursor preserves the horizontal
   view.
 - Moving to an off-screen page follows that syllable's page from its boundary,
@@ -29,6 +33,10 @@ syllable when switching from note navigation to lyrics editing.
 
 - Move between syllables on a visible page. Corresponding notes are selected
   without changing the horizontal view.
+- In `sou-ve-nir`, select `ou` while editing. The lyrics highlight covers `ou`, and
+  the first note is selected. Extend the selection through `ve` to highlight
+  `ou-ve` and select both notes. Collapse the selection inside `sou` to see the
+  whole-syllable highlight again.
 - Move to a syllable in the middle of the next off-screen page. The view shows
   that page from its beginning and remains stable for further movement on it.
 - Move backward to the previous off-screen page. Its page boundaries are shown.
