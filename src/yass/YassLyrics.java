@@ -371,14 +371,19 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         lyricsArea.addCaretListener(caretListener);
         lyricsArea.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
-                // LOGGER.info("lyrics focus gained");
+                if (lyricsArea.isEditable()) {
+                    clearSyllableHighlight();
+                }
             }
 
             public void focusLost(FocusEvent e) {
-                // LOGGER.info("lyrics focus lost");
-                
-                if (!editingTable && !confirmingSpacing && (frDialog == null || !frDialog.isVisible())) {
-                    finishEditing();
+                if (!lyricsArea.isEditable() || editingTable || confirmingSpacing
+                        || (frDialog != null && frDialog.isVisible())) {
+                    return;
+                }
+                finishEditing();
+                if (table != null) {
+                    updateSelection(false);
                 }
             }
         });
@@ -923,10 +928,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         lyricsArea.getCaret().setVisible(true);
         lyricsArea.setCaretColor(Color.red);
         lyricsArea.getCaret().setBlinkRate(initialBlinkRate);
-        lyricsArea.getStyledDocument().setCharacterAttributes(0,
-                                                              lyricsArea.getStyledDocument().getLength(),
-                                                              notSelectStyle,
-                                                              false);
+        clearSyllableHighlight();
         tableSelectionListener.valueChanged(null);
     }
 
@@ -941,11 +943,12 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         lyricsArea.setCaretColor(null);
         lyricsArea.getCaret().setVisible(false);
         lyricsArea.getCaret().setBlinkRate(0);
-        lyricsArea.getStyledDocument().setCharacterAttributes(0,
-                                                              lyricsArea.getStyledDocument().getLength(),
-                                                              notSelectStyle,
-                                                              false);
+        clearSyllableHighlight();
+    }
 
+    private void clearSyllableHighlight() {
+        StyledDocument document = lyricsArea.getStyledDocument();
+        document.setCharacterAttributes(0, document.getLength(), notSelectStyle, false);
     }
 
     private boolean confirmLyricsEdit() {
@@ -1207,6 +1210,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
      * Description of the Method
      */
     public void updateSelection() {
+        updateSelection(true);
+    }
+
+    private void updateSelection(boolean navigate) {
         pendingSelector = null;
         int i = table.getSelectionModel().getMinSelectionIndex();
         int j = table.getSelectionModel().getMaxSelectionIndex();
@@ -1271,7 +1278,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             max = min;
         }
 
-        selectSyllablesAt(min, max, scrollToEnd);
+        selectSyllablesAt(min, max, scrollToEnd, navigate);
     }
 
     Vector<Integer> errLines = new Vector<>();
@@ -1497,6 +1504,10 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
      * @param max Description of the Parameter
      */
     public void selectSyllablesAt(int min, int max, boolean scrollToEnd) {
+        selectSyllablesAt(min, max, scrollToEnd, true);
+    }
+
+    private void selectSyllablesAt(int min, int max, boolean scrollToEnd, boolean navigate) {
         String txt = lyricsArea.getText();
         int n = txt.length();
         if (n < 1) {
@@ -1528,7 +1539,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
                     caretin = in;
                 }
                 if (syllable == max) {
-                    pendingSelector = new Selector(caretin, i, scrollToEnd);
+                    pendingSelector = new Selector(caretin, i, scrollToEnd, navigate);
                     SwingUtilities.invokeLater(pendingSelector);
                     return;
                 }
@@ -1547,6 +1558,7 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
         int in, out;
         boolean scrollToEnd;
         final boolean fromCaret;
+        final boolean navigate;
 
         /**
          * Constructor for the Selector object
@@ -1554,10 +1566,11 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
          * @param i Description of the Parameter
          * @param j Description of the Parameter
          */
-        public Selector(int i, int j, boolean scrollToEnd) {
+        public Selector(int i, int j, boolean scrollToEnd, boolean navigate) {
             in = i;
             out = j;
             this.scrollToEnd = scrollToEnd;
+            this.navigate = navigate;
             fromCaret = isCaretUpdate;
         }
 
@@ -1571,11 +1584,14 @@ public class YassLyrics extends JPanel implements TabChangeListener, YassSheetLi
             pendingSelector = null;
             preventFireUpdate = true;
             try {
-                StyledDocument document = lyricsArea.getStyledDocument();
-                document.setCharacterAttributes(0, document.getLength(), notSelectStyle, false);
-                // Swing paints the exact character range during text selection.
-                if (!lyricsArea.isEditable() || lyricsArea.getSelectionStart() == lyricsArea.getSelectionEnd()) {
-                    document.setCharacterAttributes(in, out - in, selectStyle, false);
+                clearSyllableHighlight();
+                if (!lyricsArea.isEditable() || !lyricsArea.isFocusOwner()) {
+                    lyricsArea.getStyledDocument().setCharacterAttributes(in, out - in, selectStyle, false);
+                }
+
+                // A focus change only refreshes the highlight.
+                if (!navigate) {
+                    return;
                 }
 
                 if (!lyricsArea.isEditable()) {

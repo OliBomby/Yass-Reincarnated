@@ -12,6 +12,7 @@ import javax.swing.JViewport
 import javax.swing.SwingUtilities
 import javax.swing.text.DefaultEditorKit
 import javax.swing.text.StyleConstants
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.DefaultKeyboardFocusManager
 import java.awt.KeyboardFocusManager
@@ -417,13 +418,15 @@ class YassLyricsSpec extends Specification {
         SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
     }
 
-    def 'editing highlights the selected characters and keeps the corresponding notes selected'() {
+    def 'focused lyrics editing highlights only selected text and unfocused lyrics highlight selected notes'() {
         given:
         I18.setDefaultLanguage()
         def props = Stub(YassProperties)
         YassLyrics lyrics
         YassTable table
         JTextPane area
+        boolean lyricsFocused = false
+        def previousFocusManager = KeyboardFocusManager.currentKeyboardFocusManager
         def backgroundAt = { int offset ->
             StyleConstants.getBackground(area.styledDocument.getCharacterElement(offset).attributes)
         }
@@ -446,6 +449,10 @@ class YassLyricsSpec extends Specification {
             lyrics.setTable(table)
             area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
                     .viewport.view as JTextPane
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
+                @Override
+                Component getFocusOwner() { lyricsFocused ? area : null }
+            })
         }
         SwingUtilities.invokeAndWait {}
 
@@ -456,7 +463,8 @@ class YassLyricsSpec extends Specification {
         when:
         SwingUtilities.invokeAndWait {
             lyrics.editLyrics()
-            area.caret.setSelectionVisible(true)
+            lyricsFocused = true
+            area.focusListeners.each { it.focusGained(new FocusEvent(area, FocusEvent.FOCUS_GAINED)) }
             area.caret.setDot(anchor)
             area.caret.moveDot(end)
         }
@@ -475,16 +483,45 @@ class YassLyricsSpec extends Specification {
 
         then:
         area.highlighter.highlights.length == 0
+        (0..<area.document.length).every { backgroundAt(it).alpha == 0 }
+        table.selectedRows.toList() == [0]
+
+        when:
+        SwingUtilities.invokeAndWait {
+            lyricsFocused = false
+            area.focusListeners.each { it.focusLost(new FocusEvent(area, FocusEvent.FOCUS_LOST)) }
+        }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        area.caretPosition == 1
         (0..<3).every { backgroundAt(it) == area.selectionColor }
         backgroundAt(4).alpha == 0
         table.selectedRows.toList() == [0]
 
+        when:
+        SwingUtilities.invokeAndWait {
+            lyrics.editLyrics()
+            lyricsFocused = true
+            area.focusListeners.each { it.focusGained(new FocusEvent(area, FocusEvent.FOCUS_GAINED)) }
+        }
+        SwingUtilities.invokeAndWait {}
+
+        then:
+        area.caretPosition == 1
+        area.highlighter.highlights.length == 0
+        (0..<area.document.length).every { backgroundAt(it).alpha == 0 }
+
         cleanup:
-        SwingUtilities.invokeAndWait { lyrics?.finishEditing() }
+        SwingUtilities.invokeAndWait {
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(previousFocusManager)
+            lyrics?.finishEditing()
+        }
 
         where:
         darkMode | anchor | end || selectedText | selectedRows
         false    | 1      | 3   || 'ou'         | [0]
+        false    | 0      | 3   || 'sou'        | [0]
         true     | 6      | 1   || 'ou-ve'      | [0, 1]
     }
 
