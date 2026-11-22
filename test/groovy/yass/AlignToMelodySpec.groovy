@@ -356,7 +356,7 @@ class AlignToMelodySpec extends Specification {
         and.getHeightInt() == 8
     }
 
-    def 'recording alignToMelody preserves tapped timing for first note after page break'() {
+    def 'recording alignToMelody uses the vocal lead-in for the first note after a page break'() {
         given:
         def previous = new YassRow(':', '712', '16', '5', '~ ')
         def pageBreak = new YassRow('-', '734', '', '', '')
@@ -374,7 +374,8 @@ class AlignToMelodySpec extends Specification {
         yassTable.alignToMelody([tapped], pitchData, YassTable.AlignToMelodyContext.recording())
 
         then:
-        tapped.getBeatInt() == 744
+        tapped.getBeatInt() == 736
+        tapped.getLengthInt() == 2
     }
 
     def 'manual alignToMelody keeps first note after page break on pitch prevalent inside original note'() {
