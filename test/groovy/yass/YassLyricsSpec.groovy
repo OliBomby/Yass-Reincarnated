@@ -5,6 +5,7 @@ import yass.autocorrect.YassAutoCorrect
 
 import javax.swing.JPanel
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JScrollPane
 import javax.swing.JTextPane
 import javax.swing.JViewport
@@ -17,6 +18,7 @@ import java.awt.Toolkit
 import java.awt.event.FocusEvent
 import java.awt.event.KeyEvent
 import java.awt.event.ActionEvent
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import yass.input.*
 
@@ -270,6 +272,113 @@ class YassLyricsSpec extends Specification {
         true    | false         | 'Three'  | 2
         false   | true          | 'One'    | 0
         true    | true          | 'Three'  | 2
+    }
+
+    def 'splitting or merging on the timeline keeps F4 and arrows near the edited lyrics'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) {
+            isUncommonSpacingAfter() >> true
+        }
+        def auto = Stub(YassAutoCorrect)
+        boolean split = operation == 'split'
+        String syllable = split ? 'Mid' : 'Middle'
+        def previousZoomMode = YassTable.zoomMode
+        YassActions actions
+        YassLyrics lyrics
+        YassTable table
+        JTextPane area
+        int entryPosition
+        int arrowPosition
+
+        when:
+        SwingUtilities.invokeAndWait {
+            def model = new YassTableModel()
+            def notes = split ? ['One ', 'Middle ', 'Nearby ', 'Last'] : ['One ', 'Mid', '~dle ', 'Nearby ', 'Last']
+            notes.eachWithIndex { text, index ->
+                model.addRow(new YassRow(':', (index * 8) as String, '6', '10',
+                        text.replace(' ' as char, YassRow.SPACE)))
+            }
+            model.addRow(new YassRow('E', '', '', '', ''))
+            table = new YassTable(model, props)
+            table.setModel(model)
+            table.setAutoCorrect(auto)
+            table.setHyphenator(Stub(YassHyphenator) {
+                hyphenateWord('Middle') >> 'Mid\u00ADdle'
+            })
+            YassTable.zoomMode = YassTable.ZOOM_MULTI
+
+            def sheet = new YassSheet()
+            def viewport = new JViewport()
+            viewport.setSize(800, 420)
+            viewport.setExtentSize(new Dimension(800, 420))
+            viewport.setView(sheet)
+            sheet.setDuration(20000)
+            sheet.addTable(table)
+            sheet.setActiveTable(table)
+            sheet.setZoom(18)
+            sheet.clip = viewport.viewRect
+
+            lyrics = new YassLyrics(props)
+            lyrics.setAutoCorrect(auto)
+            lyrics.setSheet(sheet)
+            lyrics.setTable(table)
+            area = (lyrics.components.find { it instanceof JScrollPane } as JScrollPane)
+                    .viewport.view as JTextPane
+            actions = new YassActions(sheet, Stub(YassPlayer, constructorArgs: [null, props]), lyrics)
+            actions.setActiveTable(table)
+
+            def note = sheet.rect[operation == 'join left' ? 2 : 1]
+            int x = (note.x + (split ? note.width / 2 : operation == 'join left' ? 4 : note.width - 4)) as int
+            int y = (note.y - 4) as int
+            sheet.dispatchEvent(new MouseEvent(sheet, MouseEvent.MOUSE_MOVED, 0, 0,
+                    x, y, 0, false, MouseEvent.NOBUTTON))
+            [MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED].each { event ->
+                sheet.dispatchEvent(new MouseEvent(sheet, event, 0, 0, x, y, 1, false, MouseEvent.BUTTON1))
+            }
+        }
+        SwingUtilities.invokeAndWait {
+            assert table.noteRows.size() == (split ? 5 : 4)
+            assert area.text.contains(split ? 'Mid-dle' : 'Middle')
+            assert table.selectedRows.toList() == [1]
+            int syllableStart = area.text.indexOf(syllable)
+            assert area.caretPosition in syllableStart..(syllableStart + syllable.length())
+
+            def f4 = new KeyEvent(area, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_F4, KeyEvent.CHAR_UNDEFINED)
+            area.keyListeners.each { it.keyPressed(f4) }
+            assert lyrics.editable
+            entryPosition = area.caretPosition
+            area.setSize(400, 150)
+            paintComponent(area, 400, 150)
+            def arrowAction = forward ? DefaultEditorKit.forwardAction : DefaultEditorKit.backwardAction
+            area.actionMap.get(arrowAction).actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, arrowAction))
+            arrowPosition = area.caretPosition
+        }
+
+        then:
+        arrowPosition == entryPosition + (forward ? 1 : -1)
+        table.selectedRows.toList() in [[0], [1], [2]]
+
+        cleanup:
+        SwingUtilities.invokeAndWait {
+            lyrics?.finishEditing()
+            YassTable.zoomMode = previousZoomMode
+        }
+        if (actions != null) {
+            KeyboardFocusManager.currentKeyboardFocusManager.removeKeyEventDispatcher(actions.editorKeyDispatcher)
+        }
+
+        where:
+        [operation, forward] << [['split', 'join left', 'join right'], [true, false]].combinations()
+    }
+
+    private static void paintComponent(JComponent component, int width, int height) {
+        def graphics = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).createGraphics()
+        try {
+            component.paint(graphics)
+        } finally {
+            graphics.dispose()
+        }
     }
 
     def 'switching to lyrics preserves a selection made directly in the lyrics'() {

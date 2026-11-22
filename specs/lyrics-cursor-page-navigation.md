@@ -22,6 +22,8 @@ syllable when switching from note navigation to lyrics editing.
   position, including the song's end.
 - Pressing an arrow key and F4 together keeps navigation near the selected
   syllable rather than jumping to the start.
+- Splitting or merging notes on the timeline keeps the lyrics selection at
+  the edit. Pressing F4 starts editing there.
 
 ## Acceptance Scenarios
 
@@ -35,6 +37,9 @@ syllable when switching from note navigation to lyrics editing.
   without first requiring a visit to the song's end.
 - Select a middle-song note and press Left or Right almost simultaneously with
   F4. Lyrics navigation continues near that note.
+- Split a note or merge two notes in the middle of a song. The lyrics at the
+  edit are highlighted. Press F4 and move the cursor with Left or Right.
+  Navigation continues near the edit.
 
 ## Scope And Constraints
 

@@ -1362,24 +1362,18 @@ public class YassSheet extends JPanel implements YassPlaybackRenderer, Scrollabl
                     return;
                 }
                 YassRectangle r;
-                if (hiliteCue == CUT) {
+                if (hiliteCue == CUT || hiliteCue == JOIN_LEFT || hiliteCue == JOIN_RIGHT) {
                     r = rect.elementAt(hilite);
-                    table.clearSelection();
-                    table.addRowSelectionInterval(hilite, hilite);
-                    firePropertyChange("split", null, (e.getX() - r.x) / r.width);
+                    table.setRowSelectionInterval(hilite, hilite);
+                    switch (hiliteCue) {
+                        case CUT -> firePropertyChange("split", null, (x - r.x) / r.width);
+                        case JOIN_LEFT -> firePropertyChange("joinLeft", null, x - r.x);
+                        case JOIN_RIGHT -> firePropertyChange("joinRight", null, (int) (x - r.x));
+                    }
                     hiliteCue = UNDEFINED;
-                } else if (hiliteCue == JOIN_LEFT) {
-                    r = rect.elementAt(hilite);
-                    table.clearSelection();
-                    table.addRowSelectionInterval(hilite, hilite);
-                    firePropertyChange("joinLeft", null, (e.getX() - r.x));
-                    hiliteCue = UNDEFINED;
-                } else if (hiliteCue == JOIN_RIGHT) {
-                    r = rect.elementAt(hilite);
-                    table.clearSelection();
-                    table.addRowSelectionInterval(hilite, hilite);
-                    firePropertyChange("joinRight", null, (int) (e.getX() - r.x));
-                    hiliteCue = UNDEFINED;
+                    hit = -1;
+                    repaint();
+                    return;
                 } else if (hiliteCue == SNAPSHOT) {
                     hiliteCue = UNDEFINED;
                     createSnapshot();

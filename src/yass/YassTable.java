@@ -8615,6 +8615,8 @@ public class YassTable extends JTable {
 
         tm.getData().removeElementAt(row);
         tm.fireTableDataChanged();
+        setRowSelectionInterval(row - 1, row - 1);
+        updatePlayerPosition();
     }
 
     /**
@@ -8649,6 +8651,7 @@ public class YassTable extends JTable {
         tm.getData().removeElementAt(row + 1);
         tm.fireTableDataChanged();
         setRowSelectionInterval(row, row);
+        updatePlayerPosition();
     }
 
     /**
