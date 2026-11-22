@@ -93,6 +93,7 @@ public class YassTable extends JTable {
     private Color myColor = null;
     private volatile boolean saved = true;
     private volatile boolean autosaved = true;
+    private boolean saveVerificationWarning;
     private boolean timingTagSanityTouched = false;
     private boolean isLoading = false;
     private String encoding = null;
@@ -291,6 +292,7 @@ public class YassTable extends JTable {
         resetUndo();
         addUndo();
         setSaved(true);
+        saveVerificationWarning = false;
         mp3 = dir = txtFilename = null;
         gap = 0;
         bpm = 100;
@@ -337,6 +339,15 @@ public class YassTable extends JTable {
 
     public boolean isSaved() {
         return saved;
+    }
+
+    boolean needsManualSave() {
+        return !isSaved() || saveVerificationWarning;
+    }
+
+    void markManuallySaved(boolean verificationWarning) {
+        setSaved(true);
+        saveVerificationWarning = verificationWarning;
     }
 
     public boolean isAutosaved() {
@@ -2058,6 +2069,7 @@ public class YassTable extends JTable {
         tm.fireTableDataChanged();
         isLoading = false;
         setSaved(true);
+        saveVerificationWarning = false;
         return success;
     }
 
@@ -2103,11 +2115,20 @@ public class YassTable extends JTable {
     }
 
     public boolean storeFile(String filename) {
+        FileSaveResult result = writeSongFile(filename);
+        if (result.verificationIssue() != null) {
+            showSaveVerificationWarning(filename, result.verificationIssue());
+        }
+        return result.written();
+    }
+
+    record FileSaveResult(boolean written, String verificationIssue) {
+    }
+
+    FileSaveResult writeSongFile(String filename) {
         // LOGGER.info("Storing "+tm.getCommentRow("ARTIST:").getComment()+" - "+tm.getCommentRow("TITLE:").getComment());
 
         int relPageBreak = 0;
-        boolean isRel = isRelative() && !prop.isUnityOrNewer();
-
         BufferedWriter bw = null;
         OutputStreamWriter osw = null;
         FileOutputStream fos = null;
@@ -2122,8 +2143,10 @@ public class YassTable extends JTable {
             JTextArea text = new JTextArea(msg);
             text.setOpaque(false);
             JOptionPane.showMessageDialog(YassUtils.resolveDialogOwner(this), text);
-            return false;
+            return new FileSaveResult(false, null);
         }
+        boolean isRel = isRelative() && !prop.isUnityOrNewer();
+        boolean backup = filename.endsWith(".bak");
         boolean isUnityFormat = prop.getUsFormatVersion().getNumericVersion() >= 1d;
         String p = prop.getProperty("utf8-without-bom");
         boolean utf8WithoutBom = isUnityFormat || (p != null && p.equals("true"));
@@ -2156,7 +2179,7 @@ public class YassTable extends JTable {
                 outputStream = new PrintWriter(new FileWriter(filename));
             }
             // If this is an auto-save, don't deal with Tag-Versioning
-            if (!filename.endsWith(".bak")) {
+            if (!backup) {
                 setVersion();
                 handleDeprecations();
                 handleAudio();
@@ -2193,6 +2216,10 @@ public class YassTable extends JTable {
                 }
                 // LOGGER.info(tm.getRowAt(i).toString());
             }
+            outputStream.close();
+            if (outputStream.checkError()) {
+                throw new IOException("Could not finish writing the song file.");
+            }
             success = true;
             setPreventRelativeToAbsoluteConversion(false);
         } catch (Exception e) {
@@ -2200,6 +2227,11 @@ public class YassTable extends JTable {
                 sheet.setMessage(I18.get("sheet_msg_write_error"));
             }
             LOGGER.log(Level.INFO, "Write Error: " + e.getMessage(), e);
+            if (!backup) {
+                JOptionPane.showMessageDialog(YassUtils.resolveDialogOwner(this),
+                        "Could not save the song.\n" + filename + "\n" + e.getLocalizedMessage(),
+                        I18.get("sheet_msg_write_error"), JOptionPane.ERROR_MESSAGE);
+            }
             success = false;
         } finally {
             try {
@@ -2219,33 +2251,61 @@ public class YassTable extends JTable {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
             }
         }
+        if (!success) {
+            return new FileSaveResult(false, null);
+        }
         if (removeRelative) {
             removeRelative();
         }
-        // Autosave (.bak) skips verify-reload: re-reading and comparing against the
-        // live table races with concurrent edits and produced spurious dialogs.
-        if (!filename.endsWith(".bak")) {
-            YassTable verify = new YassTable();
-            verify.init(prop);
-            verify.loadFile(filename);
-            if (!equalsData(verify)) {
-                LOGGER.info("###############################################");
-                LOGGER.info("Write Error: Written data could not be verified.");
-                LOGGER.info("File: " + filename);
-                LOGGER.info("Encoding: " + encoding);
-                LOGGER.info("###############################################");
-                JOptionPane.showMessageDialog(YassUtils.resolveDialogOwner(this),
-                                              "<html>Write Error: Written data could not be verified.<br>File: "
-                                                      + filename, "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        String verificationIssue = backup ? null : verifySavedFile(filename);
         if (prop.getBooleanProperty("usdbsyncer-always-pin")) {
             pinUsdbSyncer();
         }
-        if (success) {
-            markTimingTagSanityTouched();
+        markTimingTagSanityTouched();
+        return new FileSaveResult(true, verificationIssue);
+    }
+
+    private String verifySavedFile(String filename) {
+        List<String> expectedRows = tm.getData().stream().map(YassTable::rowForSaveVerification).toList();
+        YassTable reopened = new YassTable();
+        reopened.init(prop);
+        boolean reopenedSuccessfully;
+        try {
+            reopenedSuccessfully = reopened.loadFile(filename);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Could not verify the saved song " + filename, e);
+            return "The saved file could not be reopened as a song.\n" + e.getLocalizedMessage();
         }
-        return success;
+        List<String> readRows = reopened.tm.getData().stream().map(YassTable::rowForSaveVerification).toList();
+        for (int i = 0; i < Math.min(expectedRows.size(), readRows.size()); i++) {
+            String expected = expectedRows.get(i);
+            String actual = readRows.get(i);
+            if (!expected.equals(actual)) {
+                return "Row " + (i + 1) + " differs.\nExpected: [" + expected + "]\nRead back: [" + actual + "]";
+            }
+        }
+        if (expectedRows.size() != readRows.size()) {
+            return "Expected " + expectedRows.size() + " rows, but read back " + readRows.size() + ".";
+        }
+        return reopenedSuccessfully ? null : "The saved file could not be reopened as a song.";
+    }
+
+    private static String rowForSaveVerification(YassRow row) {
+        String text = row.toString();
+        return row.isPageBreak() ? StringUtils.stripEnd(text, " \t" + YassRow.SPACE) : text;
+    }
+
+    void showSaveVerificationWarning(String filename, String issue) {
+        LOGGER.warning("Song saved with verification warning (" + encoding + "): " + filename + "\n" + issue);
+        JTextArea message = new JTextArea("The song was saved, but verification found a problem. You can save it again.\n\n"
+                + filename + "\n\n" + issue);
+        message.setEditable(false);
+        message.setOpaque(false);
+        message.setLineWrap(true);
+        message.setWrapStyleWord(true);
+        message.setColumns(55);
+        JOptionPane.showMessageDialog(YassUtils.resolveDialogOwner(this), message,
+                "Save Verification Warning", JOptionPane.WARNING_MESSAGE);
     }
 
     private void pinUsdbSyncer() {
@@ -8243,6 +8303,21 @@ public class YassTable extends JTable {
 
     private void rollLeftNew(int n, int i, YassRow currentRow, int lastIndex, String init) {
         YassRow prev = getRowAt(i - 1);
+        YassRow firstRolledNote = currentRow;
+        String pageStartPrefix = "";
+        if (i < lastIndex && prev != null && prev.isPageBreak()
+                && init != null && init.startsWith("~" + YassRow.SPACE)) {
+            YassRow lastNoteBeforeBreak = getRowAt(i - 2);
+            if (lastNoteBeforeBreak != null && lastNoteBeforeBreak.isNote()) {
+                if (!lastNoteBeforeBreak.endsWithSpace()) {
+                    lastNoteBeforeBreak.setText(lastNoteBeforeBreak.getText() + YassRow.SPACE);
+                }
+                pageStartPrefix = init.substring(2);
+            } else {
+                pageStartPrefix = init.substring(1);
+            }
+            init = null;
+        }
         YassRow next;
         String txt;
         while (i < lastIndex) {
@@ -8280,7 +8355,7 @@ public class YassTable extends JTable {
                         txt = txt.substring(1);
                     }
                     if (init.startsWith(
-                            "~" + YassRow.SPACE) && prev != null && !prev.isTilde() && !prev.endsWithSpace()) {
+                            "~" + YassRow.SPACE) && prev != null && prev.isNote() && !prev.isTilde() && !prev.endsWithSpace()) {
                         prev.setText(prev.getText() + YassRow.SPACE);
                         init = StringUtils.EMPTY;
                     }
@@ -8307,6 +8382,9 @@ public class YassTable extends JTable {
                 lastTxt += YassRow.SPACE;
             }
             currentRow.setText(lastTxt);
+        }
+        if (!pageStartPrefix.isEmpty()) {
+            firstRolledNote.setText(pageStartPrefix + firstRolledNote.getText());
         }
     }
 

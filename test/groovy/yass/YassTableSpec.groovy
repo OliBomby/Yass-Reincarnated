@@ -21,6 +21,7 @@ package yass
 
 import net.davidashen.text.Hyphenator
 import spock.lang.Specification
+import spock.lang.TempDir
 import yass.analysis.PitchDetector
 import yass.autocorrect.YassAutoCorrect
 
@@ -28,6 +29,9 @@ import javax.swing.*
 import javax.swing.table.TableModel 
 
 class YassTableSpec extends Specification {
+
+    @TempDir
+    File songFolder
 
     private final static List<YassRow> LEADING_SPACE_END_TILDE_SONG = initSong1()
     private final static List<YassRow> TRAILING_SPACE_END_TILDE_SONG = initSong2()
@@ -868,6 +872,109 @@ class YassTableSpec extends Specification {
     }
 
     // ----------
+
+    def 'rolling left after a page break preserves a word boundary when the pages are joined'() {
+        given:
+        def pageBreak = new YassRow('-', '8', '', '', '')
+        def table = tableForGoldenSuggestions([
+                note(':', 0, 4, 0, previousLyric),
+                pageBreak,
+                note(':', 12, 4, 0, '~ '),
+                note(':', 16, 4, 0, 'word '),
+                note(':', 20, 4, 0, 'last ')
+        ])
+        table.setRowSelectionInterval(2, 2)
+
+        when:
+        table.rollLeft()
+
+        then:
+        pageBreak.toString() == '- 8'
+        table.getRowAt(0).toString() == ': 0 4 0 one '
+        table.getRowAt(2).getText() == 'word' + YassRow.SPACE
+
+        when:
+        table.removePageBreak(true)
+
+        then:
+        table.getText().replace(YassRow.SPACE, ' ' as char).startsWith('one word ')
+
+        where:
+        previousLyric << ['one', 'one ']
+    }
+
+    def 'rolling left keeps a separator and its following text when there is no note before the break'() {
+        given:
+        def pageBreak = new YassRow('-', '8', '', '', '')
+        def table = tableForGoldenSuggestions([
+                pageBreak,
+                note(':', 12, 4, 0, '~ first'),
+                note(':', 16, 4, 0, 'word '),
+                note(':', 20, 4, 0, 'last ')
+        ])
+        table.setRowSelectionInterval(1, 1)
+
+        when:
+        table.rollLeft()
+
+        then:
+        pageBreak.toString() == '- 8'
+        table.getRowAt(1).toString() == ': 12 4 0  firstword '
+    }
+
+    def 'save verification ignores page break padding and reports changed song data'() {
+        given:
+        I18.setDefaultLanguage()
+        def props = Stub(YassProperties) {
+            getUsFormatVersion() >> UltrastarHeaderTagVersion.UNITY
+            isUnityOrNewer() >> true
+        }
+        def table = new YassTable()
+        table.init(props)
+        assert table.setText('#TITLE:Song\n#ARTIST:Artist\n#BPM:120.12\n: 0 4 0 one \n- 8\n: 12 4 0 word\nE')
+        table.getModelData().find { it.isPageBreak() }.setText(YassRow.SPACE.toString())
+        def songFile = new File(songFolder, 'Song.txt')
+
+        when:
+        def clean = table.writeSongFile(songFile.path)
+
+        then:
+        clean.written()
+        clean.verificationIssue() == null
+        songFile.readLines('UTF-8').contains('- 8  ')
+
+        when:
+        table.getCommentRow('BPM:').setComment('120.123')
+        def warned = table.writeSongFile(songFile.path)
+        table.markManuallySaved(warned.verificationIssue() != null)
+
+        then:
+        warned.written()
+        warned.verificationIssue() == 'Row 3 differs.\nExpected: [#BPM:120.123]\nRead back: [#BPM:120.12]'
+        songFile.readLines('UTF-8').contains('#BPM:120.123')
+        table.isSaved()
+        table.needsManualSave()
+
+        when:
+        songFile.setText('Different file content', 'UTF-8')
+        def repeated = table.writeSongFile(songFile.path)
+
+        then:
+        repeated.written()
+        repeated.verificationIssue() == warned.verificationIssue()
+        songFile.readLines('UTF-8').contains('#BPM:120.123')
+
+        when:
+        table.getCommentRow('BPM:').setComment('120.12')
+        def retried = table.writeSongFile(songFile.path)
+        table.markManuallySaved(retried.verificationIssue() != null)
+
+        then:
+        retried.written()
+        retried.verificationIssue() == null
+        table.isSaved()
+        !table.needsManualSave()
+    }
 
     def 'insertPageBreakAt applied to a song with leading spaces ending with ~. Legacy spacing'() {
         given:

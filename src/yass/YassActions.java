@@ -9313,27 +9313,18 @@ public class YassActions implements DropTargetListener {
         boolean isOpened = openTables.size() > 0;
         boolean isMoreThanOne = openTables.size() > 1;
         boolean isDuetTrack = table != null && table.getDuetTrack() > 0;
-        boolean isTrackSaved = table == null || table.isSaved();
-        boolean isAllSaved = true;
-        if (isOpened) {
-            for (YassTable open : openTables)
-                if (!open.isSaved()) {
-                    isAllSaved = false;
-                    break;
-                }
-        }
+        boolean canSaveTrack = table != null && table.needsManualSave();
+        boolean canSaveAnyTrack = openTables.stream().anyMatch(YassTable::needsManualSave);
         boolean canUndo = table != null && table.canUndo();
         boolean canRedo = table != null && table.canRedo();
 
-        saveTrack.setEnabled(!isTrackSaved);
-        saveAll.setEnabled(!isAllSaved);
+        saveTrack.setEnabled(canSaveTrack);
+        saveAll.setEnabled(canSaveAnyTrack);
         Component focusOwner = kbdFocus != null ? kbdFocus.getFocusOwner() : null;
         if (focusOwner instanceof JComboBox || isFocusInSongHeader()) {
             LOGGER.fine("[SaveDebug] updateActions"
                     + " focusOwner=" + (focusOwner == null ? "null" : focusOwner.getClass().getName())
                     + " focusInHeader=" + isFocusInSongHeader()
-                    + " isTrackSaved=" + isTrackSaved
-                    + " isAllSaved=" + isAllSaved
                     + " saveTrackEnabled=" + saveTrack.isEnabled()
                     + " saveAllEnabled=" + saveAll.isEnabled());
         }
@@ -12380,36 +12371,41 @@ public class YassActions implements DropTargetListener {
     }
 
     public List<YassTable> mergeTableAndSave(YassTable table, boolean backup) {
-        List<YassTable> stored = new ArrayList<>();
-        String fileSuffix = backup ? ".bak" : StringUtils.EMPTY;
+        String filename = table.getDirFilename() + (backup ? ".bak" : "");
+        List<YassTable> tracks = List.of(table);
+        YassTable tableToWrite = table;
         if (table.getDuetTrack() > 0) {
-            Vector<YassTable> tracks = getOpenTables(table);
+            Vector<YassTable> duetTracks = getOpenTables(table);
             LOGGER.info("Merging tables");
-            YassTable mergedTable = YassTable.mergeTables(tracks, prop);
-            LOGGER.info("Storing " + table.getDirFilename() + fileSuffix);
-            mergedTable.storeFile(table.getDirFilename() + fileSuffix);
-            stored.addAll(tracks);
-        } else {
-            table.storeFile(table.getDirFilename() + fileSuffix);
-            stored.add(table);
+            tableToWrite = YassTable.mergeTables(duetTracks, prop);
+            LOGGER.info("Storing " + filename);
+            tracks = duetTracks;
         }
-        return stored;
+        YassTable.FileSaveResult result = tableToWrite.writeSongFile(filename);
+        if (!result.written()) {
+            return List.of();
+        }
+        if (!backup) {
+            String issue = result.verificationIssue();
+            for (YassTable track : tracks) {
+                track.markManuallySaved(issue != null);
+            }
+            if (issue != null) {
+                tableToWrite.showSaveVerificationWarning(filename, issue);
+            }
+        }
+        return tracks;
     }
 
     private void save(Vector<YassTable> tables) {
-        List<YassTable> stored = new ArrayList<>();
+        Set<String> attemptedFiles = new HashSet<>();
         for (YassTable table : tables) {
-            if (table.isSaved() || stored.contains(table)) {
-                continue;
+            if (table.needsManualSave() && attemptedFiles.add(table.getDirFilename())) {
+                mergeTableAndSave(table, false);
             }
-            stored.addAll(mergeTableAndSave(table, false));
-
-            for (YassTable t : stored) {
-                t.setSaved(true);
-            }
-            saveAll.setEnabled(false);
-            main.repaint();
         }
+        updateActions();
+        main.repaint();
     }
 
     private void saveTrackAs() {
