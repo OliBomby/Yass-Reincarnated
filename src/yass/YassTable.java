@@ -3405,6 +3405,11 @@ public class YassTable extends JTable {
         return getPageNumber(row);
     }
 
+    int getPageNumberForNavigation() {
+        int row = getSelectionModel().getMinSelectionIndex();
+        return getPageNumber(row >= 0 ? row : getPageNavigationRowFromPlayhead());
+    }
+
     public Enumeration<YassRow> getRows() {
         return tm.getData().elements();
     }
@@ -4563,19 +4568,20 @@ public class YassTable extends JTable {
         return -1;
     }
 
+    private int getPageNavigationRowFromPlayhead() {
+        return sheet != null ? Math.max(0, sheet.nextElement()) : 0;
+    }
+
     public void gotoPage(int b) {
         int n = getRowCount();
         if (n < 1) {
             return;
         }
 
-        int row = 0;
+        int row;
         int[] rows = getSelectedRows();
         if (rows == null || rows.length < 1) {
-            row = sheet != null ? sheet.nextElement() : 0;
-            if (row < 0) {
-                row = 0;
-            }
+            row = getPageNavigationRowFromPlayhead();
         } else {
             if (b < 0) {
                 row = rows[0];
@@ -4585,21 +4591,15 @@ public class YassTable extends JTable {
         }
 
         if (b < 0) {
-            YassRow r = getRowAt(row);
-            while (r.isNote() && row > 0) {
-                r = getRowAt(--row);
+            while (row >= 0 && getRowAt(row).isNote()) {
+                row--;
             }
-            while ((!r.isNote()) && row > 0) {
-                r = getRowAt(--row);
-            }
-            while (r.isNote() && row > 0) {
-                r = getRowAt(--row);
-            }
-            if (row > 0) {
-                row++;
-            }
-            if (row == 0) {
+            row = findPreviousNoteAcrossPages(row + 1);
+            if (row < 0) {
                 return;
+            }
+            while (row > 0 && getRowAt(row - 1).isNote()) {
+                row--;
             }
         } else if (b > 0) {
             YassRow r = getRowAt(row);

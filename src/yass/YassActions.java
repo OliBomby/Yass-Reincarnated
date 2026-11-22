@@ -2710,7 +2710,7 @@ public class YassActions implements DropTargetListener {
             }
             stopPlaying();
             if (!isKeyPressed()) {
-                setCurrentEditPage(table.getPageNumber());
+                setCurrentEditPage(table.getPageNumberForNavigation());
             }
             setKeyPressed(true);
             if (getCurrentEditPage() > 1) {
@@ -2749,7 +2749,7 @@ public class YassActions implements DropTargetListener {
             }
             stopPlaying();
             if (!isKeyPressed()) {
-                setCurrentEditPage(table.getPageNumber());
+                setCurrentEditPage(table.getPageNumberForNavigation());
             }
             setKeyPressed(true);
             if (getCurrentEditPage() < table.getPageCount()) {
