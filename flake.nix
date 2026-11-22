@@ -12,7 +12,8 @@
         pkgs = import nixpkgs { inherit system; };
         lib = pkgs.lib;
         pname = "yass-reincarnated";
-        version = "2026.7";
+        releaseVersion = builtins.getEnv "RELEASE_VERSION";
+        version = if releaseVersion != "" then releaseVersion else "2026.7";
         runtimeLibs = with pkgs; [
           alsa-lib
           fontconfig
@@ -53,6 +54,7 @@
             mkdir -p "$TMPDIR/.m2/repository"
             mvn -q \
               -Dmaven.repo.local="$TMPDIR/.m2/repository" \
+              -Drevision="$version" \
               clean package -DskipTests -Djavafx.platform=linux
             runHook postBuild
           '';

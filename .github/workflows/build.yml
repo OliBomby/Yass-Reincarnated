@@ -80,7 +80,9 @@ jobs:
       
       - name: Build with Maven
         shell: bash
-        run: bash ./mvnw -B -ntp clean package -DskipTests -Djavafx.platform=${{ matrix.classifier }}
+        run: |
+          bash ./mvnw -B -ntp clean package -DskipTests \
+            -Drevision="${RELEASE_TAG#v}" -Djavafx.platform=${{ matrix.classifier }}
 
       - name: Prepare Package Input
         shell: bash
@@ -110,7 +112,7 @@ jobs:
           $appVersion = (Get-Content target/classes/version.properties -Raw | ConvertFrom-StringData).version
           jpackage --type app-image --dest dist-img --name "yass" --main-jar Yass-Reincarnated.jar --input package-input --icon "src/yass/resources/icons/yass-multi-icon.ico" --vendor "OliBomby" --description "Yass Reincarnated - Karaoke Editor" --app-version $appVersion
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "C:\Program Files (x86)\NSIS\makensis.exe" nsis-installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "/DAPP_VERSION=$appVersion" nsis-installer.nsi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Copy-Item yass-reincarnated-installer.exe dist/
@@ -176,7 +178,7 @@ jobs:
       - name: Build Linux package with Nix
         shell: bash
         run: |
-          nix build --option sandbox false .#packages.x86_64-linux.default
+          RELEASE_VERSION="${RELEASE_TAG#v}" nix build --impure --option sandbox false .#packages.x86_64-linux.default
 
       - name: Archive Nix package
         shell: bash

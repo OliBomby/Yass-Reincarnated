@@ -1,4 +1,7 @@
-﻿Name "Yass Reincarnated 2026.7"
+﻿!ifndef APP_VERSION
+  !define APP_VERSION "2026.7"
+!endif
+Name "Yass Reincarnated ${APP_VERSION}"
 OutFile "yass-reincarnated-installer.exe"
 
 Unicode true

@@ -18,6 +18,8 @@ builds or rebuilding installers on ordinary branch pushes.
   the action.
 - Builds produce Windows, Linux, macOS Apple Silicon, macOS Intel, and Linux Nix
   downloads, including the versioned Linux JAR.
+- The app's About window and the package versions use the version from the
+  release tag on every platform.
 - Linux and macOS builds compile successfully with their required JavaFX
   components and package the native libraries for the selected platform.
 - After all platform builds succeed, their downloads are attached to the GitHub
@@ -28,8 +30,9 @@ builds or rebuilding installers on ordinary branch pushes.
 ## Acceptance Scenarios
 
 - A commit is pushed to the main development branch. No release build starts.
-- A `v2026.7` tag is pushed. All platform packages build from that tag and are
-  published together in its GitHub Release after successful builds.
+- A `v2026.12` tag is pushed. All platform packages build from that tag and are
+  published together in its GitHub Release after successful builds. The About
+  window in each download shows version `2026.12`.
 - The Build action is run manually for `v2026.7` with the draft option selected.
   Its packages are attached to a draft GitHub Release for `v2026.7`.
 - The Linux or macOS build runs with the selected architecture. JavaFX imports
